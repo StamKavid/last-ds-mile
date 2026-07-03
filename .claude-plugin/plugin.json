@@ -1,0 +1,21 @@
+{
+  "name": "last-ds-mile",
+  "version": "0.1.0",
+  "description": "A guided data-science lifecycle for Claude Code: frame, explore, baseline, validate, model, evaluate, and report — with leakage and honesty checks built into every stage.",
+  "author": {
+    "name": "Stamatis",
+    "url": "https://thelastaimile.substack.com"
+  },
+  "homepage": "https://thelastaimile.substack.com",
+  "repository": "https://github.com/stamkavid/last-ds-mile",
+  "license": "MIT",
+  "keywords": [
+    "data-science",
+    "machine-learning",
+    "eda",
+    "validation",
+    "leakage",
+    "mlops",
+    "skills"
+  ]
+}

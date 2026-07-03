@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "last-ds-mile",
+  "description": "A guided data-science lifecycle for Claude Code, with leakage and honesty checks built into every stage.",
+  "owner": {
+    "name": "Stamatis",
+    "url": "https://thelastaimile.substack.com"
+  },
+  "plugins": [
+    {
+      "name": "last-ds-mile",
+      "source": {
+        "source": "github",
+        "repo": "stamkavid/last-ds-mile"
+      },
+      "description": "A guided data-science lifecycle for Claude Code: frame, explore, baseline, validate, model, evaluate, and report.",
+      "homepage": "https://thelastaimile.substack.com",
+      "license": "MIT",
+      "keywords": ["data-science", "machine-learning", "eda", "validation", "leakage"]
+    }
+  ]
+}
