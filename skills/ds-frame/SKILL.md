@@ -1,0 +1,58 @@
+---
+name: ds-frame
+description: Frames a vague data science ask into a crisp problem statement — unit of analysis, target definition, the decision the output feeds, and a success metric tied to that decision. Use when starting a new DS project, when asked to "build a model for X" without a defined target or metric, or when a request has no clear success criterion yet.
+---
+
+# ds-frame — Problem Framing
+
+## Overview
+
+Turns a vague ask into a crisp problem before any data is touched: what decision this
+feeds, what exactly is being predicted, and how success will be measured against that
+decision — not just against a modeling metric.
+
+## When to Use
+
+- Starting a new DS project or a new modeling question within an existing one.
+- The user asks for "a model" or "a prediction" without a defined target, decision, or
+  success metric.
+- NOT for: refining an already-framed problem's features or data (that's `/ds-data` and
+  `/ds-prep`); this stage is about the *question*, not the data.
+
+## Core Process
+
+1. Ask what decision this will inform: who acts on the output, how often, and what
+   happens today without it.
+2. Define the unit of analysis and the target variable precisely — not "churn" but
+   "customer with 0 purchases in the next 90 days, as of signup+30 days."
+3. Ask whether this needs ML at all, or whether a simple rule or lookup would solve it
+   just as well (the "do we even need ML?" gate).
+4. Pick a success metric tied to the decision, not only a modeling metric — e.g. "reduce
+   false negatives below X because a missed case costs $Y," not just "maximize AUC."
+5. Write the brief to `.last-ds-mile/stages/00-frame.md`: problem statement, unit of
+   analysis, target definition, decision, success metric, and explicit non-goals.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "The stakeholders just want 'a model', I don't need to press on the decision" | Without a decision the metric is arbitrary, and you'll optimize the wrong thing. |
+
+See `ds-method` for the shared Rationalizations that apply to every stage.
+
+## Red Flags
+
+| Red Flag | What it usually means |
+|---|---|
+| Success metric is a pure ML metric (accuracy/AUC) with no tie to a business or decision cost | Ask what a 1-point change in that metric is actually worth before treating it as the target to optimize. |
+
+See `ds-method` for the shared Red Flags that apply to every stage.
+
+## Verification
+
+- [ ] Target variable is defined precisely enough that two people would compute it
+      identically from raw data.
+- [ ] The decision this feeds is named explicitly.
+- [ ] The "do we even need ML?" question was asked and answered.
+- [ ] `.last-ds-mile/stages/00-frame.md` written with problem statement, target,
+      decision, metric, and non-goals.
