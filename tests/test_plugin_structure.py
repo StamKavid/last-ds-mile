@@ -18,6 +18,15 @@ STAGE_SKILLS = [
     "ds-handoff",
 ]
 
+DOMAIN_SKILLS = [
+    "target-leakage-detection",
+    "validation-strategy",
+    "imbalanced-data",
+    "metric-selection",
+    "error-analysis",
+    "notebook-hygiene",
+]
+
 REQUIRED_SECTIONS = [
     "## Overview",
     "## When to Use",
@@ -80,3 +89,14 @@ def test_ds_router_command_lists_all_stages():
     text = path.read_text(encoding="utf-8")
     for stage in STAGE_SKILLS:
         assert f"/{stage}" in text, f"router doesn't mention /{stage}"
+
+
+@pytest.mark.parametrize("skill", DOMAIN_SKILLS)
+def test_domain_skill_structure(skill):
+    path = ROOT / "skills" / skill / "SKILL.md"
+    assert path.exists(), f"missing skills/{skill}/SKILL.md"
+    frontmatter, body = parse_frontmatter(path)
+    assert frontmatter["name"] == skill
+    assert len(frontmatter["description"]) <= 1024
+    for section in REQUIRED_SECTIONS:
+        assert section in body, f"{skill} missing section {section}"
