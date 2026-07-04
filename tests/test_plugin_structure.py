@@ -52,7 +52,7 @@ def test_ds_method_skill_structure():
     assert len(frontmatter["description"]) <= 1024
     assert "## Red Flags" in body
     assert "## Common Rationalizations" in body
-    assert "## Hard Gates" in body or "Hard Gates" in body
+    assert "## Hard Gates" in body
 
 
 @pytest.mark.parametrize("stage", STAGE_SKILLS)
