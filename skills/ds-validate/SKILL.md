@@ -1,6 +1,6 @@
 ---
 name: ds-validate
-description: Chooses a leakage-safe validation or cross-validation strategy (temporal, grouped, stratified, or nested) that matches the data's structure, decided before any model is trained. Use before /ds-model, or when asked to set up train/test splits or cross-validation.
+description: Chooses a leakage-safe validation or cross-validation strategy (temporal, grouped, or stratified) that matches the data's structure, decided before any model is trained. Use before /ds-model, or when asked to set up train/test splits or cross-validation.
 ---
 
 # ds-validate — Validation Design
