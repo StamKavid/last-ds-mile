@@ -57,8 +57,8 @@ unreproducible results.
   missing, stop and run that stage first.
 - `/ds-report` requires `/ds-evaluate` to have produced slice/subgroup performance,
   not only an aggregate metric.
-- `/ds-handoff` requires the environment to be pinned (lockfile or `requirements.txt`
-  with exact versions) before packaging a model for handoff.
+- `/ds-handoff` requires the environment to be pinned (lockfile, or `requirements.txt`/
+  `environment.yml` with exact versions) before packaging a model for handoff.
 
 Gates are enforced by **warning and stopping to ask**, not by silently refusing or
 working around the missing artifact — this plugin's safe-set default is warn, not
