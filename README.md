@@ -55,8 +55,8 @@ stage shares.
 
 This is an early release covering the full lifecycle spine. Domain-specific skills
 (leakage detection, imbalanced data, time-series CV, etc.), the safe-set of hooks and
-permission guidance, and the cross-project learnings system are on the roadmap — see
-the design spec linked from the project history for the full plan.
+permission guidance, and the cross-project learnings system are on the roadmap and will
+land in later releases.
 
 ## Development
 
