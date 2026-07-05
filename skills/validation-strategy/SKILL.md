@@ -64,7 +64,7 @@ already low-variance, or when only comparing a handful of fixed-hyperparameter m
 (that's plain CV, not nested).
 
 ```python
-from sklearn.model_selection import GridSearchCV, cross_val_score
+from sklearn.model_selection import GridSearchCV, KFold, cross_val_score
 
 # inner_cv tunes hyperparameters; outer_cv gives the honest final estimate
 inner_cv = KFold(n_splits=3, shuffle=True, random_state=0)
