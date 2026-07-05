@@ -25,6 +25,8 @@ DOMAIN_SKILLS = [
     "metric-selection",
     "error-analysis",
     "notebook-hygiene",
+    "dataframe-performance",
+    "data-viz-standards",
 ]
 
 REQUIRED_SECTIONS = [
