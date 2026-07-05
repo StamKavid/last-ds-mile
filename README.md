@@ -51,12 +51,27 @@ Three stages are Hard Gates and will stop to ask rather than silently proceed:
 See `skills/ds-method/SKILL.md` for the full set of Red Flags and Rationalizations every
 stage shares.
 
+## Domain skills
+
+These aren't slash commands — they auto-trigger by description match whenever a
+situation calls for them, whether or not you're mid-pipeline:
+
+| Skill | Fires when |
+|---|---|
+| `target-leakage-detection` | a metric looks too good on the first try, or a feature dominates importance |
+| `validation-strategy` | setting up CV, or deciding whether hyperparameter tuning needs nested CV |
+| `imbalanced-data` | a classification target is skewed and accuracy stops being trustworthy |
+| `metric-selection` | choosing or defending an evaluation metric |
+| `error-analysis` | a model's aggregate score looks fine but you need to know where it fails |
+| `notebook-hygiene` | finishing exploratory work that will be shared or handed off |
+
 ## Status
 
-This is an early release covering the full lifecycle spine. Domain-specific skills
-(leakage detection, imbalanced data, time-series CV, etc.), the safe-set of hooks and
-permission guidance, and the cross-project learnings system are on the roadmap and will
-land in later releases.
+This release covers the full lifecycle spine plus 6 domain skills (leakage detection,
+validation strategy, imbalanced data, metric selection, error analysis, notebook
+hygiene) that auto-trigger whenever a matching situation comes up, pipeline or not. The
+safe-set of hooks and permission guidance, and the cross-project learnings system, are
+still on the roadmap and will land in later releases.
 
 ## Development
 
