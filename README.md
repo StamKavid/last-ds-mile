@@ -64,14 +64,17 @@ situation calls for them, whether or not you're mid-pipeline:
 | `metric-selection` | choosing or defending an evaluation metric |
 | `error-analysis` | a model's aggregate score looks fine but you need to know where it fails |
 | `notebook-hygiene` | finishing exploratory work that will be shared or handed off |
+| `dataframe-performance` | a pandas operation is slow, or deciding whether to reach for Polars |
+| `data-viz-standards` | building EDA plots, or preparing stakeholder-facing figures and tables |
 
 ## Status
 
-This release covers the full lifecycle spine plus 6 domain skills (leakage detection,
+This release covers the full lifecycle spine plus 8 domain skills (leakage detection,
 validation strategy, imbalanced data, metric selection, error analysis, notebook
-hygiene) that auto-trigger whenever a matching situation comes up, pipeline or not. The
-safe-set of hooks and permission guidance, and the cross-project learnings system, are
-still on the roadmap and will land in later releases.
+hygiene, dataframe performance, and data viz standards) that auto-trigger whenever a
+matching situation comes up, pipeline or not. The safe-set of hooks and permission
+guidance, and the cross-project learnings system, are still on the roadmap and will
+land in later releases.
 
 ## Development
 
