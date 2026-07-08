@@ -8,11 +8,16 @@ import re
 import sys
 from pathlib import Path
 
+# Matches only pickle.load(/joblib.load( by name — not pickle.loads(), not
+# pandas.read_pickle(). Known scope limit, not something we chase here.
 PICKLE_RE = re.compile(r"\b(pickle|joblib)\.load\s*\(")
-SHELL_MAGIC_RE = re.compile(r"^\s*!\S")
+# Allows an optional space after '!' since IPython accepts both '!cmd' and '! cmd'.
+SHELL_MAGIC_RE = re.compile(r"^\s*!\s*\S")
 SECRET_NAME_RE = re.compile(
     r"\b(api[_-]?key|secret|password|passwd|token|access[_-]?key)\b", re.IGNORECASE
 )
+# Will false-positive on benign long identifiers (hashes, UUIDs, base64 blobs) —
+# accepted trade-off for a warn-only tool.
 SECRET_VALUE_RE = re.compile(r"\b[A-Za-z0-9+/]{32,}={0,2}\b")
 HIDDEN_UNICODE_CHARS = {
     "​", "‌", "‍", "‎", "‏",  # zero-width / directional marks
@@ -37,10 +42,20 @@ def scan_read(file_path: str, cwd: str) -> list:
     if suffix in PICKLE_EXTENSIONS:
         try:
             resolved = path.resolve()
-            project_dir = Path(cwd).resolve() if cwd else None
         except OSError:
             return findings
-        if project_dir and project_dir != resolved and project_dir not in resolved.parents:
+        if not cwd:
+            findings.append(
+                f"{path.name} is a pickle/joblib file and this hook could not "
+                "determine the project workspace (no cwd provided) to check its "
+                "provenance — treat it as untrusted until confirmed otherwise."
+            )
+            return findings
+        try:
+            project_dir = Path(cwd).resolve()
+        except OSError:
+            return findings
+        if project_dir != resolved and project_dir not in resolved.parents:
             findings.append(
                 f"{path.name} is a pickle/joblib file outside the project workspace "
                 f"({resolved}). Loading it executes arbitrary code — confirm "
@@ -56,6 +71,8 @@ def scan_read(file_path: str, cwd: str) -> list:
     except OSError:
         return findings
 
+    # Bounded to the first 20000 chars for speed on large CSVs; the notebook-edit
+    # scan below is unbounded since notebook edits are naturally much smaller.
     hidden = find_hidden_unicode(text[:20000])
     if hidden:
         codepoints = ", ".join(f"U+{ord(c):04X}" for c in sorted(hidden))
@@ -65,6 +82,9 @@ def scan_read(file_path: str, cwd: str) -> list:
         )
 
     header = text.splitlines()[0] if text else ""
+    # Scope: header-name check only (not full-row secret VALUES like
+    # scan_notebook_edit does) — deep-scanning every CSV row is out of scope
+    # for a fast PostToolUse hook; see AUDIT.md for the documented limitation.
     if SECRET_NAME_RE.search(header):
         findings.append(
             f"{path.name}'s header row looks like it names a secret (matched a "

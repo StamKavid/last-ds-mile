@@ -136,3 +136,29 @@ def test_scan_flags_shell_magic_in_notebook_edit(tmp_path):
     })
     context = out["hookSpecificOutput"]["additionalContext"]
     assert "Shell magic in notebook cell" in context
+
+
+def test_scan_flags_pickle_when_cwd_missing(tmp_path):
+    pkl_path = tmp_path / "model.pkl"
+    pkl_path.write_bytes(b"not a real pickle, just bytes")
+
+    out = run_hook("scan_untrusted_input.py", {
+        "tool_name": "Read",
+        "tool_input": {"file_path": str(pkl_path)},
+        "cwd": "",
+    })
+    context = out["hookSpecificOutput"]["additionalContext"]
+    assert "could not determine the project workspace" in context
+
+
+def test_scan_flags_shell_magic_with_space_after_bang(tmp_path):
+    out = run_hook("scan_untrusted_input.py", {
+        "tool_name": "Edit",
+        "tool_input": {
+            "file_path": str(tmp_path / "notebook.ipynb"),
+            "new_string": "! pip install some-package",
+        },
+        "cwd": str(tmp_path),
+    })
+    context = out["hookSpecificOutput"]["additionalContext"]
+    assert "Shell magic in notebook cell" in context
