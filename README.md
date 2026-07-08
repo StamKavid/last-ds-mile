@@ -69,12 +69,13 @@ situation calls for them, whether or not you're mid-pipeline:
 
 ## Status
 
-This release covers the full lifecycle spine plus 8 domain skills (leakage detection,
+This release covers the full lifecycle spine, 8 domain skills (leakage detection,
 validation strategy, imbalanced data, metric selection, error analysis, notebook
 hygiene, dataframe performance, and data viz standards) that auto-trigger whenever a
-matching situation comes up, pipeline or not. The safe-set of hooks and permission
-guidance, and the cross-project learnings system, are still on the roadmap and will
-land in later releases.
+matching situation comes up, and the safe set: 4 hooks, a documented permission
+baseline, a real sanitization gate in `/ds-data`, `AUDIT.md`, and 3 subagents
+(`leakage-auditor`, `ds-reviewer`, `data-profiler`). See the "Safety" section below.
+The cross-project learnings curation system (`/ds-learn`) is still on the roadmap.
 
 ## Safety
 
