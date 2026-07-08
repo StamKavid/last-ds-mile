@@ -15,6 +15,14 @@ yourself — that's the point.
 | `PreCompact` | `hooks/pre_compact.py` | `.last-ds-mile/stages/*.md` (filenames only) | `.last-ds-mile/session-state.json` | none |
 | `Stop` | `hooks/stop_persist_learnings.py` | `.last-ds-mile/stages/*.md` (filenames only) | appends one line to `.last-ds-mile/learnings.jsonl` | none |
 
+All four hooks are invoked through one shared wrapper, `hooks/ds-python.sh` — a
+short bash script that finds a working Python 3 interpreter (`python3`, `python`,
+or `py -3`, in that order) and execs the target hook script through it. It exists
+to work around a Windows/Git Bash quirk (the Microsoft Store's `python3` stub) and
+a related path-form mismatch. It reads and writes nothing itself, makes no network
+calls, and its only job is picking an interpreter and handing off — read it
+alongside the 4 hook scripts if you want the complete picture of what actually runs.
+
 All four exit 0 unconditionally — **warn, don't block** is the default posture (see
 the project's design doc for the full rationale). Filesystem writes (`PreCompact` and
 `Stop`) are wrapped in error handling so a filesystem surprise (permissions, a path
@@ -23,6 +31,8 @@ hooks read file *contents* except `scan_untrusted_input.py`, which reads only th
 specific file the agent just touched (never a directory sweep) and only to look for
 the patterns below — it never sends that content anywhere; it only prints a short
 warning string back to Claude Code via `hookSpecificOutput.additionalContext`.
+
+To verify the no-network and stdlib-only claims yourself: `grep -n "^import\|^from" hooks/*.py` shows every import (all four hooks use only `json`, `sys`, `re`, `pathlib`, `datetime`) and `grep -rniE "requests\.|urllib|socket\.|http\.client|\.urlopen\(" hooks/*.py` should return nothing.
 
 ## What `scan_untrusted_input.py` looks for
 
