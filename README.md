@@ -76,6 +76,31 @@ matching situation comes up, pipeline or not. The safe-set of hooks and permissi
 guidance, and the cross-project learnings system, are still on the roadmap and will
 land in later releases.
 
+## Safety
+
+This plugin ships a "safe set": hooks that scan for untrusted-input risk (a
+poisoned CSV, a pickle file that executes code on load, a shell magic hidden in a
+notebook), a sanitization gate built into `/ds-data`, and 3 subagents. Every hook
+is **warn, don't block** — nothing here silently stops your work. See
+[`AUDIT.md`](AUDIT.md) for exactly what each hook reads, writes, and calls (nothing
+over the network, ever).
+
+To adopt the recommended permission baseline in your own project, merge
+[`settings-baseline.json`](settings-baseline.json) into your project's
+`.claude/settings.json` (this plugin never modifies your settings automatically):
+
+    cat settings-baseline.json
+    # then merge its "permissions" block into your own settings.json by hand,
+    # or with a JSON-merging tool if you already have one in your workflow.
+
+### Subagents
+
+| Subagent | Model | Use for |
+|---|---|---|
+| `leakage-auditor` | Opus | Adversarially hunting target/temporal/validation leakage before `/ds-model` or `/ds-report` |
+| `ds-reviewer` | Sonnet | Running the discipline checklist (baseline, validation, metric, slices, reproducibility) before `/ds-report` |
+| `data-profiler` | Haiku | Fast structural profiling sweep for `/ds-data` or `/ds-explore` |
+
 ## Development
 
     pip install -r requirements-dev.txt
