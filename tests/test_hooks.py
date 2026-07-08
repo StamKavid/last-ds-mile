@@ -162,3 +162,26 @@ def test_scan_flags_shell_magic_with_space_after_bang(tmp_path):
     })
     context = out["hookSpecificOutput"]["additionalContext"]
     assert "Shell magic in notebook cell" in context
+
+
+def test_pre_compact_writes_snapshot_with_stage_files(tmp_path):
+    stages_dir = tmp_path / ".last-ds-mile" / "stages"
+    stages_dir.mkdir(parents=True)
+    (stages_dir / "00-frame.md").write_text("x", encoding="utf-8")
+
+    run_hook("pre_compact.py", {"cwd": str(tmp_path), "trigger": "manual"})
+
+    state_file = tmp_path / ".last-ds-mile" / "session-state.json"
+    assert state_file.exists()
+    data = json.loads(state_file.read_text(encoding="utf-8"))
+    assert data["trigger"] == "manual"
+    assert data["stage_files"] == ["00-frame.md"]
+
+
+def test_pre_compact_writes_empty_stage_list_when_no_pipeline(tmp_path):
+    run_hook("pre_compact.py", {"cwd": str(tmp_path), "trigger": "auto"})
+
+    state_file = tmp_path / ".last-ds-mile" / "session-state.json"
+    assert state_file.exists()
+    data = json.loads(state_file.read_text(encoding="utf-8"))
+    assert data["stage_files"] == []
