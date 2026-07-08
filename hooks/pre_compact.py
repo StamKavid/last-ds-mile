@@ -27,9 +27,12 @@ def main() -> None:
         "stage_files": stage_files,
     }
 
-    ds_dir.mkdir(parents=True, exist_ok=True)
-    state_file = ds_dir / "session-state.json"
-    state_file.write_text(json.dumps(snapshot, indent=2) + "\n", encoding="utf-8")
+    try:
+        ds_dir.mkdir(parents=True, exist_ok=True)
+        state_file = ds_dir / "session-state.json"
+        state_file.write_text(json.dumps(snapshot, indent=2) + "\n", encoding="utf-8")
+    except OSError:
+        pass
 
     sys.exit(0)
 

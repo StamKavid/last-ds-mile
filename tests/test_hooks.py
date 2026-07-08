@@ -185,3 +185,17 @@ def test_pre_compact_writes_empty_stage_list_when_no_pipeline(tmp_path):
     assert state_file.exists()
     data = json.loads(state_file.read_text(encoding="utf-8"))
     assert data["stage_files"] == []
+
+
+def test_pre_compact_does_not_crash_when_ds_dir_path_is_a_file(tmp_path):
+    # .last-ds-mile already exists as a FILE, not a directory — mkdir() would raise.
+    (tmp_path / ".last-ds-mile").write_text("not a directory", encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, str(HOOKS_DIR / "pre_compact.py")],
+        input=json.dumps({"cwd": str(tmp_path), "trigger": "manual"}),
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    assert result.returncode == 0, f"pre_compact.py should not crash: {result.stderr}"
