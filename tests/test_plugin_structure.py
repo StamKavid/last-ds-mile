@@ -29,6 +29,21 @@ DOMAIN_SKILLS = [
     "data-viz-standards",
 ]
 
+AGENTS = [
+    ("leakage-auditor", "opus"),
+    ("ds-reviewer", "sonnet"),
+    ("data-profiler", "haiku"),
+]
+
+REQUIRED_HOOK_EVENTS = ["SessionStart", "PostToolUse", "PreCompact", "Stop"]
+
+HOOK_SCRIPTS = [
+    "session_start.py",
+    "scan_untrusted_input.py",
+    "pre_compact.py",
+    "stop_persist_learnings.py",
+]
+
 REQUIRED_SECTIONS = [
     "## Overview",
     "## When to Use",
@@ -102,3 +117,67 @@ def test_domain_skill_structure(skill):
     assert len(frontmatter["description"]) <= 1024
     for section in REQUIRED_SECTIONS:
         assert section in body, f"{skill} missing section {section}"
+
+
+def test_hooks_json_valid():
+    path = ROOT / "hooks" / "hooks.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    for event in REQUIRED_HOOK_EVENTS:
+        assert event in data["hooks"], f"hooks.json missing {event}"
+
+
+def test_hook_scripts_exist():
+    for script in HOOK_SCRIPTS:
+        path = ROOT / "hooks" / script
+        assert path.exists(), f"missing hooks/{script}"
+
+
+def test_ds_python_shim_exists():
+    path = ROOT / "hooks" / "ds-python.sh"
+    assert path.exists()
+    text = path.read_text(encoding="utf-8")
+    assert "python3" in text
+    assert "py -3" in text
+
+
+@pytest.mark.parametrize("agent,model", AGENTS)
+def test_agent_structure(agent, model):
+    path = ROOT / "agents" / f"{agent}.md"
+    assert path.exists(), f"missing agents/{agent}.md"
+    frontmatter, body = parse_frontmatter(path)
+    assert frontmatter["name"] == agent
+    assert frontmatter["model"] == model
+    assert "description" in frontmatter
+    assert len(body.strip()) > 0
+
+
+def test_audit_md_documents_every_hook():
+    path = ROOT / "AUDIT.md"
+    assert path.exists(), "missing AUDIT.md"
+    text = path.read_text(encoding="utf-8")
+    assert "network" in text.lower()
+    for script in HOOK_SCRIPTS:
+        assert script in text, f"AUDIT.md doesn't mention {script}"
+
+
+def test_settings_baseline_valid():
+    path = ROOT / "settings-baseline.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    deny = data["permissions"]["deny"]
+    for rule in [
+        "Read(~/.ssh/**)",
+        "Read(~/.aws/**)",
+        "Read(**/.env*)",
+        "Write(~/.ssh/**)",
+        "Write(~/.aws/**)",
+        "Bash(curl * | bash)",
+        "Bash(curl * | sh)",
+    ]:
+        assert rule in deny, f"settings-baseline.json missing deny rule {rule}"
+
+
+def test_ds_data_has_sanitization_gate():
+    path = ROOT / "skills" / "ds-data" / "SKILL.md"
+    text = path.read_text(encoding="utf-8")
+    assert "sanitization gate" in text.lower()
+    assert "later release of this plugin" not in text
