@@ -48,6 +48,23 @@ def test_session_start_reports_learnings_count(tmp_path):
     assert "2 prior session note(s) available" in context
 
 
+def test_session_start_does_not_crash_when_learnings_file_is_unreadable(tmp_path):
+    ds_dir = tmp_path / ".last-ds-mile"
+    ds_dir.mkdir(parents=True)
+    # learnings.jsonl exists as a DIRECTORY, not a file — .exists() is True but
+    # read_text() raises IsADirectoryError (an OSError subclass).
+    (ds_dir / "learnings.jsonl").mkdir()
+
+    result = subprocess.run(
+        [sys.executable, str(HOOKS_DIR / "session_start.py")],
+        input=json.dumps({"cwd": str(tmp_path)}),
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    assert result.returncode == 0, f"session_start.py should not crash: {result.stderr}"
+
+
 def test_scan_flags_out_of_workspace_pickle(tmp_path):
     outside = tmp_path / "outside"
     outside.mkdir()

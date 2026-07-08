@@ -21,9 +21,11 @@ def learnings_status(project_dir: Path) -> str:
     learnings_file = project_dir / ".last-ds-mile" / "learnings.jsonl"
     if not learnings_file.exists():
         return "no prior learnings recorded"
-    count = sum(
-        1 for line in learnings_file.read_text(encoding="utf-8").splitlines() if line.strip()
-    )
+    try:
+        text = learnings_file.read_text(encoding="utf-8")
+    except OSError:
+        return "learnings file present but unreadable"
+    count = sum(1 for line in text.splitlines() if line.strip())
     return f"{count} prior session note(s) available"
 
 
