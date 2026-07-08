@@ -199,3 +199,39 @@ def test_pre_compact_does_not_crash_when_ds_dir_path_is_a_file(tmp_path):
         timeout=10,
     )
     assert result.returncode == 0, f"pre_compact.py should not crash: {result.stderr}"
+
+
+def test_stop_appends_learning_when_pipeline_started(tmp_path):
+    stages_dir = tmp_path / ".last-ds-mile" / "stages"
+    stages_dir.mkdir(parents=True)
+    (stages_dir / "00-frame.md").write_text("x", encoding="utf-8")
+
+    run_hook("stop_persist_learnings.py", {"cwd": str(tmp_path), "session_id": "abc123"})
+
+    learnings_file = tmp_path / ".last-ds-mile" / "learnings.jsonl"
+    assert learnings_file.exists()
+    lines = learnings_file.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
+    note = json.loads(lines[0])
+    assert note["session_id"] == "abc123"
+    assert note["stage_files"] == ["00-frame.md"]
+
+
+def test_stop_does_not_write_when_no_pipeline(tmp_path):
+    run_hook("stop_persist_learnings.py", {"cwd": str(tmp_path), "session_id": "abc123"})
+
+    learnings_file = tmp_path / ".last-ds-mile" / "learnings.jsonl"
+    assert not learnings_file.exists()
+
+
+def test_stop_appends_second_line_on_second_call(tmp_path):
+    stages_dir = tmp_path / ".last-ds-mile" / "stages"
+    stages_dir.mkdir(parents=True)
+    (stages_dir / "00-frame.md").write_text("x", encoding="utf-8")
+
+    run_hook("stop_persist_learnings.py", {"cwd": str(tmp_path), "session_id": "first"})
+    run_hook("stop_persist_learnings.py", {"cwd": str(tmp_path), "session_id": "second"})
+
+    learnings_file = tmp_path / ".last-ds-mile" / "learnings.jsonl"
+    lines = learnings_file.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 2
