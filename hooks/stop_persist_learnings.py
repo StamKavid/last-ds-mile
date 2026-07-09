@@ -28,6 +28,7 @@ def main() -> None:
         sys.exit(0)
 
     note = {
+        "type": "session",
         "recorded_at": datetime.now(timezone.utc).isoformat(),
         "session_id": payload.get("session_id", "unknown"),
         "stage_files": stage_files,

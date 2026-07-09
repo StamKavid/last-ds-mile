@@ -252,3 +252,15 @@ def test_stop_appends_second_line_on_second_call(tmp_path):
     learnings_file = tmp_path / ".last-ds-mile" / "learnings.jsonl"
     lines = learnings_file.read_text(encoding="utf-8").splitlines()
     assert len(lines) == 2
+
+
+def test_stop_note_has_type_session(tmp_path):
+    stages_dir = tmp_path / ".last-ds-mile" / "stages"
+    stages_dir.mkdir(parents=True)
+    (stages_dir / "00-frame.md").write_text("x", encoding="utf-8")
+
+    run_hook("stop_persist_learnings.py", {"cwd": str(tmp_path), "session_id": "abc123"})
+
+    learnings_file = tmp_path / ".last-ds-mile" / "learnings.jsonl"
+    note = json.loads(learnings_file.read_text(encoding="utf-8").splitlines()[0])
+    assert note["type"] == "session"
