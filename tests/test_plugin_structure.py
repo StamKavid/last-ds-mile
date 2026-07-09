@@ -1,4 +1,5 @@
 import json
+import re
 
 import pytest
 
@@ -27,6 +28,25 @@ DOMAIN_SKILLS = [
     "notebook-hygiene",
     "dataframe-performance",
     "data-viz-standards",
+    "capturing-learnings",
+]
+
+LESSONS = [
+    "the-time-traveling-feature",
+    "the-99-percent-fraud-model",
+    "the-notebook-nobody-could-rerun",
+    "the-leaderboard-that-lied",
+]
+
+SKILL_LESSON_CITATIONS = [
+    ("target-leakage-detection", "the-time-traveling-feature"),
+    ("ds-prep", "the-time-traveling-feature"),
+    ("imbalanced-data", "the-99-percent-fraud-model"),
+    ("metric-selection", "the-99-percent-fraud-model"),
+    ("notebook-hygiene", "the-notebook-nobody-could-rerun"),
+    ("ds-handoff", "the-notebook-nobody-could-rerun"),
+    ("validation-strategy", "the-leaderboard-that-lied"),
+    ("ds-validate", "the-leaderboard-that-lied"),
 ]
 
 AGENTS = [
@@ -181,3 +201,34 @@ def test_ds_data_has_sanitization_gate():
     text = path.read_text(encoding="utf-8")
     assert "sanitization gate" in text.lower()
     assert "later release of this plugin" not in text
+
+
+def test_gitignore_covers_last_ds_mile_dir():
+    path = ROOT / ".gitignore"
+    text = path.read_text(encoding="utf-8")
+    assert ".last-ds-mile/" in text
+
+
+@pytest.mark.parametrize("lesson", LESSONS)
+def test_lesson_structure(lesson):
+    path = ROOT / "lessons" / f"{lesson}.md"
+    assert path.exists(), f"missing lessons/{lesson}.md"
+    text = path.read_text(encoding="utf-8")
+    assert re.search(r"^title:\s*.+$", text, re.MULTILINE), f"{lesson} missing title:"
+    assert re.search(r"^skills:\s*\[.+\]\s*$", text, re.MULTILINE), f"{lesson} missing skills: [...]"
+    assert re.search(r"^stages:\s*\[.*\]\s*$", text, re.MULTILINE), f"{lesson} missing stages: [...]"
+
+
+def test_ds_learn_command_exists():
+    path = ROOT / "commands" / "ds-learn.md"
+    assert path.exists(), "missing commands/ds-learn.md"
+    frontmatter, body = parse_frontmatter(path)
+    assert "description" in frontmatter
+    assert "capturing-learnings" in body
+
+
+@pytest.mark.parametrize("skill,lesson", SKILL_LESSON_CITATIONS)
+def test_skill_cites_lesson(skill, lesson):
+    path = ROOT / "skills" / skill / "SKILL.md"
+    text = path.read_text(encoding="utf-8")
+    assert lesson in text, f"{skill}/SKILL.md doesn't cite lessons/{lesson}.md"
