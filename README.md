@@ -14,7 +14,7 @@ A product of [The Last AI Mile](https://thelastaimile.substack.com).
 **Option A — one command, from any terminal (recommended):**
 
 ```bash
-npx github:stamkavid/last-ds-mile
+npx stamkavid/last-ds-mile
 ```
 
 This finds your `claude` CLI, adds the marketplace, and installs the plugin —
@@ -33,6 +33,16 @@ routed to the next stage.
 
 **Requirements:** [Claude Code](https://claude.com/claude-code) (either option),
 plus [Node.js](https://nodejs.org) 18+ if you use the `npx` one-liner.
+
+**Troubleshooting:** if `claude plugin install` fails with `Permission denied
+(publickey)` or another SSH clone error, it's trying to clone over SSH but you
+likely use HTTPS-based GitHub auth (no SSH key registered). Fix once, globally:
+
+```bash
+git config --global url."https://github.com/".insteadOf git@github.com:
+```
+
+then re-run the install command.
 
 ## Why
 

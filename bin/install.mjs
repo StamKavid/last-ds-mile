@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // One-command installer for the Last DS Mile Claude Code plugin.
-// Zero dependencies (Node stdlib only) so `npx github:stamkavid/last-ds-mile`
+// Zero dependencies (Node stdlib only) so `npx stamkavid/last-ds-mile`
 // starts instantly with no install step of its own.
 import { spawnSync } from "node:child_process";
 
@@ -18,7 +18,7 @@ const check = spawnSync("claude", ["--version"], { stdio: "ignore", shell: ON_WI
 if (check.error) {
   console.error("Claude Code CLI (`claude`) was not found on your PATH.");
   console.error("Install it first: https://claude.com/claude-code");
-  console.error("\nThen re-run: npx github:stamkavid/last-ds-mile");
+  console.error("\nThen re-run: npx stamkavid/last-ds-mile");
   process.exit(1);
 }
 
@@ -33,6 +33,15 @@ console.log(`\n2/2  claude plugin install ${PLUGIN}`);
 const install = run("claude", ["plugin", "install", PLUGIN]);
 if (install.status !== 0) {
   console.error("\nFailed to install the plugin — see the error above.");
+  console.error(
+    "\nIf the error mentions 'Permission denied (publickey)' or an SSH clone\n" +
+    "failure: `claude plugin install` clones over SSH, but you likely use\n" +
+    "HTTPS-based GitHub auth (no SSH key registered) — the marketplace step\n" +
+    "above falls back to HTTPS automatically, this one doesn't yet. Fix by\n" +
+    "telling git to rewrite SSH GitHub URLs to HTTPS, then re-run this\n" +
+    "installer (or just `claude plugin install last-ds-mile` again):\n\n" +
+    '  git config --global url."https://github.com/".insteadOf git@github.com:\n'
+  );
   process.exit(install.status ?? 1);
 }
 

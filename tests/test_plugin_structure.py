@@ -260,4 +260,4 @@ def test_license_exists():
 def test_readme_documents_npx_install():
     path = ROOT / "README.md"
     text = path.read_text(encoding="utf-8")
-    assert "npx github:stamkavid/last-ds-mile" in text
+    assert "npx stamkavid/last-ds-mile" in text
