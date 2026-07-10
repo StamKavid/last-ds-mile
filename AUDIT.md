@@ -10,7 +10,7 @@ yourself — that's the point.
 
 | Hook | File | Reads | Writes | Network |
 |---|---|---|---|---|
-| `SessionStart` | `hooks/session_start.py` | `.last-ds-mile/stages/*.md` (filenames only), `.last-ds-mile/learnings.jsonl` (line count only) | nothing | none |
+| `SessionStart` | `hooks/session_start.py` | `.last-ds-mile/stages/*.md` (filenames only), `.last-ds-mile/learnings.jsonl` (full content — parses `type`/`tags`/`title` fields per line, not just a line count), the plugin's own `lessons/*.md` frontmatter (`title`/`stages` fields only, via a stdlib regex parser — never the lesson body text) | nothing | none |
 | `PostToolUse` | `hooks/scan_untrusted_input.py` | the file just read or edited (`tool_input.file_path`), bounded to `.csv`/`.parquet`/`.xlsx`/`.pkl`/`.joblib` on Read and `.ipynb` on Edit/Write/MultiEdit/NotebookEdit | nothing | none |
 | `PreCompact` | `hooks/pre_compact.py` | `.last-ds-mile/stages/*.md` (filenames only) | `.last-ds-mile/session-state.json` | none |
 | `Stop` | `hooks/stop_persist_learnings.py` | `.last-ds-mile/stages/*.md` (filenames only) | appends one line to `.last-ds-mile/learnings.jsonl` | none |

@@ -264,3 +264,73 @@ def test_stop_note_has_type_session(tmp_path):
     learnings_file = tmp_path / ".last-ds-mile" / "learnings.jsonl"
     note = json.loads(learnings_file.read_text(encoding="utf-8").splitlines()[0])
     assert note["type"] == "session"
+
+
+def test_session_start_surfaces_matching_jsonl_lesson(tmp_path):
+    ds_dir = tmp_path / ".last-ds-mile"
+    ds_dir.mkdir(parents=True)
+    lesson = {
+        "type": "lesson",
+        "recorded_at": "2026-01-01T00:00:00+00:00",
+        "session_id": "abc",
+        "title": "Watch the join keys",
+        "what_broke": "a duplicate join key",
+        "what_fixed_it": "deduped before the join",
+        "tags": ["ds-frame"],
+    }
+    (ds_dir / "learnings.jsonl").write_text(json.dumps(lesson) + "\n", encoding="utf-8")
+
+    out = run_hook("session_start.py", {"cwd": str(tmp_path)})
+    context = out["hookSpecificOutput"]["additionalContext"]
+    assert "Relevant lessons for ds-frame" in context
+    assert "Watch the join keys" in context
+
+
+def test_session_start_does_not_surface_lesson_for_a_past_stage(tmp_path):
+    ds_dir = tmp_path / ".last-ds-mile"
+    stages_dir = ds_dir / "stages"
+    stages_dir.mkdir(parents=True)
+    (stages_dir / "00-frame.md").write_text("x", encoding="utf-8")
+    lesson = {
+        "type": "lesson",
+        "recorded_at": "2026-01-01T00:00:00+00:00",
+        "session_id": "abc",
+        "title": "Watch the join keys",
+        "what_broke": "x",
+        "what_fixed_it": "y",
+        "tags": ["ds-frame"],
+    }
+    (ds_dir / "learnings.jsonl").write_text(json.dumps(lesson) + "\n", encoding="utf-8")
+
+    out = run_hook("session_start.py", {"cwd": str(tmp_path)})
+    context = out["hookSpecificOutput"]["additionalContext"]
+    assert "Watch the join keys" not in context
+
+
+def test_session_start_ignores_session_type_records_for_matching(tmp_path):
+    ds_dir = tmp_path / ".last-ds-mile"
+    ds_dir.mkdir(parents=True)
+    session_note = {
+        "type": "session",
+        "recorded_at": "2026-01-01T00:00:00+00:00",
+        "session_id": "abc",
+        "stage_files": ["00-frame.md"],
+    }
+    (ds_dir / "learnings.jsonl").write_text(json.dumps(session_note) + "\n", encoding="utf-8")
+
+    out = run_hook("session_start.py", {"cwd": str(tmp_path)})
+    context = out["hookSpecificOutput"]["additionalContext"]
+    assert "Relevant lessons" not in context
+
+
+def test_session_start_surfaces_corpus_lesson_for_ds_prep(tmp_path):
+    stages_dir = tmp_path / ".last-ds-mile" / "stages"
+    stages_dir.mkdir(parents=True)
+    (stages_dir / "00-frame.md").write_text("x", encoding="utf-8")
+    (stages_dir / "01-data.md").write_text("x", encoding="utf-8")
+    (stages_dir / "02-explore.md").write_text("x", encoding="utf-8")
+
+    out = run_hook("session_start.py", {"cwd": str(tmp_path)})
+    context = out["hookSpecificOutput"]["additionalContext"]
+    assert "Relevant lessons for ds-prep" in context
+    assert "The Time-Traveling Feature" in context
