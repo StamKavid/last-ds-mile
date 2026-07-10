@@ -47,6 +47,9 @@ See `ds-method` for the shared Rationalizations that apply to every stage.
 
 See `ds-method` for the shared Red Flags that apply to every stage.
 
+See `lessons/the-time-traveling-feature.md` for a real example of this exact
+failure mode.
+
 ## Verification
 
 - [ ] Every feature has an explicit known-at-prediction-time justification.

@@ -53,6 +53,9 @@ See `ds-method` for the shared Rationalizations that apply to every stage.
 See `ds-method`'s Red Flags — "metric looks too good on the first try" and "a single
 feature has near-perfect importance" are this skill's primary triggers.
 
+See `lessons/the-time-traveling-feature.md` for a real example of this exact
+failure mode (a full-dataset aggregate leaking future information).
+
 ## Verification
 
 - [ ] Every feature that triggered a Red Flag was traced to its actual computation,

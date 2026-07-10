@@ -58,6 +58,9 @@ See `ds-method` for the shared Rationalizations that apply to every stage.
 See `ds-method`'s Red Flags — "model accuracy matches the majority-class rate to 2
 decimal places" is directly this failure mode.
 
+See `lessons/the-99-percent-fraud-model.md` for a real example of this exact
+failure mode.
+
 ## Verification
 
 - [ ] Actual class balance measured and stated (not assumed).

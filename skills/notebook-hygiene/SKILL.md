@@ -60,6 +60,9 @@ a vague intention.
 See `ds-method`'s Red Flags for the broader "notebook nobody could rerun" failure
 mode this skill directly targets.
 
+See `lessons/the-notebook-nobody-could-rerun.md` for a real example of this
+exact failure mode.
+
 ## Verification
 
 - [ ] Restart & Run All (or fresh-process script run) completed without error

@@ -56,6 +56,9 @@ See `ds-method` for the shared Rationalizations that apply to every stage.
 See `ds-method`'s Red Flags and `/ds-frame`'s — a metric with no stated tie to the
 actual decision cost is the clearest sign this skill was skipped.
 
+See `lessons/the-99-percent-fraud-model.md` for a real example of accuracy
+hiding a model that was effectively useless.
+
 ## Verification
 
 - [ ] The chosen metric is explicitly tied to the decision's real cost asymmetry,

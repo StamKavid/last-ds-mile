@@ -46,6 +46,9 @@ rerun failure mode this stage exists to prevent.
 
 See `ds-method` for the shared Red Flags that apply to every stage.
 
+See `lessons/the-notebook-nobody-could-rerun.md` for a real example of a
+handoff that looked done but wasn't reproducible.
+
 ## Verification
 
 - [ ] Gate check passed: the environment is pinned with exact versions.

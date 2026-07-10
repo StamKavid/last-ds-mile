@@ -42,6 +42,9 @@ exactly the rationalization this stage exists to prevent.
 See `ds-method`'s Red Flags — in particular, "validation metric beats the training
 metric" is this stage's clearest signal of a broken or shuffled temporal split.
 
+See `lessons/the-leaderboard-that-lied.md` for a real example of this exact
+failure mode.
+
 ## Verification
 
 - [ ] Time, group, and imbalance questions all answered explicitly, not skipped.

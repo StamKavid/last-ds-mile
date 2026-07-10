@@ -87,6 +87,9 @@ See `ds-method` for the shared Rationalizations that apply to every stage.
 See `ds-method`'s Red Flags — "validation metric beats the training metric" and
 "test set touched during hyperparameter search" are this skill's primary triggers.
 
+See `lessons/the-leaderboard-that-lied.md` for a real example of a shuffled
+split on time-ordered data silently inverting which model actually won.
+
 ## Verification
 
 - [ ] The chosen splitter matches the data's actual time/group/imbalance structure,
