@@ -1,6 +1,6 @@
 ---
 description: Capture a project-local lesson — what broke and what fixed it
-argument-hint: [what broke and what fixed it, or leave blank to be asked]
+argument-hint: "[what broke and what fixed it, or leave blank to be asked]"
 ---
 
 Invoke the `capturing-learnings` skill now via the Skill tool to determine
@@ -18,7 +18,8 @@ by drift; keep them in sync if either changes.) Then:
    `SessionStart`'s stage-based matching, plus any domain skill(s)
    (`target-leakage-detection`, `imbalanced-data`, etc.) genuinely relevant.
    A skill-only tag with no stage tag will never resurface automatically —
-   only cited from the skill file itself.
+   nothing in this plugin re-attaches a captured entry to a skill file, so
+   always include a stage tag if you want this lesson to resurface.
 3. Append one line to `.last-ds-mile/learnings.jsonl` (create the file and
    its parent `.last-ds-mile/` directory if either doesn't exist yet) with
    this exact shape:

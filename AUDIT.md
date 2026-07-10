@@ -29,11 +29,13 @@ the project's design doc for the full rationale). Filesystem writes (`PreCompact
 collision) degrades to a silent no-op rather than crashing the hook. `SessionStart`'s
 read of `learnings.jsonl` is similarly guarded — an unreadable file (permissions, or
 the path being a directory) degrades to an honest "present but unreadable" status
-string rather than crashing. None of the
-hooks read file *contents* except `scan_untrusted_input.py`, which reads only the
-specific file the agent just touched (never a directory sweep) and only to look for
-the patterns below — it never sends that content anywhere; it only prints a short
-warning string back to Claude Code via `hookSpecificOutput.additionalContext`.
+string rather than crashing. Only `scan_untrusted_input.py` and `SessionStart` read file *contents* —
+`scan_untrusted_input.py` reads only the specific file the agent just touched
+(never a directory sweep) and only to look for the patterns below;
+`SessionStart` reads `learnings.jsonl` and the plugin's own `lessons/*.md`
+frontmatter (see the table above) only to compute the relevant-lessons
+summary. Neither sends that content anywhere — they only print a short
+context string back to Claude Code via `hookSpecificOutput.additionalContext`.
 
 To verify the no-network and stdlib-only claims yourself: `grep -n "^import\|^from" hooks/*.py` shows every import (all four hooks use only `json`, `sys`, `re`, `pathlib`, `datetime`) and `grep -rniE "requests\.|urllib|socket\.|http\.client|\.urlopen\(" hooks/*.py` should return nothing.
 

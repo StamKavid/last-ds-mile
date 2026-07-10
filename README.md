@@ -77,9 +77,9 @@ baseline, a real sanitization gate in `/ds-data`, `AUDIT.md`, and 3 subagents
 (`leakage-auditor`, `ds-reviewer`, `data-profiler`). See the "Safety" section below.
 The learnings system now ships too: a curated `lessons/` corpus (4 real DS
 failure/fix write-ups, cited from the skills that teach them) and project-local
-capture via `/ds-learn`, which resurfaces relevant lessons automatically at the
-start of your next session. Cross-project sharing of captured lessons is still
-on the roadmap.
+capture via `/ds-learn` — both resurface automatically at the start of your
+next session if tagged to the stage you're about to work on. Cross-project
+sharing of captured lessons is still on the roadmap.
 
 ## Safety
 
