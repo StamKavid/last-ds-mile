@@ -29,7 +29,8 @@ trigger for proactively suggesting `/ds-learn` when a real one just happened.
    that *did* go wrong and got corrected), say so and suggest `/ds-learn`
    rather than waiting to be asked. This is the same "notice the moment"
    pattern every domain skill in this plugin already uses for its own
-   trigger.
+   trigger. If already invoked via `/ds-learn` directly, the suggestion has
+   already happened — skip straight to step 2.
 2. **Check it clears the bar** before capturing: does it name a concrete
    failure (a specific feature, a specific metric value, a specific broken
    assumption) and a concrete fix (what changed, not just "fixed it")? If
@@ -45,12 +46,21 @@ trigger for proactively suggesting `/ds-learn` when a real one just happened.
    `.last-ds-mile/learnings.jsonl` — this skill defines the judgment, the
    command does the writing.
 
+## Techniques/Patterns — does this count as a lesson?
+
+| Situation | Counts as a lesson? | Why |
+|---|---|---|
+| A leakage source was found and removed mid-session (e.g. a full-dataset aggregate feature caught and recomputed as-of-date) | Yes | Specific failure (named feature/mechanism) + specific fix (what changed) |
+| "Remember to always check for leakage before modeling" | No | This is the rule already in `target-leakage-detection` — no specific instance happened this session |
+| A validation split was silently wrong (shuffled K-fold on time-series data) and got swapped to `TimeSeriesSplit` after a result looked implausible | Yes | Concrete broken assumption + concrete fix — matches the shape of `lessons/the-leaderboard-that-lied.md` |
+| "The model could probably be better if we tuned more" | No | Not a failure-and-fix — an open-ended observation, nothing specific broke |
+
 ## Common Rationalizations
 
 | Rationalization | Reality |
 |---|---|
 | "This is basically the same as what `target-leakage-detection` already says, no need to capture it" | The skill states the general rule; a captured lesson is the specific instance that made the rule real for this project. Both are useful — the lesson makes the rule concrete next time. |
-| "I'll capture it later, right now I want to keep moving" | Later rarely happens — the specifics (the exact feature name, the exact number) are freshest right now and get vaguer with every passing minute. |
+| "This project is small/one-off, no one will hit this again" | The lesson protects THIS project too — the same mistake can resurface at a later stage of the same pipeline (e.g. an assumption fixed during `/ds-prep` quietly breaking again during `/ds-model`), and `/ds-learn` entries are exactly what `SessionStart`'s matching uses to catch that repeat. |
 
 See `ds-method` for the shared Rationalizations that apply to every stage.
 
@@ -59,6 +69,9 @@ See `ds-method` for the shared Rationalizations that apply to every stage.
 | Red Flag | What it usually means |
 |---|---|
 | A captured lesson's "what fixed it" is a single vague phrase ("fixed the bug") | This lesson won't be useful when it resurfaces later — go back and get the specific fix before considering the capture done. |
+| A genuine failure-and-fix happened this session and `/ds-learn` was never suggested | The proactive-nudge step (Core Process step 1) was skipped — this is the harder failure mode to catch since nothing else in the pipeline enforces it; stay alert for it specifically. |
+
+See `ds-method` for the shared Red Flags that apply to every stage.
 
 ## Verification
 
