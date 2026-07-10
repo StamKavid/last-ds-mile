@@ -233,3 +233,31 @@ def test_skill_cites_lesson(skill, lesson):
     path = ROOT / "skills" / skill / "SKILL.md"
     text = path.read_text(encoding="utf-8")
     assert lesson in text, f"{skill}/SKILL.md doesn't cite lessons/{lesson}.md"
+
+
+def test_package_json_valid():
+    path = ROOT / "package.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    assert data["name"] == "last-ds-mile"
+    assert data["bin"]["last-ds-mile"] == "bin/install.mjs"
+    assert data["private"] is True
+
+
+def test_install_script_exists():
+    path = ROOT / "bin" / "install.mjs"
+    assert path.exists(), "missing bin/install.mjs"
+    text = path.read_text(encoding="utf-8")
+    assert "marketplace add" in text
+    assert "plugin install" in text
+
+
+def test_license_exists():
+    path = ROOT / "LICENSE"
+    assert path.exists(), "missing LICENSE"
+    assert "MIT" in path.read_text(encoding="utf-8")
+
+
+def test_readme_documents_npx_install():
+    path = ROOT / "README.md"
+    text = path.read_text(encoding="utf-8")
+    assert "npx github:stamkavid/last-ds-mile" in text

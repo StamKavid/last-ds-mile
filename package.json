@@ -1,0 +1,18 @@
+{
+  "name": "last-ds-mile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "One-command installer for the Last DS Mile Claude Code plugin. Run via: npx github:stamkavid/last-ds-mile",
+  "type": "module",
+  "bin": {
+    "last-ds-mile": "bin/install.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stamkavid/last-ds-mile"
+  }
+}

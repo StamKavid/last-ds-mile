@@ -1,10 +1,38 @@
 # Last DS Mile
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-8dbb3c)](https://claude.com/claude-code)
+
 A guided data-science lifecycle for [Claude Code](https://claude.com/claude-code) —
 frame, explore, baseline, validate, model, evaluate, and report — with leakage and
 honesty checks built into every stage.
 
 A product of [The Last AI Mile](https://thelastaimile.substack.com).
+
+## Quickstart (60-second setup)
+
+**Option A — one command, from any terminal (recommended):**
+
+```bash
+npx github:stamkavid/last-ds-mile
+```
+
+This finds your `claude` CLI, adds the marketplace, and installs the plugin —
+no npm publish, no account, nothing to configure first.
+
+**Option B — inside Claude Code:**
+
+```
+/plugin marketplace add stamkavid/last-ds-mile
+/plugin install last-ds-mile
+```
+
+Either way, once it's installed: open Claude Code in any project and run
+`/ds-frame` to start the pipeline, or `/ds` at any point to see the map and get
+routed to the next stage.
+
+**Requirements:** [Claude Code](https://claude.com/claude-code) (either option),
+plus [Node.js](https://nodejs.org) 18+ if you use the `npx` one-liner.
 
 ## Why
 
@@ -12,11 +40,6 @@ Data science projects don't die in the modeling cell. They die in the last mile:
 leakage, inflated metrics, a validation scheme that lied, results nobody trusts, and
 notebooks nobody can rerun. This plugin walks you through the full lifecycle on a guided
 rail, and enforces the discipline that keeps the results honest.
-
-## Install
-
-    /plugin marketplace add stamkavid/last-ds-mile
-    /plugin install last-ds-mile
 
 ## The pipeline
 
@@ -125,5 +148,6 @@ skill for what's worth capturing.
     pip install -r requirements-dev.txt
     python -m pytest tests/ -v
 
-`tests/` validates plugin structure (frontmatter, required sections, command↔skill
-wiring) — there's no runtime code to unit test yet.
+`tests/test_plugin_structure.py` validates plugin structure (frontmatter, required
+sections, command↔skill wiring, lesson citations); `tests/test_hooks.py`
+unit-tests the runtime hooks' actual behavior via subprocess.
