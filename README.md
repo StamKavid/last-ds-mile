@@ -111,8 +111,8 @@ To adopt the recommended permission baseline in your own project, merge
 Four real DS failure-and-fix write-ups ship in `lessons/`, cited from the
 skills that teach the pattern they illustrate — read one alongside the skill
 it's cited from for a concrete example, not just the abstract rule. Most of
-them are also tagged to a pipeline stage, so `/ds` will surface the relevant
-one automatically when you start a session heading into that stage.
+them are also tagged to a pipeline stage, so it will surface automatically at
+the start of a session heading into that stage.
 
 Run `/ds-learn` to capture your own project-local lesson (what broke, what
 fixed it) — it's appended to `.last-ds-mile/learnings.jsonl` and resurfaces
