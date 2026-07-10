@@ -209,6 +209,7 @@ def test_gitignore_covers_last_ds_mile_dir():
     assert ".last-ds-mile/" in text
 
 
+# Mirrors hooks/session_start.py's stdlib-only regex parser (no PyYAML) — do not replace with parse_frontmatter.
 @pytest.mark.parametrize("lesson", LESSONS)
 def test_lesson_structure(lesson):
     path = ROOT / "lessons" / f"{lesson}.md"
