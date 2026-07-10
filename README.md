@@ -75,7 +75,11 @@ hygiene, dataframe performance, and data viz standards) that auto-trigger whenev
 matching situation comes up, and the safe set: 4 hooks, a documented permission
 baseline, a real sanitization gate in `/ds-data`, `AUDIT.md`, and 3 subagents
 (`leakage-auditor`, `ds-reviewer`, `data-profiler`). See the "Safety" section below.
-The cross-project learnings curation system (`/ds-learn`) is still on the roadmap.
+The learnings system now ships too: a curated `lessons/` corpus (4 real DS
+failure/fix write-ups, cited from the skills that teach them) and project-local
+capture via `/ds-learn`, which resurfaces relevant lessons automatically at the
+start of your next session. Cross-project sharing of captured lessons is still
+on the roadmap.
 
 ## Safety
 
@@ -101,6 +105,18 @@ To adopt the recommended permission baseline in your own project, merge
 | `leakage-auditor` | Opus | Adversarially hunting target/temporal/validation leakage before `/ds-model` or `/ds-report` |
 | `ds-reviewer` | Sonnet | Running the discipline checklist (baseline, validation, metric, slices, reproducibility) before `/ds-report` |
 | `data-profiler` | Haiku | Fast structural profiling sweep for `/ds-data` or `/ds-explore` |
+
+## Learnings
+
+Four real DS failure-and-fix write-ups ship in `lessons/`, cited from the
+skills that teach the pattern they illustrate — read one alongside the skill
+it's cited from for a concrete example, not just the abstract rule.
+
+Run `/ds-learn` to capture your own project-local lesson (what broke, what
+fixed it) — it's appended to `.last-ds-mile/learnings.jsonl` and automatically
+resurfaces at the start of your next session if it's tagged to the stage
+you're about to work on. See the `capturing-learnings` skill for what's worth
+capturing.
 
 ## Development
 
