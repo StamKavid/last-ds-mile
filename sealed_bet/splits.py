@@ -15,8 +15,8 @@ def split(df: pd.DataFrame, strategy: str, seed: int, held_frac: float = 0.2,
     - time: held is always strictly chronologically later than dev — every row
       sharing a given time_col value ends up entirely in dev or entirely in
       held, never split across both. Because a tie found straddling the cut
-      point is pushed entirely into held, the actual held fraction may end up
-      somewhat larger than the requested held_frac when ties exist there.
+      point is pushed entirely into dev, the actual held fraction may end up
+      somewhat smaller than the requested held_frac when ties exist there.
     """
     if strategy == "random":
         dev, held = train_test_split(df, test_size=held_frac, random_state=seed, shuffle=True)
