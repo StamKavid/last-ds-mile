@@ -8,18 +8,21 @@ from sealed_bet.seal import seal
 from sealed_bet.score import open_seal, score_dev
 
 
-def _make_dataset(tmp_path, seed=0):
+def _make_dataset(tmp_path, seed=0, scale=2.0):
     rng = np.random.default_rng(seed)
     n = 600
     signal = rng.normal(size=n)
-    # scale=2.0 (not 0.5): a single strong feature is so separable that even
+    # Default scale=2.0 (not 0.5): this is what test_optimistic_overfit_model_is_refused
+    # needs -- a single strong feature at scale=0.5 is so separable that even
     # a fully overfit tree finds it via the top splits and generalizes anyway.
     # Weakening the label's signal-to-noise ratio here is what actually lets
     # the tree get confused between the real feature and the 20 noise columns
     # -- reproducing the "looks great in dev, collapses on the seal" failure
-    # this test exists to catch, while leaving enough real signal for an
-    # honestly cross-validated model to clear the 2-sigma ship bar.
-    y = (signal + rng.normal(scale=2.0, size=n) > 0).astype(int)
+    # that test exists to catch, while leaving enough real signal for an
+    # honestly cross-validated model to clear the 2-sigma ship bar. Callers
+    # demonstrating a different property (e.g. estimate reliability) can pass
+    # a different scale for a more/less separable dataset.
+    y = (signal + rng.normal(scale=scale, size=n) > 0).astype(int)
     noise = rng.normal(size=(n, 20))  # 20 pure-noise columns
     df = pd.DataFrame(noise, columns=[f"n{i}" for i in range(20)])
     df["real"] = signal
@@ -61,7 +64,11 @@ def test_optimistic_overfit_model_is_refused(tmp_path):
 
 
 def test_honest_model_ships(tmp_path):
-    data = _make_dataset(tmp_path, seed=1)
+    # More separable than the default (scale=0.5, not 2.0): this test is
+    # demonstrating that an honest dev estimate is a reliable proxy for the
+    # sealed score, which benefits from a comfortable, non-boundary-scraping
+    # margin -- a different goal from test 1's "make the tree get confused".
+    data = _make_dataset(tmp_path, seed=1, scale=0.5)
     out = tmp_path / ".last-ds-mile"
     led = tmp_path / "LEDGER.md"
     seal(str(data), "y", "classification", "roc_auc", str(out),
@@ -73,7 +80,7 @@ def test_honest_model_ships(tmp_path):
     # Honest: out-of-fold CV predictions on dev, then a model trained on all dev.
     model = LogisticRegression(max_iter=1000)
     oof = cross_val_predict(model, dev[Xcols], dev["y"], cv=5, method="predict_proba")[:, 1]
-    score_dev(dev["y"], oof, "roc_auc", ledger_path=str(led), note="logreg, 5-fold OOF")
+    dev_auc = score_dev(dev["y"], oof, "roc_auc", ledger_path=str(led), note="logreg, 5-fold OOF")
 
     model.fit(dev[Xcols], dev["y"])
     held_feats = pd.read_csv(out / "held" / "features.csv")
@@ -84,3 +91,5 @@ def test_honest_model_ships(tmp_path):
     result = open_seal(str(preds), str(out), str(led))
     assert result["shipped"] is True               # beats baseline by > 2σ
     assert result["lift"] > 2.0
+    gap = abs(dev_auc - result["sealed_score"])
+    assert gap < 0.15                              # the honest estimate was a reliable proxy
