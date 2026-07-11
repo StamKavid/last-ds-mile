@@ -105,7 +105,7 @@ situation calls for them, whether or not you're mid-pipeline:
 This release covers the full lifecycle spine, 8 domain skills (leakage detection,
 validation strategy, imbalanced data, metric selection, error analysis, notebook
 hygiene, dataframe performance, and data viz standards) that auto-trigger whenever a
-matching situation comes up, and the safe set: 4 hooks, a documented permission
+matching situation comes up, and the safe set: 5 hooks, a documented permission
 baseline, a real sanitization gate in `/ds-data`, `AUDIT.md`, and 3 subagents
 (`leakage-auditor`, `ds-reviewer`, `data-profiler`). See the "Safety" section below.
 The learnings system now ships too: a curated `lessons/` corpus (4 real DS
@@ -118,10 +118,12 @@ sharing of captured lessons is still on the roadmap.
 
 This plugin ships a "safe set": hooks that scan for untrusted-input risk (a
 poisoned CSV, a pickle file that executes code on load, a shell magic hidden in a
-notebook), a sanitization gate built into `/ds-data`, and 3 subagents. Every hook
-is **warn, don't block** — nothing here silently stops your work. See
-[`AUDIT.md`](AUDIT.md) for exactly what each hook reads, writes, and calls (nothing
-over the network, ever).
+notebook), a sanitization gate built into `/ds-data`, and 3 subagents. 4 of the 5
+hooks are **warn, don't block** — they never stop your work. The one exception is
+`seal_guard.py`, which deliberately denies Read access to the sealed holdout
+labels — that block is the physical basis of the Sealed Bet's trust guarantee.
+See [`AUDIT.md`](AUDIT.md) for exactly what each hook reads, writes, and calls
+(nothing over the network, ever).
 
 To adopt the recommended permission baseline in your own project, merge
 [`settings-baseline.json`](settings-baseline.json) into your project's

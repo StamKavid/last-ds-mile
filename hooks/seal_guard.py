@@ -12,8 +12,8 @@ from pathlib import PurePosixPath, PureWindowsPath
 
 def _is_sealed(file_path: str) -> bool:
     for pure in (PurePosixPath(file_path), PureWindowsPath(file_path)):
-        parts = pure.parts
-        name = pure.name
+        parts = tuple(p.lower() for p in pure.parts)
+        name = pure.name.lower()
         if "held" in parts and name.startswith("_sealed"):
             return True
     return False
@@ -25,7 +25,11 @@ def main() -> None:
     except (json.JSONDecodeError, ValueError):
         sys.exit(0)  # nothing to guard; stay out of the way
 
-    file_path = str(data.get("tool_input", {}).get("file_path", ""))
+    if not isinstance(data, dict):
+        sys.exit(0)  # not a normal tool-use payload; nothing to check
+
+    tool_input = data.get("tool_input", {}) or {}
+    file_path = str(tool_input.get("file_path", ""))
     if file_path and _is_sealed(file_path):
         print(json.dumps({
             "hookSpecificOutput": {

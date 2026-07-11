@@ -31,3 +31,24 @@ def test_allows_ordinary_file():
 def test_denies_sealed_target_windows_style_path():
     out = _run(r"C:\proj\.last-ds-mile\held\_sealed_target.csv")
     assert '"permissionDecision": "deny"' in out
+
+
+def test_denies_case_variant_path():
+    out = _run("/proj/.last-ds-mile/HELD/_SEALED_target.csv")
+    assert '"permissionDecision": "deny"' in out
+
+
+def test_handles_null_tool_input_without_crashing():
+    payload = json.dumps({"tool_name": "Read", "tool_input": None})
+    proc = subprocess.run([sys.executable, str(HOOK)], input=payload,
+                          capture_output=True, text=True)
+    assert proc.returncode == 0
+    assert '"deny"' not in proc.stdout
+
+
+def test_handles_non_dict_payload_without_crashing():
+    for payload in ('[1, 2, 3]', '"just a string"', 'null', '42'):
+        proc = subprocess.run([sys.executable, str(HOOK)], input=payload,
+                              capture_output=True, text=True)
+        assert proc.returncode == 0, f"crashed on payload {payload!r}: {proc.stderr}"
+        assert '"deny"' not in proc.stdout
