@@ -23,15 +23,12 @@ def seal(data_path: str, target: str, task: str, metric: str, out_dir: str,
          strategy: str = "random", group_key=None, time_col=None,
          held_frac: float = 0.2, seed: int = 0, input_mode: str = "full",
          ledger_path: str = "LEDGER.md") -> Contract:
+    out = Path(out_dir)
+    init_state(out)  # guard first: refuse re-sealing an opened project before anything else touches disk
+
     df = pd.read_csv(data_path)
     dev, held = split(df, strategy=strategy, seed=seed, held_frac=held_frac,
                       group_key=group_key, time_col=time_col)
-
-    out = Path(out_dir)
-    (out / "held").mkdir(parents=True, exist_ok=True)
-    dev.to_csv(out / "dev.csv", index=False)
-    held.drop(columns=[target]).to_csv(out / "held" / "features.csv", index=False)
-    held[[target]].to_csv(out / "held" / "_sealed_target.csv", index=False)
 
     base = baseline_score(dev[target].to_numpy(), held[target].to_numpy(), metric)
     contract = Contract(
@@ -41,8 +38,12 @@ def seal(data_path: str, target: str, task: str, metric: str, out_dir: str,
         input_mode=input_mode,
         created_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
     ).validate()
+
+    (out / "held").mkdir(parents=True, exist_ok=True)
+    dev.to_csv(out / "dev.csv", index=False)
+    held.drop(columns=[target]).to_csv(out / "held" / "features.csv", index=False)
+    held[[target]].to_csv(out / "held" / "_sealed_target.csv", index=False)
     contract.save(out / "contract.json")
-    init_state(out)
     write_header(ledger_path, contract)
     return contract
 
