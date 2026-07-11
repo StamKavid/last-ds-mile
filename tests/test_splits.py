@@ -25,3 +25,26 @@ def test_group_split_no_group_crosses_boundary():
 def test_time_split_held_is_the_future():
     dev, held = split(_df(), strategy="time", seed=0, held_frac=0.2, time_col="t")
     assert dev["t"].max() < held["t"].min()
+
+
+def test_time_split_no_tie_leaks_across_boundary():
+    df = pd.DataFrame({
+        "t": pd.to_datetime(["2020-01-01"] * 6 + ["2020-01-05"] * 2 + ["2020-01-09"] * 3),
+        "y": range(11),
+    })
+    dev, held = split(df, strategy="time", seed=0, held_frac=0.3, time_col="t")
+    # every row with a given timestamp value must land entirely on one side
+    assert set(dev["t"]).isdisjoint(set(held["t"]))
+    assert dev["t"].max() < held["t"].min()
+
+
+def test_group_split_missing_column_raises_value_error():
+    import pytest
+    with pytest.raises(ValueError, match="group_key"):
+        split(_df(), strategy="group", seed=0, held_frac=0.2, group_key="nope")
+
+
+def test_time_split_missing_column_raises_value_error():
+    import pytest
+    with pytest.raises(ValueError, match="time_col"):
+        split(_df(), strategy="time", seed=0, held_frac=0.2, time_col="nope")
