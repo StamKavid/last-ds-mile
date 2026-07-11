@@ -27,3 +27,33 @@ def test_ledger_records_header_experiments_verdict(tmp_path):
     assert "logreg on 3 features" in text
     assert "NOT SHIPPED" in text
     assert "lift" in text.lower()
+
+
+def test_init_state_refuses_to_reset_opened_seal(tmp_path):
+    import pytest
+    init_state(tmp_path)
+    mark_opened(tmp_path)
+    with pytest.raises(RuntimeError, match="already opened"):
+        init_state(tmp_path)
+    # the seal must still read as opened after the refused re-init attempt
+    assert is_opened(tmp_path) is True
+
+
+def test_init_state_allows_reset_before_opening(tmp_path):
+    init_state(tmp_path)
+    init_state(tmp_path)  # calling twice before opening is fine, not dangerous
+    assert is_opened(tmp_path) is False
+
+
+def test_is_opened_fails_loud_on_corrupted_state(tmp_path):
+    import pytest
+    (tmp_path / "seal_state.json").write_text("{not valid json", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="corrupted"):
+        is_opened(tmp_path)
+
+
+def test_is_opened_fails_loud_on_non_bool_opened_value(tmp_path):
+    import pytest
+    (tmp_path / "seal_state.json").write_text('{"opened": "false"}', encoding="utf-8")
+    with pytest.raises(RuntimeError, match="corrupted"):
+        is_opened(tmp_path)

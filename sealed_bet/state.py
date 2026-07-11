@@ -12,15 +12,32 @@ def _path(out_dir) -> Path:
 
 
 def init_state(out_dir) -> None:
+    p = _path(out_dir)
+    if p.exists() and is_opened(out_dir):
+        raise RuntimeError(
+            f"seal state at {p} was already opened and cannot be re-initialized"
+        )
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    _path(out_dir).write_text(json.dumps({"opened": False}), encoding="utf-8")
+    p.write_text(json.dumps({"opened": False}), encoding="utf-8")
 
 
 def is_opened(out_dir) -> bool:
     p = _path(out_dir)
     if not p.exists():
         return False
-    return bool(json.loads(p.read_text(encoding="utf-8")).get("opened", False))
+    try:
+        opened = json.loads(p.read_text(encoding="utf-8")).get("opened", False)
+    except json.JSONDecodeError:
+        raise RuntimeError(
+            f"seal state file {p} is corrupted and cannot be trusted — the "
+            f"holdout's opened/unopened status is unknown; resolve manually before proceeding"
+        )
+    if not isinstance(opened, bool):
+        raise RuntimeError(
+            f"seal state file {p} is corrupted and cannot be trusted — the "
+            f"holdout's opened/unopened status is unknown; resolve manually before proceeding"
+        )
+    return opened
 
 
 def mark_opened(out_dir) -> None:
