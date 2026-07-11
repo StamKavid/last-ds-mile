@@ -57,3 +57,25 @@ def test_is_opened_fails_loud_on_non_bool_opened_value(tmp_path):
     (tmp_path / "seal_state.json").write_text('{"opened": "false"}', encoding="utf-8")
     with pytest.raises(RuntimeError, match="corrupted"):
         is_opened(tmp_path)
+
+
+def test_is_opened_fails_loud_on_missing_opened_key(tmp_path):
+    import pytest
+    (tmp_path / "seal_state.json").write_text("{}", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="corrupted"):
+        is_opened(tmp_path)
+
+
+def test_is_opened_fails_loud_on_non_dict_json(tmp_path):
+    import pytest
+    for content in ("[1, 2, 3]", "42", '"just a string"', "null", "true"):
+        (tmp_path / "seal_state.json").write_text(content, encoding="utf-8")
+        with pytest.raises(RuntimeError, match="corrupted"):
+            is_opened(tmp_path)
+
+
+def test_init_state_refuses_when_state_is_corrupted(tmp_path):
+    import pytest
+    (tmp_path / "seal_state.json").write_text("{}", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="corrupted"):
+        init_state(tmp_path)
