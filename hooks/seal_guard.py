@@ -12,7 +12,12 @@ from pathlib import PurePosixPath, PureWindowsPath
 
 def _is_sealed(file_path: str) -> bool:
     for pure in (PurePosixPath(file_path), PureWindowsPath(file_path)):
-        parts = tuple(p.lower() for p in pure.parts)
+        # Windows silently strips trailing dots/spaces from a path component
+        # before resolving it on disk (Win32 CreateFile normalization), so
+        # "held." and "held " on disk are the same directory as "held". Strip
+        # them here too, or a crafted "held." component would sail past this
+        # check while the real filesystem still serves the sealed file.
+        parts = tuple(p.lower().rstrip(". ") for p in pure.parts)
         name = pure.name.lower()
         if "held" in parts and name.startswith("_sealed"):
             return True
@@ -28,7 +33,9 @@ def main() -> None:
     if not isinstance(data, dict):
         sys.exit(0)  # not a normal tool-use payload; nothing to check
 
-    tool_input = data.get("tool_input", {}) or {}
+    tool_input = data.get("tool_input")
+    if not isinstance(tool_input, dict):
+        tool_input = {}
     file_path = str(tool_input.get("file_path", ""))
     if file_path and _is_sealed(file_path):
         print(json.dumps({
