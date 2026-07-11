@@ -48,3 +48,15 @@ def test_time_split_missing_column_raises_value_error():
     import pytest
     with pytest.raises(ValueError, match="time_col"):
         split(_df(), strategy="time", seed=0, held_frac=0.2, time_col="nope")
+
+
+def test_time_split_ties_to_end_raise_value_error():
+    import pytest
+    df = pd.DataFrame({
+        "t": pd.to_datetime(["2020-01-01"] * 5 + ["2020-01-09"] * 5),
+        "y": range(10),
+    })
+    # naive cut at held_frac=0.4 lands inside the tied tail run (all "2020-01-09"),
+    # and the tie-walk can't find a boundary before running off the end
+    with pytest.raises(ValueError, match="no non-empty held split"):
+        split(df, strategy="time", seed=0, held_frac=0.4, time_col="t")
