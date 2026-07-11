@@ -261,3 +261,19 @@ def test_readme_documents_npx_install():
     path = ROOT / "README.md"
     text = path.read_text(encoding="utf-8")
     assert "npx stamkavid/last-ds-mile" in text
+
+
+def test_sealed_bet_core_is_importable_without_plugin_adapter():
+    # The portable core must not import any Claude-Code-only module.
+    import importlib
+    for mod in ["sealed_bet.seal", "sealed_bet.score", "sealed_bet.metrics",
+                "sealed_bet.contract", "sealed_bet.ledger", "sealed_bet.splits",
+                "sealed_bet.state"]:
+        importlib.import_module(mod)
+
+
+def test_seal_and_open_commands_exist():
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[1]
+    assert (root / "commands" / "ds-seal.md").exists()
+    assert (root / "commands" / "ds-open.md").exists()

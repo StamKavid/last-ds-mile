@@ -72,6 +72,16 @@ Run `/ds` at any point to see the pipeline map and get routed to the next stage.
 Each stage writes its output to `.last-ds-mile/stages/` in your project, so later stages
 build on earlier ones and `/ds` can detect your progress.
 
+## The Sealed Bet (experimental)
+
+A trust core you can run in any coding agent: `python -m sealed_bet.seal` locks a
+holdout's labels and records a Contract; you build freely on the dev split; then
+`python -m sealed_bet.score` opens the holdout **once** and reports
+`lift = (sealed − baseline)/σ` — ship only if it beats the dumb baseline by more
+than the noise (> 2σ). The sealed labels are physically off-limits (`seal_guard`
+hook), so the score cannot be gamed by peeking. See
+`docs` for the design. In Claude Code, use `/ds-seal` and `/ds-open`.
+
 ## Discipline, not just steps
 
 Three stages are Hard Gates and will stop to ask rather than silently proceed:
