@@ -55,3 +55,30 @@ def split_adversary(dev_df: pd.DataFrame, held_features_df: pd.DataFrame,
     lift_val = lift(auc, 0.5, sigma, greater_is_better=True)
     certified = lift_val <= CERTIFY_LIFT_THRESHOLD
     return {"auc": auc, "sigma": sigma, "lift": lift_val, "certified": certified}
+
+
+def leakage_adversary(dev_df: pd.DataFrame, target_col: str,
+                      feature_cols: list[str], task: str, seed: int = 0) -> list[dict]:
+    y = dev_df[target_col].to_numpy()
+    if task == "classification":
+        counts = np.bincount(y.astype(int))
+        minority_count = int(counts[counts > 0].min())
+        cv = _cv_folds(minority_count)
+    else:
+        cv = min(5, max(2, len(y) // 20))
+
+    findings = []
+    for col in feature_cols:
+        X = dev_df[[col]].to_numpy()
+        if task == "classification":
+            model = LogisticRegression(max_iter=1000)
+            proba = cross_val_predict(model, X, y, cv=cv, method="predict_proba")[:, 1]
+            score = float(roc_auc_score(y, proba))
+            flagged = score > LEAKAGE_AUC_THRESHOLD
+        else:
+            model = LinearRegression()
+            pred = cross_val_predict(model, X, y, cv=cv)
+            score = float(r2_score(y, pred))
+            flagged = score > LEAKAGE_R2_THRESHOLD
+        findings.append({"feature": col, "solo_score": score, "flagged": flagged})
+    return findings
