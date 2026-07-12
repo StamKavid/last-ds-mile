@@ -94,18 +94,32 @@ def test_leakage_adversary_regression_task():
     assert by_feature["noise"]["flagged"] is False
 
 
-def test_leakage_adversary_handles_imbalanced_classification_target():
-    # Regression test for the exact bug class Task 1 fixed: an imbalanced
-    # binary target must size CV folds from the MINORITY class count, not
-    # total row count, or this degenerates into NaN scores on real sklearn
-    # versions (they warn-and-return-NaN rather than raise for single-class
-    # folds).
+def test_leakage_adversary_sizes_cv_by_minority_class_not_total_rows(monkeypatch):
+    # Regression test for the exact bug class Task 1 fixed elsewhere in this
+    # file: CV folds must be sized from the MINORITY class count, not total
+    # row count, or a degenerate fold can silently corrupt results on some
+    # sklearn versions. leakage_adversary's aggregate roc_auc_score call
+    # doesn't itself go NaN when this is wrong (verified empirically), so we
+    # test the mechanism directly -- the actual cv value passed downstream --
+    # rather than an indirect symptom that doesn't manifest here.
+    import sealed_bet.adversary as adversary_module
+
+    captured_cv = {}
+    real_cross_val_predict = adversary_module.cross_val_predict
+
+    def _spy(estimator, X, y, cv=None, **kwargs):
+        captured_cv["cv"] = cv
+        return real_cross_val_predict(estimator, X, y, cv=cv, **kwargs)
+
+    monkeypatch.setattr(adversary_module, "cross_val_predict", _spy)
+
     rng = np.random.default_rng(2)
     n = 200
-    y = np.concatenate([np.zeros(190), np.ones(10)]).astype(int)
+    y = np.concatenate([np.zeros(197), np.ones(3)]).astype(int)
     rng.shuffle(y)
     df = pd.DataFrame({"noise": rng.normal(size=n), "y": y})
-    findings = leakage_adversary(df, target_col="y", feature_cols=["noise"],
-                                 task="classification", seed=2)
-    score = findings[0]["solo_score"]
-    assert score == score  # not NaN
+    leakage_adversary(df, target_col="y", feature_cols=["noise"],
+                      task="classification", seed=2)
+
+    # minority class has 3 members -> _cv_folds(3) == 3, NOT _cv_folds(200) == 5
+    assert captured_cv["cv"] == 3
