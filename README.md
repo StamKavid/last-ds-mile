@@ -72,6 +72,20 @@ Run `/ds` at any point to see the pipeline map and get routed to the next stage.
 Each stage writes its output to `.last-ds-mile/stages/` in your project, so later stages
 build on earlier ones and `/ds` can detect your progress.
 
+## The Sealed Bet (experimental)
+
+A trust core you can run in any coding agent: `python -m sealed_bet.seal` locks a
+holdout's labels and records a Contract; you build freely on the dev split; then
+`python -m sealed_bet.score` opens the holdout **once** and reports
+`lift = (sealed − baseline)/σ` — ship only if it beats the dumb baseline by more
+than the noise (> 2σ). The scoring/contract/ledger math itself has zero
+Claude-Code-only imports, so it's portable to any agent. The physical
+Read-blocking (`seal_guard` hook) is a Claude Code-specific hook this plugin
+ships, and it currently gates the `Read` tool only — `Bash`/`Grep` are not
+gated, so a careless or malicious agent could still `cat`/`grep` the sealed
+file directly and bypass the guard. In Claude Code, use `/ds-seal` and
+`/ds-open`.
+
 ## Discipline, not just steps
 
 Three stages are Hard Gates and will stop to ask rather than silently proceed:
@@ -105,7 +119,7 @@ situation calls for them, whether or not you're mid-pipeline:
 This release covers the full lifecycle spine, 8 domain skills (leakage detection,
 validation strategy, imbalanced data, metric selection, error analysis, notebook
 hygiene, dataframe performance, and data viz standards) that auto-trigger whenever a
-matching situation comes up, and the safe set: 4 hooks, a documented permission
+matching situation comes up, and the safe set: 5 hooks, a documented permission
 baseline, a real sanitization gate in `/ds-data`, `AUDIT.md`, and 3 subagents
 (`leakage-auditor`, `ds-reviewer`, `data-profiler`). See the "Safety" section below.
 The learnings system now ships too: a curated `lessons/` corpus (4 real DS
@@ -118,10 +132,14 @@ sharing of captured lessons is still on the roadmap.
 
 This plugin ships a "safe set": hooks that scan for untrusted-input risk (a
 poisoned CSV, a pickle file that executes code on load, a shell magic hidden in a
-notebook), a sanitization gate built into `/ds-data`, and 3 subagents. Every hook
-is **warn, don't block** — nothing here silently stops your work. See
-[`AUDIT.md`](AUDIT.md) for exactly what each hook reads, writes, and calls (nothing
-over the network, ever).
+notebook), a sanitization gate built into `/ds-data`, and 3 subagents. 4 of the 5
+hooks are **warn, don't block** — they never stop your work. The one exception is
+`seal_guard.py`, which deliberately denies Read access to the sealed holdout
+labels — that block is the physical basis of the Sealed Bet's trust guarantee
+for the `Read` tool specifically; `Bash`/`Grep` are not yet gated (see AUDIT.md's
+"Known limitation" note under `seal_guard.py`).
+See [`AUDIT.md`](AUDIT.md) for exactly what each hook reads, writes, and calls
+(nothing over the network, ever).
 
 To adopt the recommended permission baseline in your own project, merge
 [`settings-baseline.json`](settings-baseline.json) into your project's
