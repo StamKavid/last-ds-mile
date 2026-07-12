@@ -8,8 +8,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from sealed_bet.adversary import split_adversary
 from sealed_bet.contract import Contract
-from sealed_bet.ledger import write_header
+from sealed_bet.ledger import append_probe, write_header
 from sealed_bet.metrics import baseline_score
 from sealed_bet.splits import split
 from sealed_bet.state import init_state
@@ -45,6 +46,13 @@ def seal(data_path: str, target: str, task: str, metric: str, out_dir: str,
     held[[target]].to_csv(out / "held" / "_sealed_target.csv", index=False)
     contract.save(out / "contract.json")
     write_header(ledger_path, contract)
+    try:
+        feature_cols = [c for c in dev.columns if c != target]
+        probe = split_adversary(dev, held.drop(columns=[target]), feature_cols, seed=seed)
+        append_probe(ledger_path, probe["auc"], probe["sigma"], probe["lift"], probe["certified"])
+    except Exception as exc:  # the probe is a diagnostic, never a reason to fail the seal
+        with open(ledger_path, "a", encoding="utf-8") as f:
+            f.write(f"\n## Probe (split-adversary, warn-only)\n- probe skipped: {exc}\n")
     return contract
 
 
