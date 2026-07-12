@@ -135,7 +135,9 @@ poisoned CSV, a pickle file that executes code on load, a shell magic hidden in 
 notebook), a sanitization gate built into `/ds-data`, and 3 subagents. 4 of the 5
 hooks are **warn, don't block** — they never stop your work. The one exception is
 `seal_guard.py`, which deliberately denies Read access to the sealed holdout
-labels — that block is the physical basis of the Sealed Bet's trust guarantee.
+labels — that block is the physical basis of the Sealed Bet's trust guarantee
+for the `Read` tool specifically; `Bash`/`Grep` are not yet gated (see AUDIT.md's
+"Known limitation" note under `seal_guard.py`).
 See [`AUDIT.md`](AUDIT.md) for exactly what each hook reads, writes, and calls
 (nothing over the network, ever).
 
