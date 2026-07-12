@@ -41,3 +41,11 @@ def append_verdict(ledger_path, sealed_score: float, baseline_score: float,
                 f"· σ: {sigma:.4f}\n")
         f.write(f"- **lift = {lift_val:.2f}σ** → {stamp}  (ship iff lift > 2σ)\n")
         f.write(f"- sealed−baseline gap: {gap:+.4f}\n")
+
+
+def append_probe(ledger_path, auc: float, sigma: float, lift_val: float, certified: bool) -> None:
+    stamp = "CERTIFIED ✅" if certified else "⚠ SUSPECT — split may leak a forgotten group/time key"
+    with open(ledger_path, "a", encoding="utf-8") as f:
+        f.write("\n## Probe (split-adversary, warn-only)\n")
+        f.write(f"- train-vs-held AUC: {auc:.4f} · σ: {sigma:.4f} · lift: {lift_val:.2f}σ\n")
+        f.write(f"- **{stamp}**\n")
