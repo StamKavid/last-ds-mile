@@ -123,3 +123,24 @@ def test_leakage_adversary_sizes_cv_by_minority_class_not_total_rows(monkeypatch
 
     # minority class has 3 members -> _cv_folds(3) == 3, NOT _cv_folds(200) == 5
     assert captured_cv["cv"] == 3
+
+
+def test_leakage_adversary_raises_on_minority_class_below_two():
+    rng = np.random.default_rng(0)
+    n = 200
+    y = np.zeros(n, dtype=int)
+    y[0] = 1  # exactly 1 positive -- the ordinary "rare fraud" scenario
+    df = pd.DataFrame({"noise": rng.normal(size=n), "y": y})
+    with pytest.raises(ValueError, match="minority class"):
+        leakage_adversary(df, target_col="y", feature_cols=["noise"],
+                          task="classification", seed=0)
+
+
+def test_leakage_adversary_raises_on_negative_encoded_labels():
+    rng = np.random.default_rng(0)
+    n = 200
+    y = rng.choice([-1, 1], size=n)
+    df = pd.DataFrame({"noise": rng.normal(size=n), "y": y})
+    with pytest.raises(ValueError, match="non-negative"):
+        leakage_adversary(df, target_col="y", feature_cols=["noise"],
+                          task="classification", seed=0)

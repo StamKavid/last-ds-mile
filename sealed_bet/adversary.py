@@ -61,8 +61,20 @@ def leakage_adversary(dev_df: pd.DataFrame, target_col: str,
                       feature_cols: list[str], task: str, seed: int = 0) -> list[dict]:
     y = dev_df[target_col].to_numpy()
     if task == "classification":
+        if np.any(y.astype(int) < 0):
+            raise ValueError(
+                "leakage_adversary: classification target must be encoded "
+                "as non-negative integers (e.g. 0/1), not negative values "
+                "like -1/1"
+            )
         counts = np.bincount(y.astype(int))
         minority_count = int(counts[counts > 0].min())
+        if minority_count < 2:
+            raise ValueError(
+                f"leakage_adversary: the minority class has only "
+                f"{minority_count} row(s); need at least 2 to run a "
+                f"stratified cross-validated leakage probe"
+            )
         cv = _cv_folds(minority_count)
     else:
         cv = min(5, max(2, len(y) // 20))
@@ -71,7 +83,7 @@ def leakage_adversary(dev_df: pd.DataFrame, target_col: str,
     for col in feature_cols:
         X = dev_df[[col]].to_numpy()
         if task == "classification":
-            model = LogisticRegression(max_iter=1000)
+            model = LogisticRegression(max_iter=1000, random_state=seed)
             proba = cross_val_predict(model, X, y, cv=cv, method="predict_proba")[:, 1]
             score = float(roc_auc_score(y, proba))
             flagged = score > LEAKAGE_AUC_THRESHOLD
