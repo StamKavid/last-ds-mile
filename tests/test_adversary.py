@@ -49,3 +49,11 @@ def test_split_adversary_raises_on_too_small_held_set():
     held = pd.DataFrame({"a": rng.normal(size=1), "b": rng.normal(size=1)})
     with pytest.raises(ValueError):
         split_adversary(dev, held, feature_cols=["a", "b"], seed=0)
+
+
+def test_split_adversary_raises_on_too_small_dev_set():
+    rng = np.random.default_rng(0)
+    dev = pd.DataFrame({"a": rng.normal(size=1), "b": rng.normal(size=1)})
+    held = pd.DataFrame({"a": rng.normal(size=100), "b": rng.normal(size=100)})
+    with pytest.raises(ValueError, match="dev set has only"):
+        split_adversary(dev, held, feature_cols=["a", "b"], seed=0)

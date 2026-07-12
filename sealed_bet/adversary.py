@@ -37,10 +37,12 @@ def split_adversary(dev_df: pd.DataFrame, held_features_df: pd.DataFrame,
     held_X = held_features_df[feature_cols].to_numpy()
     minority_count = min(len(dev_X), len(held_X))
     if minority_count < 2:
+        offending = "dev" if len(dev_X) < len(held_X) else "held"
         raise ValueError(
-            f"split_adversary: held set has only {len(held_X)} row(s) "
-            f"(dev has {len(dev_X)}); need at least 2 rows in both dev and "
-            f"held to run a stratified cross-validated split-adversary"
+            f"split_adversary: {offending} set has only {minority_count} row(s) "
+            f"(dev has {len(dev_X)}, held has {len(held_X)}); need at least 2 "
+            f"rows in both dev and held to run a stratified cross-validated "
+            f"split-adversary"
         )
     X = np.vstack([dev_X, held_X])
     y = np.concatenate([np.zeros(len(dev_X)), np.ones(len(held_X))])
