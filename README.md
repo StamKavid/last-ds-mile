@@ -78,8 +78,12 @@ A trust core you can run in any coding agent: `python -m sealed_bet.seal` locks 
 holdout's labels and records a Contract; you build freely on the dev split; then
 `python -m sealed_bet.score` opens the holdout **once** and reports
 `lift = (sealed − baseline)/σ` — ship only if it beats the dumb baseline by more
-than the noise (> 2σ). The sealed labels are physically off-limits (`seal_guard`
-hook), so the score cannot be gamed by peeking. In Claude Code, use `/ds-seal` and
+than the noise (> 2σ). The scoring/contract/ledger math itself has zero
+Claude-Code-only imports, so it's portable to any agent. The physical
+Read-blocking (`seal_guard` hook) is a Claude Code-specific hook this plugin
+ships, and it currently gates the `Read` tool only — `Bash`/`Grep` are not
+gated, so a careless or malicious agent could still `cat`/`grep` the sealed
+file directly and bypass the guard. In Claude Code, use `/ds-seal` and
 `/ds-open`.
 
 ## Discipline, not just steps

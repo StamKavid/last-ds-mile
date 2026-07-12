@@ -39,8 +39,8 @@ def open_seal(preds_path: str, out_dir: str, ledger_path: str) -> dict:
     lift_val = lift(sealed, contract.baseline_score, sigma, m.greater_is_better)
     shipped = lift_val > SHIP_THRESHOLD
 
-    append_verdict(ledger_path, sealed, contract.baseline_score, sigma, lift_val, shipped)
     mark_opened(out_dir)
+    append_verdict(ledger_path, sealed, contract.baseline_score, sigma, lift_val, shipped)
     return {"sealed_score": sealed, "baseline": contract.baseline_score,
             "sigma": sigma, "lift": lift_val, "shipped": shipped}
 

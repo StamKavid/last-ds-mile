@@ -74,6 +74,14 @@ To verify the no-network and stdlib-only claims yourself: `grep -n "^import\|^fr
   `_sealed*` file under a `held/` directory (the sealed holdout labels). Everything
   else, including `held/features.csv`, is allowed. This is the physical basis of
   the Sealed Bet trust guarantee, so it blocks rather than warns.
+- **Known limitation (Phase A):** this hook only gates the `Read` tool. `Bash`,
+  `Grep`, and any other tool that can surface file contents without going
+  through Claude Code's `Read` tool are not currently gated — an agent could
+  still `cat`/`Get-Content`/`grep` the sealed file directly and bypass this
+  guard entirely. This is a documented gap, not a complete guarantee.
+  Closing it requires parsing/canonicalizing arbitrary shell command strings
+  (quoting, variable expansion, encoding, wildcards), which is its own
+  substantial adversarial-hardening project and is out of scope here.
 
 ## Recommended permission baseline
 

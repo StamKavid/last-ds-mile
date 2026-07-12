@@ -59,6 +59,7 @@ REQUIRED_HOOK_EVENTS = ["SessionStart", "PostToolUse", "PreCompact", "Stop"]
 
 HOOK_SCRIPTS = [
     "session_start.py",
+    "seal_guard.py",
     "scan_untrusted_input.py",
     "pre_compact.py",
     "stop_persist_learnings.py",
