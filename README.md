@@ -79,8 +79,8 @@ holdout's labels and records a Contract; you build freely on the dev split; then
 `python -m sealed_bet.score` opens the holdout **once** and reports
 `lift = (sealed − baseline)/σ` — ship only if it beats the dumb baseline by more
 than the noise (> 2σ). The sealed labels are physically off-limits (`seal_guard`
-hook), so the score cannot be gamed by peeking. See
-`docs` for the design. In Claude Code, use `/ds-seal` and `/ds-open`.
+hook), so the score cannot be gamed by peeking. In Claude Code, use `/ds-seal` and
+`/ds-open`.
 
 ## Discipline, not just steps
 
