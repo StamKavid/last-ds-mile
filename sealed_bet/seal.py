@@ -51,8 +51,11 @@ def seal(data_path: str, target: str, task: str, metric: str, out_dir: str,
         probe = split_adversary(dev, held.drop(columns=[target]), feature_cols, seed=seed)
         append_probe(ledger_path, probe["auc"], probe["sigma"], probe["lift"], probe["certified"])
     except Exception as exc:  # the probe is a diagnostic, never a reason to fail the seal
-        with open(ledger_path, "a", encoding="utf-8") as f:
-            f.write(f"\n## Probe (split-adversary, warn-only)\n- probe skipped: {exc}\n")
+        try:
+            with open(ledger_path, "a", encoding="utf-8") as f:
+                f.write(f"\n## Probe (split-adversary, warn-only)\n- probe skipped: {exc}\n")
+        except Exception:  # even logging the failure must never fail the seal
+            pass
     return contract
 
 

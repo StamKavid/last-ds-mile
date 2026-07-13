@@ -59,7 +59,8 @@ def test_seal_records_a_probe_verdict_in_the_ledger(tmp_path):
     seal(str(data), target="y", task="classification", metric="roc_auc",
          out_dir=str(out), strategy="random", seed=0, ledger_path=str(led))
     text = led.read_text(encoding="utf-8")
-    assert "Probe" in text
+    assert "train-vs-held AUC" in text
+    assert "probe skipped" not in text.lower()
 
 
 def test_seal_survives_a_probe_failure(tmp_path, monkeypatch):
