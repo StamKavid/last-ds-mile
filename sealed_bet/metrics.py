@@ -50,9 +50,12 @@ def bootstrap_sigma(y_true, y_pred, metric_name: str, n: int = 1000, seed: int =
     for _ in range(n):
         s = rng.choice(idx, size=len(idx), replace=True)
         try:
-            scores.append(m.fn(y_true[s], y_pred[s]))
+            score = m.fn(y_true[s], y_pred[s])
         except ValueError:
             continue  # e.g. a resample with one class for roc_auc; skip
+        if score != score:  # NaN check without importing math; NaN != NaN is always True
+            continue  # some sklearn versions warn-and-return-NaN instead of raising; skip
+        scores.append(score)
     return float(np.std(scores)) if scores else 0.0
 
 

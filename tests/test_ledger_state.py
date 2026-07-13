@@ -1,5 +1,5 @@
 from sealed_bet.state import init_state, is_opened, mark_opened
-from sealed_bet.ledger import write_header, append_experiment, append_verdict
+from sealed_bet.ledger import write_header, append_experiment, append_verdict, append_probe
 from sealed_bet.contract import Contract
 
 
@@ -79,3 +79,12 @@ def test_init_state_refuses_when_state_is_corrupted(tmp_path):
     (tmp_path / "seal_state.json").write_text("{}", encoding="utf-8")
     with pytest.raises(RuntimeError, match="corrupted"):
         init_state(tmp_path)
+
+
+def test_ledger_records_probe_verdict(tmp_path):
+    led = tmp_path / "LEDGER.md"
+    write_header(led, _c())
+    append_probe(led, auc=0.51, sigma=0.05, lift_val=0.2, certified=True)
+    text = led.read_text(encoding="utf-8")
+    assert "Probe" in text
+    assert "CERTIFIED" in text

@@ -38,6 +38,21 @@ def test_bootstrap_sigma_positive_for_varied_preds():
     assert s > 0.0
 
 
+def test_bootstrap_sigma_skips_nan_resamples_not_just_valueerror():
+    # A tiny minority class makes some bootstrap resamples draw ZERO
+    # minority-class rows purely by chance -- roc_auc_score on that resample
+    # returns NaN (warns, doesn't raise) rather than raising ValueError.
+    # bootstrap_sigma must skip these, not let a single NaN poison the whole
+    # sigma estimate.
+    rng = np.random.default_rng(0)
+    y = np.concatenate([np.zeros(196), np.ones(4)])  # 196/4 split, matches
+                                                       # the real bug report
+    p = rng.random(200)
+    sigma = bootstrap_sigma(y, p, "roc_auc", n=1000, seed=0)
+    assert sigma == sigma  # not NaN (NaN != NaN, so this fails if sigma is NaN)
+    assert sigma >= 0.0
+
+
 def test_lift_sign_follows_direction():
     # greater-is-better: model above baseline -> positive lift
     assert lift(0.80, 0.50, 0.10, greater_is_better=True) == pytest.approx(3.0)
