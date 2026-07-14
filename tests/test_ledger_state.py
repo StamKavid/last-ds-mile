@@ -6,7 +6,8 @@ from sealed_bet.contract import Contract
 def _c():
     return Contract("y", "classification", "roc_auc",
                     {"strategy": "random", "group_key": None, "time_col": None},
-                    0.5, 0.2, 0, "abc", "full", "2026-07-10T00:00:00Z")
+                    0.5, 0.2, 0, "abc", "full", "2026-07-10T00:00:00Z",
+                    budget=15, ceiling_score=0.5, ceiling_source="proxy")
 
 
 def test_open_once_flag(tmp_path):

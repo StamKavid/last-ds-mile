@@ -21,6 +21,9 @@ class Contract:
     data_hash: str
     input_mode: str
     created_at: str
+    budget: int
+    ceiling_score: float
+    ceiling_source: str
 
     def validate(self) -> "Contract":
         if self.metric not in METRICS:
@@ -33,6 +36,12 @@ class Contract:
             raise ValueError(f"held_frac must be in (0, 1), got {self.held_frac}")
         if self.seed < 0:
             raise ValueError(f"seed must be non-negative, got {self.seed}")
+        if self.budget <= 0:
+            raise ValueError(f"budget must be a positive int, got {self.budget}")
+        if not math.isfinite(self.ceiling_score):
+            raise ValueError(f"ceiling_score must be finite, got {self.ceiling_score}")
+        if self.ceiling_source not in ("human", "proxy"):
+            raise ValueError(f"ceiling_source must be 'human' or 'proxy', got {self.ceiling_source!r}")
         return self
 
     def save(self, path) -> None:
