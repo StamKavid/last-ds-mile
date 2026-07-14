@@ -38,6 +38,8 @@ def seal(data_path: str, target: str, task: str, metric: str, out_dir: str,
         baseline_score=base, held_frac=held_frac, seed=seed, data_hash=_hash(data_path),
         input_mode=input_mode,
         created_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        # TODO(Task 8): temporary placeholders — replaced by a real budget
+        # parameter and a real ceiling_baseline() computation.
         budget=15, ceiling_score=0.5, ceiling_source="proxy",
     ).validate()
 
