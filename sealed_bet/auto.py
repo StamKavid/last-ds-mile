@@ -23,3 +23,16 @@ def ladder_accept(new_score: float, best_score: float, noise_floor: float,
                   greater_is_better: bool) -> bool:
     delta = (new_score - best_score) if greater_is_better else (best_score - new_score)
     return delta > noise_floor
+
+
+def diagnose(train_score: float, val_score: float, noise_floor: float,
+            ceiling_score: float, greater_is_better: bool) -> dict:
+    gap = (train_score - val_score) if greater_is_better else (val_score - train_score)
+    gap_to_ceiling = (ceiling_score - val_score) if greater_is_better else (val_score - ceiling_score)
+    if gap > noise_floor:
+        regime = "high_variance"
+    elif gap_to_ceiling > noise_floor:
+        regime = "high_bias"
+    else:
+        regime = "neither"
+    return {"regime": regime, "gap": gap}
