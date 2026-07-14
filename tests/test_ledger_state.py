@@ -105,10 +105,18 @@ def test_ledger_records_build_iteration_accepted(tmp_path):
 
 
 def test_ledger_records_build_iteration_rejected(tmp_path):
+    # sequential from i=1, matching how /ds-auto's loop actually calls this
+    # (no resume/checkpoint feature exists, so i always starts at 1) -- this
+    # also confirms the "## Build (auto)" header is present once the section
+    # has been opened, not just that a bare bullet line was appended somewhere.
     led = tmp_path / "LEDGER.md"
     write_header(led, _c())
+    append_build_iteration(led, i=1, regime="high_variance",
+                           framing_note="baseline framing",
+                           dev_score=0.76, accepted=True)
     append_build_iteration(led, i=2, regime="high_bias",
                            framing_note="added recency feature",
                            dev_score=0.775, accepted=False)
     text = led.read_text(encoding="utf-8")
+    assert "Build (auto)" in text
     assert "rejected" in text.lower()
