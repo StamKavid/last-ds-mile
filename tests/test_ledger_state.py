@@ -1,5 +1,5 @@
 from sealed_bet.state import init_state, is_opened, mark_opened
-from sealed_bet.ledger import write_header, append_experiment, append_verdict, append_probe
+from sealed_bet.ledger import write_header, append_experiment, append_verdict, append_probe, append_build_iteration
 from sealed_bet.contract import Contract
 
 
@@ -89,3 +89,26 @@ def test_ledger_records_probe_verdict(tmp_path):
     text = led.read_text(encoding="utf-8")
     assert "Probe" in text
     assert "CERTIFIED" in text
+
+
+def test_ledger_records_build_iteration_accepted(tmp_path):
+    led = tmp_path / "LEDGER.md"
+    write_header(led, _c())
+    append_build_iteration(led, i=1, regime="high_variance",
+                           framing_note="dropped 40 sparse one-hot cols",
+                           dev_score=0.76, accepted=True)
+    text = led.read_text(encoding="utf-8")
+    assert "Build (auto)" in text
+    assert "high_variance" in text
+    assert "dropped 40 sparse one-hot cols" in text
+    assert "ACCEPTED" in text
+
+
+def test_ledger_records_build_iteration_rejected(tmp_path):
+    led = tmp_path / "LEDGER.md"
+    write_header(led, _c())
+    append_build_iteration(led, i=2, regime="high_bias",
+                           framing_note="added recency feature",
+                           dev_score=0.775, accepted=False)
+    text = led.read_text(encoding="utf-8")
+    assert "rejected" in text.lower()
