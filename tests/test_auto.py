@@ -167,3 +167,22 @@ def test_ceiling_baseline_falls_back_to_autogluon_proxy(tmp_path):
     )
     assert result["source"] == "proxy"
     assert 0.0 <= result["score"] <= 1.0
+
+
+from sealed_bet.auto import refit_winner
+
+
+def test_refit_winner_returns_a_predictor_that_predicts_all_held_rows(tmp_path):
+    rng = np.random.default_rng(4)
+    n = 200
+    dev = pd.DataFrame({"a": rng.normal(size=n), "b": rng.normal(size=n)})
+    dev["y"] = (dev["a"] + dev["b"] > 0).astype(int)
+    held_features = pd.DataFrame({"a": rng.normal(size=30), "b": rng.normal(size=30)})
+
+    predictor = refit_winner(
+        dev_df=dev, target="y", feature_cols=["a", "b"], task="classification",
+        seed=0, time_limit=15, model_dir=str(tmp_path / "refit"),
+    )
+    preds = predictor.predict_proba(held_features)[1]
+    assert len(preds) == len(held_features)
+    assert preds.between(0, 1).all()

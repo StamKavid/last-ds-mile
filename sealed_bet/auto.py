@@ -90,3 +90,8 @@ def ceiling_baseline(dev_df, target: str, feature_cols: list[str], task: str, me
     predictor = _fit_predictor(dev_df[feature_cols + [target]], target, task, model_dir, time_limit)
     score, _, _ = _score(predictor, dev_df, target, feature_cols, task, metric)
     return {"score": score, "source": "proxy"}
+
+
+def refit_winner(dev_df, target: str, feature_cols: list[str], task: str,
+                 seed: int = 0, time_limit: int = 30, model_dir: str | None = None):
+    return _fit_predictor(dev_df[feature_cols + [target]], target, task, model_dir, time_limit)
