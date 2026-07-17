@@ -87,7 +87,7 @@ To verify the no-network and stdlib-only claims yourself: `grep -n "^import\|^fr
 
 `settings-baseline.json` at the repo root is a documented, opt-in fragment for your
 own project's `.claude/settings.json` — this plugin never modifies your settings
-automatically. See the README's "Safety" section for how to adopt it.
+automatically. See the README's "Security model" section for how to adopt it.
 
 ## Subagents
 
