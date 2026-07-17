@@ -1,4 +1,8 @@
-# 🏁 Last DS Mile
+<p align="center">
+  <img src="assets/last-ds-mile-logo.png" alt="Last DS Mile — trustworthy data science" width="220">
+</p>
+
+<h1 align="center">Last DS Mile</h1>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License: MIT"></a>
