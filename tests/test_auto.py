@@ -95,11 +95,11 @@ def test_run_iteration_returns_expected_keys_and_plausible_scores(tmp_path):
 
 
 def test_run_iteration_respects_the_contracts_split_strategy(tmp_path):
-    # a group-correlated dataset: rows sharing a group_key must never be split
-    # across the internal outer-train/outer-val fold, same leakage concern the
-    # top-level seal already guards against -- run_iteration must thread
-    # strategy/group_key through to sealed_bet.splits.split(), not silently
-    # default to "random" regardless of the Contract's own recorded strategy.
+    # smoke test: strategy="group" with a valid group_key runs end to end
+    # without raising. This alone doesn't prove strategy/group_key were
+    # actually threaded through to sealed_bet.splits.split() rather than
+    # silently defaulted to "random" -- see the discriminating test below,
+    # which is what actually catches that regression.
     rng = np.random.default_rng(1)
     n_groups = 40
     rows_per_group = 5
@@ -115,8 +115,24 @@ def test_run_iteration_respects_the_contracts_split_strategy(tmp_path):
         metric="roc_auc", strategy="group", group_key="grp", seed=0,
         held_frac=0.2, time_limit=15, model_dir=str(tmp_path / "iter_group"),
     )
-    # just proving it runs at all under strategy="group" without raising --
-    # sealed_bet.splits.split() already raises ValueError if group_key is
-    # missing/invalid, so a clean return here proves the strategy was threaded
-    # through rather than silently defaulting to "random"
     assert result["dev_score"] >= 0.0
+
+
+def test_run_iteration_actually_threads_group_key_to_split_not_just_random(tmp_path):
+    # discriminating regression test: sealed_bet.splits.split() raises
+    # ValueError for strategy="group" when group_key isn't a real column
+    # (see splits.py). A run_iteration that silently hardcoded strategy="random"
+    # internally would never reach that branch and this dataset would split
+    # fine -- so only a genuine "group" pass-through makes this raise.
+    rng = np.random.default_rng(2)
+    n = 50
+    dev = pd.DataFrame({"a": rng.normal(size=n)})
+    dev["y"] = (dev["a"] > 0).astype(int)
+
+    import pytest
+    with pytest.raises(ValueError, match="group_key"):
+        run_iteration(
+            dev_df=dev, target="y", feature_cols=["a"], task="classification",
+            metric="roc_auc", strategy="group", group_key="not_a_real_column",
+            seed=0, held_frac=0.2, time_limit=15, model_dir=str(tmp_path / "iter_bad_group"),
+        )
