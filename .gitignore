@@ -4,3 +4,15 @@ __pycache__/
 .venv/
 venv/
 .last-ds-mile/
+
+# benchmarks: keep the narrative evidence (stages/*.md, contract.json,
+# LEDGER.md), never the raw data or heavy artifacts (dev/held splits,
+# AutoGluon model binaries) that live alongside it. Named last-ds-mile-run/
+# (no leading dot) deliberately, NOT .last-ds-mile/ -- that name is already
+# blanket-ignored above, and git can't re-include a child of an ignored dir.
+benchmarks/*/*.csv
+benchmarks/*/*.txt
+benchmarks/*/last-ds-mile-run/dev.csv
+benchmarks/*/last-ds-mile-run/held/
+benchmarks/*/last-ds-mile-run/auto/
+benchmarks/*/last-ds-mile-run/seal_state.json
