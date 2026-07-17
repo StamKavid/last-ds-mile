@@ -4,16 +4,20 @@ description: Run the autonomous Build loop between /ds-seal and /ds-open — dia
 
 Run the Build loop against the sealed Contract. This runs autonomously within
 this turn, up to the Contract's `budget` or 5 consecutive Ladder rejections —
-no mid-loop check-ins, but every iteration is logged to `LEDGER.md` (same
-path convention as `/ds-seal`/`/ds-open`) as it happens so it stays watchable.
+no mid-loop check-ins, but every iteration is logged to the ledger as it
+happens so it stays watchable.
 
 1. Load `.last-ds-mile/contract.json` (via `sealed_bet.contract.Contract.load`)
    for `target`, `task`, `metric`, `budget`, `ceiling_score`, `ceiling_source`,
-   and the split `strategy`/`group_key`/`time_col`. Load `.last-ds-mile/dev.csv`
-   into `dev_df`, and `.last-ds-mile/held/features.csv` into `held_df` — any
-   feature engineered into `dev_df` during the loop (step 3b) must be applied
-   identically to `held_df` in the same step, so the two stay column-aligned
-   for the final prediction in step 5.
+   `seed`, and the split `strategy`/`group_key`/`time_col`. Load
+   `.last-ds-mile/dev.csv` into `dev_df`, and `.last-ds-mile/held/features.csv`
+   into `held_df` — any feature engineered into `dev_df` during the loop
+   (step 3b) must be applied identically to `held_df` in the same step, so the
+   two stay column-aligned for the final prediction in step 5. Determine
+   `ledger_path`: the Contract itself doesn't persist which `--ledger` path
+   `/ds-seal` used, so use `LEDGER.md` unless this session's own `/ds-seal`
+   run (or the user) said otherwise — it must match whatever `/ds-seal`/
+   `/ds-open` use for this same project.
 2. Track across iterations: the loop counter `i` (starts at 1), `best_score`,
    `best_train_score`, `best_feature_cols` (starts as all `dev_df` columns
    except the target), `noise_floor` (from the most recent iteration), and
@@ -49,7 +53,9 @@ path convention as `/ds-seal`/`/ds-open`) as it happens so it stays watchable.
       `run_iteration`'s (AutoGluon's) job entirely.
    c. Call `sealed_bet.auto.run_iteration(dev_df, target, feature_cols, task,
       metric, strategy=strategy, group_key=group_key, time_col=time_col,
-      seed=0, model_dir=f".last-ds-mile/auto/iter{i}")` — always pass an
+      seed=contract.seed, model_dir=f".last-ds-mile/auto/iter{i}")` — reuse
+      the Contract's own recorded `seed` (not a hardcoded value) so the
+      outer-fold split is reproducible against the same seal; always pass an
       explicit `model_dir` under `.last-ds-mile/auto/` so AutoGluon never
       writes to the repo root. Update `noise_floor` from this result.
    d. On iteration 1: set `best_score`/`best_train_score`/`best_feature_cols`
@@ -58,18 +64,18 @@ path convention as `/ds-seal`/`/ds-open`) as it happens so it stays watchable.
       noise_floor, greater_is_better)`; if `True`, update all three `best_*`
       and reset `consecutive_rejections` to 0; if `False`, increment
       `consecutive_rejections` and leave `best_*` unchanged.
-   e. Call `sealed_bet.ledger.append_build_iteration("LEDGER.md", i, regime,
+   e. Call `sealed_bet.ledger.append_build_iteration(ledger_path, i, regime,
       framing_note, dev_score, accepted)` every iteration, accepted or not
       (iteration 1 logs `regime="baseline"`, `accepted=True`). Increment `i`.
 4. Once the loop ends, call `sealed_bet.auto.refit_winner(dev_df, target,
-   best_feature_cols, task, seed=0, model_dir=".last-ds-mile/auto/refit")` to
-   refit the winning framing on the full dev set (not just its outer-train
-   fold from whichever iteration won).
+   best_feature_cols, task, seed=contract.seed,
+   model_dir=".last-ds-mile/auto/refit")` to refit the winning framing on the
+   full dev set (not just its outer-train fold from whichever iteration won).
 5. Generate predictions on `held_df[best_feature_cols]` (subsetting the same
    way as `run_iteration`'s own internal scoring; `held_df` already carries
    any engineered columns from step 3b) using the refit predictor
-   (`predict_proba(...)[1]` for classification, `predict(...)` for
-   regression). Write them as a single-column CSV to `preds.csv`.
+   (`predict_proba(..., as_multiclass=False)` for classification, `predict(...)`
+   for regression). Write them as a single-column CSV to `preds.csv`.
 6. Report a summary: how many iterations ran, how many were accepted, the
    best dev score, the ceiling score and its source, and that `preds.csv` is
    ready. Tell the user `/ds-open` settles the bet next.
