@@ -36,7 +36,8 @@ def seal(data_path: str, target: str, task: str, metric: str, out_dir: str,
     base = baseline_score(dev[target].to_numpy(), held[target].to_numpy(), metric)
     feature_cols = [c for c in dev.columns if c != target]
     ceiling = ceiling_baseline(dev, target, feature_cols, task, metric,
-                              human_estimate=ceiling_estimate, seed=seed)
+                              human_estimate=ceiling_estimate, seed=seed,
+                              model_dir=str(out / "auto" / "ceiling"))
     contract = Contract(
         target=target, task=task, metric=metric,
         split={"strategy": strategy, "group_key": group_key, "time_col": time_col},
