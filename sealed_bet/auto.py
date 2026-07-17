@@ -75,3 +75,13 @@ def run_iteration(dev_df, target: str, feature_cols: list[str], task: str, metri
     val_score, val_y_true, val_y_pred = _score(predictor, outer_val, target, feature_cols, task, metric)
     noise_floor = bootstrap_sigma(val_y_true, val_y_pred, metric, seed=seed)
     return {"train_score": train_score, "dev_score": val_score, "noise_floor": noise_floor}
+
+
+def ceiling_baseline(dev_df, target: str, feature_cols: list[str], task: str, metric: str,
+                     human_estimate: float | None = None, seed: int = 0,
+                     time_limit: int = 30, model_dir: str | None = None) -> dict:
+    if human_estimate is not None:
+        return {"score": float(human_estimate), "source": "human"}
+    predictor = _fit_predictor(dev_df[feature_cols + [target]], target, task, model_dir, time_limit)
+    score, _, _ = _score(predictor, dev_df, target, feature_cols, task, metric)
+    return {"score": score, "source": "proxy"}

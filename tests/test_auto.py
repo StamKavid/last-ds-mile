@@ -136,3 +136,34 @@ def test_run_iteration_actually_threads_group_key_to_split_not_just_random(tmp_p
             metric="roc_auc", strategy="group", group_key="not_a_real_column",
             seed=0, held_frac=0.2, time_limit=15, model_dir=str(tmp_path / "iter_bad_group"),
         )
+
+
+from sealed_bet.auto import ceiling_baseline
+
+
+def test_ceiling_baseline_uses_human_estimate_when_given(tmp_path):
+    rng = np.random.default_rng(2)
+    n = 100
+    dev = pd.DataFrame({"a": rng.normal(size=n)})
+    dev["y"] = (dev["a"] > 0).astype(int)
+
+    result = ceiling_baseline(
+        dev_df=dev, target="y", feature_cols=["a"], task="classification",
+        metric="roc_auc", human_estimate=0.97, model_dir=str(tmp_path / "ceiling_human"),
+    )
+    assert result == {"score": 0.97, "source": "human"}
+
+
+def test_ceiling_baseline_falls_back_to_autogluon_proxy(tmp_path):
+    rng = np.random.default_rng(3)
+    n = 200
+    dev = pd.DataFrame({"a": rng.normal(size=n), "b": rng.normal(size=n)})
+    dev["y"] = (dev["a"] + dev["b"] > 0).astype(int)
+
+    result = ceiling_baseline(
+        dev_df=dev, target="y", feature_cols=["a", "b"], task="classification",
+        metric="roc_auc", human_estimate=None, seed=0, time_limit=15,
+        model_dir=str(tmp_path / "ceiling_proxy"),
+    )
+    assert result["source"] == "proxy"
+    assert 0.0 <= result["score"] <= 1.0
