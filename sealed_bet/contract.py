@@ -51,4 +51,16 @@ class Contract:
     @classmethod
     def load(cls, path) -> "Contract":
         data = json.loads(Path(path).read_text(encoding="utf-8"))
-        return cls(**data).validate()
+        try:
+            return cls(**data).validate()
+        except TypeError as exc:
+            # Most likely cause: a contract.json written by a pre-Phase-C
+            # version of this plugin, missing budget/ceiling_score/ceiling_source.
+            # Fail loudly and explain rather than silently defaulting those
+            # fields -- a made-up ceiling_score would corrupt diagnose()'s
+            # regime classification without any visible symptom.
+            raise TypeError(
+                f"{path} doesn't match this version's Contract shape ({exc}). "
+                "If this was sealed by an older version of the plugin, re-run "
+                "/ds-seal to write a current-format contract.json."
+            ) from exc
