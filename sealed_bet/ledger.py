@@ -18,6 +18,7 @@ def write_header(ledger_path, contract: Contract) -> None:
         "## Contract",
         f"- target: `{contract.target}`  ·  task: `{contract.task}`  ·  metric: `{contract.metric}`",
         f"- split: `{contract.split['strategy']}`  ·  baseline_score: `{contract.baseline_score:.4f}`",
+        f"- ceiling_score: `{contract.ceiling_score:.4f}`  ·  ceiling_source: `{contract.ceiling_source}`  ·  budget: `{contract.budget}`",
         f"- input_mode: `{contract.input_mode}`  ·  data_hash: `{contract.data_hash}`  ·  sealed_at: `{_now()}`",
         "",
         "## Experiments (dev only — none of these count yet)",
@@ -49,3 +50,12 @@ def append_probe(ledger_path, auc: float, sigma: float, lift_val: float, certifi
         f.write("\n## Probe (split-adversary, warn-only)\n")
         f.write(f"- train-vs-held AUC: {auc:.4f} · σ: {sigma:.4f} · lift: {lift_val:.2f}σ\n")
         f.write(f"- **{stamp}**\n")
+
+
+def append_build_iteration(ledger_path, i: int, regime: str, framing_note: str,
+                           dev_score: float, accepted: bool) -> None:
+    stamp = "ACCEPTED (new best)" if accepted else "rejected (within noise floor)"
+    with open(ledger_path, "a", encoding="utf-8") as f:
+        if i == 1:
+            f.write("\n## Build (auto)\n")
+        f.write(f"- iter {i} · {regime} · {framing_note!r} → dev {dev_score:.4f} · {stamp}\n")

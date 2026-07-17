@@ -41,7 +41,7 @@ def test_optimistic_overfit_model_is_refused(tmp_path):
     out = tmp_path / ".last-ds-mile"
     led = tmp_path / "LEDGER.md"
     seal(str(data), "y", "classification", "roc_auc", str(out),
-         strategy="random", seed=0, ledger_path=str(led))
+         strategy="random", seed=0, ledger_path=str(led), ceiling_estimate=0.9)
 
     dev = pd.read_csv(out / "dev.csv")
     Xcols = [c for c in dev.columns if c != "y"]
@@ -76,7 +76,7 @@ def test_honest_model_ships(tmp_path):
     out = tmp_path / ".last-ds-mile"
     led = tmp_path / "LEDGER.md"
     seal(str(data), "y", "classification", "roc_auc", str(out),
-         strategy="random", seed=1, ledger_path=str(led))
+         strategy="random", seed=1, ledger_path=str(led), ceiling_estimate=0.9)
 
     dev = pd.read_csv(out / "dev.csv")
     Xcols = [c for c in dev.columns if c != "y"]
