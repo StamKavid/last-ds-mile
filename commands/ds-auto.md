@@ -31,8 +31,10 @@ path convention as `/ds-seal`/`/ds-open`) as it happens so it stays watchable.
         something to hand-tune here — dropping features is the one lever
         this loop pulls for this regime.)
       - `high_bias` → engineer a new feature (e.g. an interaction or
-        derived column) into a working copy of `dev_df`, then add its name
-        to `feature_cols`.
+        derived column) directly into `dev_df` — the same `dev_df` used by
+        every other step, so the new column stays available for later
+        iterations and for the final refit/predict steps — then add its
+        name to `feature_cols`.
       - `neither` → engineer a new framing of an existing feature (a
         transform or encoding, not just more of the same) into `dev_df` the
         same way, and swap it in for the feature it replaces.
