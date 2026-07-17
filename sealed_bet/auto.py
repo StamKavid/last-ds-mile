@@ -17,8 +17,6 @@ from __future__ import annotations
 
 import tempfile
 
-from autogluon.tabular import TabularPredictor
-
 from sealed_bet.metrics import METRICS, bootstrap_sigma
 from sealed_bet.splits import split
 
@@ -47,6 +45,24 @@ def diagnose(train_score: float, val_score: float, noise_floor: float,
 
 def _fit_predictor(train_df, target: str, task: str, model_dir: str | None,
                    time_limit: int):
+    # Known limitation: this doesn't accept/thread a seed into AutoGluon's own
+    # fit. TabularPredictor.__init__/.fit() expose no top-level seed/random_state
+    # (verified against the installed autogluon.tabular API) -- real seeding
+    # would mean per-model hyperparameter overrides (lightgbm's seed, xgboost's
+    # random_state, etc. all differ), which is a larger, riskier change than
+    # this module's scope. run_iteration's OUTER split and bootstrap_sigma are
+    # still fully seeded via `seed`; only AutoGluon's own internal model search
+    # is not, so re-running the same framing can land on a slightly different
+    # winning model even with the same seed.
+    try:
+        from autogluon.tabular import TabularPredictor
+    except ImportError as exc:
+        raise ImportError(
+            "AutoGluon is required for this operation (sealed_bet.auto's "
+            "run_iteration/ceiling_baseline-without-a-human-estimate/refit_winner). "
+            "Install it (see requirements-dev.txt), or pass --ceiling-estimate to "
+            "seal() to avoid the proxy ceiling fit and skip AutoGluon entirely."
+        ) from exc
     problem_type = "regression" if task == "regression" else "binary"
     path = model_dir or tempfile.mkdtemp(prefix="sealed_bet_autogluon_")
     return TabularPredictor(
@@ -58,7 +74,10 @@ def _score(predictor, df, target: str, feature_cols: list[str], task: str, metri
     m = METRICS[metric]
     y_true = df[target].to_numpy()
     if task == "classification":
-        y_pred = predictor.predict_proba(df[feature_cols])[1].to_numpy()
+        # as_multiclass=False returns just the positive-class probability via
+        # predictor.positive_class -- unlike a bare [1] column lookup, this
+        # doesn't assume the positive label is literally the int 1.
+        y_pred = predictor.predict_proba(df[feature_cols], as_multiclass=False).to_numpy()
     else:
         y_pred = predictor.predict(df[feature_cols]).to_numpy()
     return float(m.fn(y_true, y_pred)), y_true, y_pred
