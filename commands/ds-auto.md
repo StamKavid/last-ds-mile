@@ -10,7 +10,10 @@ path convention as `/ds-seal`/`/ds-open`) as it happens so it stays watchable.
 1. Load `.last-ds-mile/contract.json` (via `sealed_bet.contract.Contract.load`)
    for `target`, `task`, `metric`, `budget`, `ceiling_score`, `ceiling_source`,
    and the split `strategy`/`group_key`/`time_col`. Load `.last-ds-mile/dev.csv`
-   into `dev_df`.
+   into `dev_df`, and `.last-ds-mile/held/features.csv` into `held_df` — any
+   feature engineered into `dev_df` during the loop (step 3b) must be applied
+   identically to `held_df` in the same step, so the two stay column-aligned
+   for the final prediction in step 5.
 2. Track across iterations: the loop counter `i` (starts at 1), `best_score`,
    `best_train_score`, `best_feature_cols` (starts as all `dev_df` columns
    except the target), `noise_floor` (from the most recent iteration), and
@@ -34,10 +37,14 @@ path convention as `/ds-seal`/`/ds-open`) as it happens so it stays watchable.
         derived column) directly into `dev_df` — the same `dev_df` used by
         every other step, so the new column stays available for later
         iterations and for the final refit/predict steps — then add its
-        name to `feature_cols`.
+        name to `feature_cols`. Apply the identical transform to `held_df`
+        in the same step (e.g. the same pandas expression on the same
+        source columns), so `held_df` has the column too by the time step 5
+        needs it.
       - `neither` → engineer a new framing of an existing feature (a
         transform or encoding, not just more of the same) into `dev_df` the
-        same way, and swap it in for the feature it replaces.
+        same way, and swap it in for the feature it replaces. Apply the same
+        transform to `held_df` as with `high_bias`.
       Never adjust hyperparameters or model family directly — that's
       `run_iteration`'s (AutoGluon's) job entirely.
    c. Call `sealed_bet.auto.run_iteration(dev_df, target, feature_cols, task,
@@ -58,11 +65,11 @@ path convention as `/ds-seal`/`/ds-open`) as it happens so it stays watchable.
    best_feature_cols, task, seed=0, model_dir=".last-ds-mile/auto/refit")` to
    refit the winning framing on the full dev set (not just its outer-train
    fold from whichever iteration won).
-5. Generate predictions for `.last-ds-mile/held/features.csv`, subset to
-   `best_feature_cols` (same convention as `run_iteration`'s own internal
-   scoring), using the refit predictor (`predict_proba(...)[1]` for
-   classification, `predict(...)` for regression). Write them as a
-   single-column CSV to `preds.csv`.
+5. Generate predictions on `held_df[best_feature_cols]` (subsetting the same
+   way as `run_iteration`'s own internal scoring; `held_df` already carries
+   any engineered columns from step 3b) using the refit predictor
+   (`predict_proba(...)[1]` for classification, `predict(...)` for
+   regression). Write them as a single-column CSV to `preds.csv`.
 6. Report a summary: how many iterations ran, how many were accepted, the
    best dev score, the ceiling score and its source, and that `preds.csv` is
    ready. Tell the user `/ds-open` settles the bet next.
