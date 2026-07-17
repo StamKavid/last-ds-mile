@@ -9,6 +9,7 @@ from pathlib import Path
 import pandas as pd
 
 from sealed_bet.adversary import split_adversary
+from sealed_bet.auto import ceiling_baseline
 from sealed_bet.contract import Contract
 from sealed_bet.ledger import append_probe, write_header
 from sealed_bet.metrics import baseline_score
@@ -23,7 +24,8 @@ def _hash(path) -> str:
 def seal(data_path: str, target: str, task: str, metric: str, out_dir: str,
          strategy: str = "random", group_key=None, time_col=None,
          held_frac: float = 0.2, seed: int = 0, input_mode: str = "full",
-         ledger_path: str = "LEDGER.md") -> Contract:
+         ledger_path: str = "LEDGER.md", budget: int = 15,
+         ceiling_estimate: float | None = None) -> Contract:
     out = Path(out_dir)
     init_state(out)  # guard first: refuse re-sealing an opened project before anything else touches disk
 
@@ -32,15 +34,16 @@ def seal(data_path: str, target: str, task: str, metric: str, out_dir: str,
                       group_key=group_key, time_col=time_col)
 
     base = baseline_score(dev[target].to_numpy(), held[target].to_numpy(), metric)
+    feature_cols = [c for c in dev.columns if c != target]
+    ceiling = ceiling_baseline(dev, target, feature_cols, task, metric,
+                              human_estimate=ceiling_estimate, seed=seed)
     contract = Contract(
         target=target, task=task, metric=metric,
         split={"strategy": strategy, "group_key": group_key, "time_col": time_col},
         baseline_score=base, held_frac=held_frac, seed=seed, data_hash=_hash(data_path),
         input_mode=input_mode,
         created_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        # TODO(Task 8): temporary placeholders — replaced by a real budget
-        # parameter and a real ceiling_baseline() computation.
-        budget=15, ceiling_score=0.5, ceiling_source="proxy",
+        budget=budget, ceiling_score=ceiling["score"], ceiling_source=ceiling["source"],
     ).validate()
 
     (out / "held").mkdir(parents=True, exist_ok=True)
@@ -50,7 +53,6 @@ def seal(data_path: str, target: str, task: str, metric: str, out_dir: str,
     contract.save(out / "contract.json")
     write_header(ledger_path, contract)
     try:
-        feature_cols = [c for c in dev.columns if c != target]
         probe = split_adversary(dev, held.drop(columns=[target]), feature_cols, seed=seed)
         append_probe(ledger_path, probe["auc"], probe["sigma"], probe["lift"], probe["certified"])
     except Exception as exc:  # the probe is a diagnostic, never a reason to fail the seal
@@ -75,10 +77,13 @@ def main() -> None:
     ap.add_argument("--held-frac", type=float, default=0.2)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--ledger", default="LEDGER.md")
+    ap.add_argument("--budget", type=int, default=15)
+    ap.add_argument("--ceiling-estimate", type=float, default=None)
     a = ap.parse_args()
     c = seal(a.data, a.target, a.task, a.metric, a.out, a.strategy, a.group_key,
-             a.time_col, a.held_frac, a.seed, "full", a.ledger)
-    print(f"Sealed. baseline_score={c.baseline_score:.4f}. Build in the open; open once with score.py.")
+             a.time_col, a.held_frac, a.seed, "full", a.ledger, a.budget, a.ceiling_estimate)
+    print(f"Sealed. baseline_score={c.baseline_score:.4f} ceiling_score={c.ceiling_score:.4f} "
+          f"({c.ceiling_source}). Build in the open; open once with score.py.")
 
 
 if __name__ == "__main__":

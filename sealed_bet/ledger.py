@@ -18,6 +18,7 @@ def write_header(ledger_path, contract: Contract) -> None:
         "## Contract",
         f"- target: `{contract.target}`  ·  task: `{contract.task}`  ·  metric: `{contract.metric}`",
         f"- split: `{contract.split['strategy']}`  ·  baseline_score: `{contract.baseline_score:.4f}`",
+        f"- ceiling_score: `{contract.ceiling_score:.4f}`  ·  ceiling_source: `{contract.ceiling_source}`  ·  budget: `{contract.budget}`",
         f"- input_mode: `{contract.input_mode}`  ·  data_hash: `{contract.data_hash}`  ·  sealed_at: `{_now()}`",
         "",
         "## Experiments (dev only — none of these count yet)",
