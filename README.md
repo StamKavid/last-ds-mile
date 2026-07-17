@@ -67,6 +67,8 @@ rail, and enforces the discipline that keeps the results honest.
 
 ## The pipeline
 
+<p align="center"><img src="assets/pipeline-flow.svg" alt="The 11-stage pipeline from Frame to Handoff, with Model, Report, and Handoff marked as Hard Gates"></p>
+
 | # | Command | Stage |
 |---|---------|-------|
 | 0 | `/ds-frame` | Problem framing |
@@ -115,6 +117,8 @@ situation calls for them, whether or not you're mid-pipeline:
 | `data-viz-standards` | building EDA plots, or preparing stakeholder-facing figures and tables |
 
 ## The Sealed Bet (experimental)
+
+<p align="center"><img src="assets/sealed-bet-flow.svg" alt="Seal locks the holdout, Build loops diagnose/frame/delegate/accept up to budget or 5 rejections, Open settles the bet once by lift over baseline"></p>
 
 A trust core you can run in any coding agent: `python -m sealed_bet.seal` locks a
 holdout's labels and records a Contract (including a mandatory ceiling baseline —

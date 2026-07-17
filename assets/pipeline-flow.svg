@@ -1,0 +1,88 @@
+<svg viewBox="0 0 1760 300" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="lockHead" markerWidth="1" markerHeight="1"/>
+  </defs>
+
+  <!-- brand canvas: fixed-appearance card, reads the same in light or dark host pages -->
+  <rect x="0" y="0" width="1760" height="300" fill="#1C5A3C"/>
+
+  <!-- connecting rail -->
+  <line x1="100" y1="140" x2="1660" y2="140" stroke="#DCE5DB" stroke-width="3" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- 11 stage nodes: cx steps of 156 from 100 to 1660 -->
+  <!-- plain stages: outlined circle, cream ring, cream number -->
+  <g font-size="19" font-weight="700" fill="#F5F1E7" text-anchor="middle">
+    <circle cx="100"  cy="140" r="25" fill="none" stroke="#F5F1E7" stroke-width="2.5"/>
+    <text  x="100"  y="147">0</text>
+    <circle cx="256"  cy="140" r="25" fill="none" stroke="#F5F1E7" stroke-width="2.5"/>
+    <text  x="256"  y="147">1</text>
+    <circle cx="412"  cy="140" r="25" fill="none" stroke="#F5F1E7" stroke-width="2.5"/>
+    <text  x="412"  y="147">2</text>
+    <circle cx="568"  cy="140" r="25" fill="none" stroke="#F5F1E7" stroke-width="2.5"/>
+    <text  x="568"  y="147">3</text>
+    <circle cx="724"  cy="140" r="25" fill="none" stroke="#F5F1E7" stroke-width="2.5"/>
+    <text  x="724"  y="147">4</text>
+    <circle cx="880"  cy="140" r="25" fill="none" stroke="#F5F1E7" stroke-width="2.5"/>
+    <text  x="880"  y="147">5</text>
+    <circle cx="1192" cy="140" r="25" fill="none" stroke="#F5F1E7" stroke-width="2.5"/>
+    <text  x="1192" y="147">7</text>
+    <circle cx="1348" cy="140" r="25" fill="none" stroke="#F5F1E7" stroke-width="2.5"/>
+    <text  x="1348" y="147">8</text>
+  </g>
+
+  <!-- hard-gate stages (6 Model, 9 Report, 10 Handoff): inverted fill (cream disc, green number) -->
+  <g font-size="19" font-weight="700" fill="#1C5A3C" text-anchor="middle">
+    <circle cx="1036" cy="140" r="25" fill="#F5F1E7"/>
+    <text  x="1036" y="147">6</text>
+    <circle cx="1504" cy="140" r="25" fill="#F5F1E7"/>
+    <text  x="1504" y="147">9</text>
+    <circle cx="1660" cy="140" r="25" fill="#F5F1E7"/>
+    <text  x="1660" y="147">10</text>
+  </g>
+
+  <!-- padlock glyphs over the 3 hard gates -->
+  <g fill="none" stroke="#F5F1E7" stroke-width="2.5">
+    <path d="M1028 95 L1028 88 C1028 83 1032 79 1036 79 C1040 79 1044 83 1044 88 L1044 95"/>
+    <rect x="1024" y="95" width="24" height="19" rx="3" fill="#123D28" stroke="#F5F1E7"/>
+    <path d="M1496 95 L1496 88 C1496 83 1500 79 1504 79 C1508 79 1512 83 1512 88 L1512 95"/>
+    <rect x="1492" y="95" width="24" height="19" rx="3" fill="#123D28" stroke="#F5F1E7"/>
+    <path d="M1652 95 L1652 88 C1652 83 1656 79 1660 79 C1664 79 1668 83 1668 88 L1668 95"/>
+    <rect x="1648" y="95" width="24" height="19" rx="3" fill="#123D28" stroke="#F5F1E7"/>
+  </g>
+
+  <!-- stage name labels -->
+  <g font-size="16.5" fill="#F5F1E7" text-anchor="middle">
+    <text x="100"  y="196">Frame</text>
+    <text x="256"  y="196">Data</text>
+    <text x="412"  y="196">EDA</text>
+    <text x="568"  y="196">Prep</text>
+    <text x="724"  y="196">Baseline</text>
+    <text x="880"  y="196">Validate</text>
+    <text x="1036" y="196" font-weight="700">Model</text>
+    <text x="1192" y="196">Evaluate</text>
+    <text x="1348" y="196">Explain</text>
+    <text x="1504" y="196" font-weight="700">Report</text>
+    <text x="1660" y="196" font-weight="700">Handoff</text>
+  </g>
+
+  <!-- command labels, smaller, muted -->
+  <g font-size="13" fill="#DCE5DB" text-anchor="middle" opacity="0.85">
+    <text x="100"  y="214">/ds-frame</text>
+    <text x="256"  y="214">/ds-data</text>
+    <text x="412"  y="214">/ds-explore</text>
+    <text x="568"  y="214">/ds-prep</text>
+    <text x="724"  y="214">/ds-baseline</text>
+    <text x="880"  y="214">/ds-validate</text>
+    <text x="1036" y="214">/ds-model</text>
+    <text x="1192" y="214">/ds-evaluate</text>
+    <text x="1348" y="214">/ds-explain</text>
+    <text x="1504" y="214">/ds-report</text>
+    <text x="1660" y="214">/ds-handoff</text>
+  </g>
+
+  <!-- legend -->
+  <g font-size="15" fill="#F5F1E7">
+    <rect x="640" y="252" width="20" height="20" rx="10" fill="#F5F1E7"/>
+    <text x="670" y="267" fill="#F5F1E7" opacity="0.9">= Hard Gate — stops to ask, never silently proceeds</text>
+  </g>
+</svg>

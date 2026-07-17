@@ -1,0 +1,80 @@
+<svg viewBox="0 0 1400 400" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="#F5F1E7"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="400" fill="#1C5A3C"/>
+
+  <!-- ===== SEAL ===== -->
+  <g>
+    <path d="M126 100 L126 92 C126 86 130 82 136 82 C142 82 146 86 146 92 L146 100"
+          fill="none" stroke="#F5F1E7" stroke-width="3"/>
+    <rect x="118" y="100" width="36" height="30" rx="4" fill="#F5F1E7"/>
+    <text x="136" y="122" font-size="14" font-weight="700" fill="#1C5A3C" text-anchor="middle">●</text>
+  </g>
+  <text x="136" y="160" font-size="21" font-weight="700" fill="#F5F1E7" text-anchor="middle">Seal</text>
+  <text x="136" y="182" font-size="13" fill="#DCE5DB" text-anchor="middle">/ds-seal</text>
+  <text x="136" y="204" font-size="12" fill="#DCE5DB" text-anchor="middle" opacity="0.85">locks the holdout,</text>
+  <text x="136" y="220" font-size="12" fill="#DCE5DB" text-anchor="middle" opacity="0.85">records a Contract</text>
+  <text x="136" y="236" font-size="12" fill="#DCE5DB" text-anchor="middle" opacity="0.85">+ ceiling baseline</text>
+
+  <line x1="200" y1="115" x2="320" y2="115" stroke="#F5F1E7" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- ===== BUILD (loop) ===== -->
+  <text x="700" y="60" font-size="21" font-weight="700" fill="#F5F1E7" text-anchor="middle">Build</text>
+  <text x="700" y="82" font-size="13" fill="#DCE5DB" text-anchor="middle">/ds-auto (or build by hand on dev.csv)</text>
+
+  <g font-size="14" font-weight="700" fill="#1C5A3C" text-anchor="middle">
+    <rect x="360" y="100" width="130" height="34" rx="17" fill="#F5F1E7"/>
+    <text x="425" y="122">Diagnose</text>
+    <rect x="527" y="100" width="130" height="34" rx="17" fill="#F5F1E7"/>
+    <text x="592" y="122">Frame</text>
+    <rect x="694" y="100" width="140" height="34" rx="17" fill="#F5F1E7"/>
+    <text x="764" y="122">Delegate</text>
+    <rect x="871" y="100" width="150" height="34" rx="17" fill="#F5F1E7"/>
+    <text x="946" y="122">Ladder-accept?</text>
+  </g>
+  <g stroke="#1C5A3C" stroke-width="2" fill="none">
+    <line x1="490" y1="117" x2="527" y2="117" marker-end="url(#arrowGreen)"/>
+    <line x1="657" y1="117" x2="694" y2="117" marker-end="url(#arrowGreen)"/>
+    <line x1="834" y1="117" x2="871" y2="117" marker-end="url(#arrowGreen)"/>
+  </g>
+  <defs>
+    <marker id="arrowGreen" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#1C5A3C"/>
+    </marker>
+  </defs>
+
+  <!-- loop-back arrow -->
+  <path d="M946 134 C946 175 425 175 425 134" fill="none" stroke="#F5F1E7" stroke-width="2.5"
+        stroke-dasharray="1 7" stroke-linecap="round" marker-end="url(#arrow)"/>
+  <text x="686" y="196" font-size="13" fill="#F5F1E7" text-anchor="middle" font-weight="600">
+    repeat — up to budget (≤15) or 5 consecutive rejections
+  </text>
+  <text x="686" y="216" font-size="12" fill="#DCE5DB" text-anchor="middle" opacity="0.85">
+    scoring always via metrics.py, never AutoGluon's own eval
+  </text>
+
+  <line x1="1090" y1="117" x2="1200" y2="117" stroke="#F5F1E7" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- ===== OPEN ===== -->
+  <g>
+    <path d="M1290 100 L1290 92 C1290 86 1294 82 1300 82 C1306 82 1310 86 1310 90"
+          fill="none" stroke="#F5F1E7" stroke-width="3"/>
+    <rect x="1282" y="100" width="36" height="30" rx="4" fill="#F5F1E7"/>
+  </g>
+  <text x="1300" y="160" font-size="21" font-weight="700" fill="#F5F1E7" text-anchor="middle">Open</text>
+  <text x="1300" y="182" font-size="13" fill="#DCE5DB" text-anchor="middle">/ds-open</text>
+  <text x="1300" y="204" font-size="12" fill="#DCE5DB" text-anchor="middle" opacity="0.85">exactly once —</text>
+  <text x="1300" y="220" font-size="12" fill="#DCE5DB" text-anchor="middle" opacity="0.85">irreversible</text>
+
+  <!-- verdict bar -->
+  <rect x="60" y="300" width="1280" height="60" rx="30" fill="#123D28"/>
+  <text x="700" y="338" font-size="16.5" fill="#F5F1E7" text-anchor="middle">
+    <tspan font-weight="700">lift = (sealed − baseline) / σ</tspan>
+    <tspan dx="18" opacity="0.9">·</tspan>
+    <tspan dx="18">ship iff lift &gt; 2σ — otherwise, say so plainly</tspan>
+  </text>
+</svg>
