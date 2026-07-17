@@ -80,6 +80,11 @@ def run_iteration(dev_df, target: str, feature_cols: list[str], task: str, metri
 def ceiling_baseline(dev_df, target: str, feature_cols: list[str], task: str, metric: str,
                      human_estimate: float | None = None, seed: int = 0,
                      time_limit: int = 30, model_dir: str | None = None) -> dict:
+    # The "proxy" path fits and scores on the SAME full dev_df -- an in-sample
+    # training score, not an honest out-of-sample estimate like run_iteration's
+    # dev_score. It's optimism-prone by construction; diagnose() treats it as
+    # an upper bound, so leaning optimistic is intentional, but don't read it
+    # as a real achievable score the way you would run_iteration's dev_score.
     if human_estimate is not None:
         return {"score": float(human_estimate), "source": "human"}
     predictor = _fit_predictor(dev_df[feature_cols + [target]], target, task, model_dir, time_limit)
