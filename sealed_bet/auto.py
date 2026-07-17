@@ -15,6 +15,13 @@ internal evaluation -- so one statistical language runs through the product.
 """
 from __future__ import annotations
 
+import tempfile
+
+from autogluon.tabular import TabularPredictor
+
+from sealed_bet.metrics import METRICS, bootstrap_sigma
+from sealed_bet.splits import split
+
 
 EARLY_STOP_AFTER = 5  # consecutive Ladder rejections before the Build loop gives up
 
@@ -36,3 +43,35 @@ def diagnose(train_score: float, val_score: float, noise_floor: float,
     else:
         regime = "neither"
     return {"regime": regime, "gap": gap}
+
+
+def _fit_predictor(train_df, target: str, task: str, model_dir: str | None,
+                   time_limit: int):
+    problem_type = "regression" if task == "regression" else "binary"
+    path = model_dir or tempfile.mkdtemp(prefix="sealed_bet_autogluon_")
+    return TabularPredictor(
+        label=target, problem_type=problem_type, verbosity=0, path=path,
+    ).fit(train_df, time_limit=time_limit, presets="medium_quality")
+
+
+def _score(predictor, df, target: str, feature_cols: list[str], task: str, metric: str):
+    m = METRICS[metric]
+    y_true = df[target].to_numpy()
+    if task == "classification":
+        y_pred = predictor.predict_proba(df[feature_cols])[1].to_numpy()
+    else:
+        y_pred = predictor.predict(df[feature_cols]).to_numpy()
+    return float(m.fn(y_true, y_pred)), y_true, y_pred
+
+
+def run_iteration(dev_df, target: str, feature_cols: list[str], task: str, metric: str,
+                  strategy: str = "random", group_key=None, time_col=None,
+                  seed: int = 0, held_frac: float = 0.2, time_limit: int = 30,
+                  model_dir: str | None = None) -> dict:
+    outer_train, outer_val = split(dev_df, strategy=strategy, seed=seed,
+                                   held_frac=held_frac, group_key=group_key, time_col=time_col)
+    predictor = _fit_predictor(outer_train[feature_cols + [target]], target, task, model_dir, time_limit)
+    train_score, _, _ = _score(predictor, outer_train, target, feature_cols, task, metric)
+    val_score, val_y_true, val_y_pred = _score(predictor, outer_val, target, feature_cols, task, metric)
+    noise_floor = bootstrap_sigma(val_y_true, val_y_pred, metric, seed=seed)
+    return {"train_score": train_score, "dev_score": val_score, "noise_floor": noise_floor}
