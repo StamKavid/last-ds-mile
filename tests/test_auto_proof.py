@@ -78,7 +78,7 @@ def test_build_loop_early_stops_when_every_framing_is_genuine_noise(tmp_path):
     # every iteration gets an unrelated random feature -- none should ever
     # meaningfully beat the first iteration's score, so the Ladder should
     # reject enough in a row to trigger early-stop well before the budget
-    # (6 iterations here) is exhausted.
+    # (8 iterations here) is exhausted.
     rng = np.random.default_rng(1)
     n = 300
     dev = pd.DataFrame({f"noise{i}": rng.normal(size=n) for i in range(8)})
