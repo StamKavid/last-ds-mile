@@ -21,9 +21,10 @@ Print the pipeline map below, marking each stage done (✓) if its file exists, 
     9.  /ds-report    Communication
     10. /ds-handoff   Reproducibility & handoff
 
-Separately from the numbered pipeline above, mention that `/ds-seal` and `/ds-open`
-are an experimental trust-core alternative: `/ds-seal` locks a holdout, `/ds-open`
-settles the bet by lift over baseline — see README.
+Separately from the numbered pipeline above, mention that `/ds-seal`, `/ds-auto`,
+and `/ds-open` are an experimental trust-core alternative: `/ds-seal` locks a
+holdout, `/ds-auto` runs an autonomous Build loop, `/ds-open` settles the bet by
+lift over baseline — see README.
 
 If `.last-ds-mile/stages/` doesn't exist yet, recommend starting with `/ds-frame` and
 explain that each stage's output feeds the next.

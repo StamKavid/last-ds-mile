@@ -12,7 +12,8 @@ def _seal_a_problem(tmp_path):
     df.to_csv(data, index=False)
     out = tmp_path / ".last-ds-mile"
     seal(str(data), "y", "classification", "roc_auc", str(out),
-         strategy="random", seed=0, ledger_path=str(tmp_path / "LEDGER.md"))
+         strategy="random", seed=0, ledger_path=str(tmp_path / "LEDGER.md"),
+         ceiling_estimate=0.9)
     return out
 
 

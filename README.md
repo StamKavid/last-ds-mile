@@ -175,8 +175,13 @@ skill for what's worth capturing.
 
 ## Development
 
-    pip install -r requirements-dev.txt
-    python -m pytest tests/ -v
+    uv venv --python 3.13
+    uv pip install -r requirements-dev.txt
+    uv run pytest tests/ -v
+
+Requires Python >=3.10,<3.14 — AutoGluon's `pyarrow` dependency has no
+prebuilt wheel for 3.14 yet at time of writing, so the dev venv must stay on
+3.13 or earlier until that catches up upstream.
 
 `tests/test_plugin_structure.py` validates plugin structure (frontmatter, required
 sections, command↔skill wiring, lesson citations); `tests/test_hooks.py`
