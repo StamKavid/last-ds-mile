@@ -86,6 +86,9 @@ needed — and `--exclude-from-features col1,col2` keeps a column (e.g. a raw `t
 with no standalone predictive legitimacy) out of the model's own inputs while still
 using it to build the split. You build freely on the dev split; then `python -m
 sealed_bet.score` opens the holdout **once** and reports `lift = (sealed − baseline)/σ`,
+where predictions are joined to the sealed labels on a `row_id` echoed from
+`held/row_ids.csv` rather than by row position — so a pipeline that sorts or reindexes
+before writing `preds.csv` gets a hard error instead of a silently wrong verdict, and
 where σ is the paired bootstrap difference between the model's and baseline's scores on
 the same held rows — ship only if it beats the baseline by more than the noise (> 2σ).
 Opening also writes `held/revealed.csv` (the true target plus your submitted

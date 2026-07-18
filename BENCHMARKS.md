@@ -194,6 +194,27 @@ for new and fiber-optic customers specifically. House prices did *not* get a sym
 analysis: no treatment variable maps onto its framed decision (a list-price *prediction*,
 not an intervention) without first reframing `00-frame.md` into a different product.
 
+**`open_seal()` joined predictions to held rows purely positionally, with no identity
+check.** `pd.read_csv(preds_path).iloc[:, 0]`. Row *count* was checked
+(`len(preds) != len(y_true)` raises), but nothing verified the *order* matched
+`held/features.csv`. A prediction pipeline that sorted, reindexed, or otherwise
+reordered rows before writing `preds.csv` would silently score against the wrong labels
+— no error, just a wrong sealed score with no way to detect it after the fact. For a
+tool whose whole purpose is refusing to trust an unearned number, a silent-wrong-answer
+path was the worst available failure mode. Fixed: `seal()` now writes
+`held/row_ids.csv`, `preds.csv` must echo a `row_id` column, and
+`sealed_bet.score._read_predictions` reindexes into held order — raising on a missing
+id, an unexpected id, or a duplicate, rather than scoring anyway. The order of
+`preds.csv` is now irrelevant. `row_id` lives in its own file rather than as a column of
+`features.csv` on purpose: an id column is a row-order proxy, and on any sorted dataset
+that is itself a leakage vector, so a leakage-prevention tool must not ship one inside
+the feature matrix. Seals written before `row_ids.csv` existed still open positionally,
+and `--unsafe-positional-join` restores the old behavior explicitly. Proven by
+`tests/test_score.py::test_shuffled_preds_would_have_scored_wrong_under_positional_join`,
+which shows perfect predictions collapsing toward chance under the old join, alongside
+`test_shuffled_preds_score_identically_when_row_ids_are_carried`, which shows shuffling
+is now a no-op.
+
 ## Open — not fixed here
 
 **The Build loop rejects nearly everything after iteration 1, in every run so far.**
@@ -213,16 +234,6 @@ a large effect, regardless of how many iterations run.
 **`Contract.input_mode` is write-only.** Stored on every Contract, printed in every
 `LEDGER.md` header, never read or branched on anywhere in `sealed_bet`. Vestigial —
 either give it a real purpose or remove it.
-
-**`open_seal()` joins predictions to held rows purely positionally, with no identity
-check.** `pd.read_csv(preds_path).iloc[:, 0]` — the same for the sealed baseline
-predictions file. Row *count* is checked (`len(preds) != len(y_true)` raises), but
-nothing verifies the *order* matches `held/features.csv`'s row order. A prediction
-pipeline that sorts, reindexes, or otherwise reorders rows before writing `preds.csv`
-would silently score against the wrong labels — no error, just a wrong (probably worse,
-possibly better-looking-by-chance) sealed score with no way to detect it after the fact.
-An index/ID column in `held/features.csv` that `preds.csv` is required to echo back
-would close this.
 
 **AutoGluon's own internal model search isn't seeded.** `sealed_bet.auto._fit_predictor`
 threads a seed through the outer train/val split and `bootstrap_sigma`, but

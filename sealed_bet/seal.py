@@ -117,6 +117,20 @@ def seal(data_path: str, target: str, task: str, metric: str, out_dir: str,
     dev.to_csv(out / "dev.csv", index=False)
     held_features.to_csv(out / "held" / "features.csv", index=False)
     held[[target]].to_csv(out / "held" / "_sealed_target.csv", index=False)
+    # Row identity for the scoring join. Deliberately a SEPARATE file rather
+    # than a column in features.csv: an id column is a row-order proxy, and on
+    # any sorted dataset that is a leakage vector -- a leakage-prevention tool
+    # must not ship one inside the feature matrix. Keeping it out also means
+    # every existing pipeline that reads features.csv is unaffected.
+    #
+    # Values are the source dataframe's own row positions, so a mismatch at
+    # open time can be traced back to specific rows of the original CSV.
+    # Not `_sealed*`: these are not labels, and the prediction pipeline must be
+    # able to read them to echo them back. See score.py::_read_predictions for
+    # what this defends against.
+    pd.DataFrame({"row_id": held.index.to_numpy()}).to_csv(
+        out / "held" / "row_ids.csv", index=False
+    )
     # Sealed alongside the labels (the `_sealed*` prefix is what seal_guard blocks):
     # open_seal needs the baseline's PER-ROW predictions, not just its scalar score,
     # to compute the paired σ. Sealing them keeps the agent from reverse-engineering
