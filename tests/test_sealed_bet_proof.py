@@ -4,8 +4,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_predict
 from sklearn.tree import DecisionTreeClassifier
 
-from sealed_bet.seal import seal
 from sealed_bet.score import open_seal, score_dev
+from sealed_bet.seal import seal
 
 
 def _make_dataset(tmp_path, seed=0, scale=30.0):

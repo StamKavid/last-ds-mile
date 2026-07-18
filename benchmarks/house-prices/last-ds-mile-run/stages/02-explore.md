@@ -2,9 +2,11 @@
 
 **Univariate — target:** `SalePrice` is right-skewed (skew = 1.88, as expected for a
 price variable); `log1p(SalePrice)` is close to symmetric (skew = 0.12), confirming the
-log-target choice from `00-frame.md`.
+log-target choice from `00-frame.md`. See `figures/02-target-distribution.png` — the
+two histograms side by side make the skew-correction visual, not just a number.
 
 **Bivariate — target relationship (numeric features, by |corr| with `log_saleprice`):**
+See `figures/02-top-correlations.png` for the same ranking as a chart.
 
 | Feature | Corr. w/ log(SalePrice) | Hypothesis |
 |---|---|---|

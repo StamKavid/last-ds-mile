@@ -2,7 +2,6 @@ import json
 import re
 
 import pytest
-
 from helpers import ROOT, parse_frontmatter
 
 STAGE_SKILLS = [

@@ -17,7 +17,8 @@ def write_header(ledger_path, contract: Contract) -> None:
         "",
         "## Contract",
         f"- target: `{contract.target}`  ·  task: `{contract.task}`  ·  metric: `{contract.metric}`",
-        f"- split: `{contract.split['strategy']}`  ·  baseline_score: `{contract.baseline_score:.4f}`",
+        f"- split: `{contract.split['strategy']}`  ·  baseline_score: `{contract.baseline_score:.4f}` "
+        f"(`{contract.baseline_kind}`)",
         f"- ceiling_score: `{contract.ceiling_score:.4f}`  ·  ceiling_source: `{contract.ceiling_source}`  ·  budget: `{contract.budget}`",
         f"- input_mode: `{contract.input_mode}`  ·  data_hash: `{contract.data_hash}`  ·  sealed_at: `{_now()}`",
         "",
@@ -39,7 +40,7 @@ def append_verdict(ledger_path, sealed_score: float, baseline_score: float,
     with open(ledger_path, "a", encoding="utf-8") as f:
         f.write("\n## Verdict (seal opened once)\n")
         f.write(f"- sealed_score: {sealed_score:.4f} · baseline: {baseline_score:.4f} "
-                f"· σ: {sigma:.4f}\n")
+                f"· σ (paired, model−baseline): {sigma:.4f}\n")
         f.write(f"- **lift = {lift_val:.2f}σ** → {stamp}  (ship iff lift > 2σ)\n")
         f.write(f"- sealed−baseline gap: {gap:+.4f}\n")
 
@@ -49,6 +50,26 @@ def append_probe(ledger_path, auc: float, sigma: float, lift_val: float, certifi
     with open(ledger_path, "a", encoding="utf-8") as f:
         f.write("\n## Probe (split-adversary, warn-only)\n")
         f.write(f"- train-vs-held AUC: {auc:.4f} · σ: {sigma:.4f} · lift: {lift_val:.2f}σ\n")
+        f.write(f"- **{stamp}**\n")
+
+
+def append_probe_na(ledger_path, reason: str) -> None:
+    with open(ledger_path, "a", encoding="utf-8") as f:
+        f.write("\n## Probe (split-adversary, N/A for this split strategy)\n")
+        f.write(f"- **N/A** — {reason}\n")
+
+
+def append_leakage_probe(ledger_path, findings: list[dict]) -> None:
+    flagged = [f for f in findings if f["flagged"]]
+    stamp = (
+        f"⚠ SUSPECT — {len(flagged)} feature(s) solo-predict the target implausibly well"
+        if flagged else "CLEAR ✅ — no feature solo-predicts the target implausibly well"
+    )
+    with open(ledger_path, "a", encoding="utf-8") as f:
+        f.write("\n## Probe (leakage-adversary, warn-only)\n")
+        for finding in sorted(findings, key=lambda x: x["solo_score"], reverse=True)[:5]:
+            flag = " ⚠" if finding["flagged"] else ""
+            f.write(f"- `{finding['feature']}`: solo_score {finding['solo_score']:.4f}{flag}\n")
         f.write(f"- **{stamp}**\n")
 
 

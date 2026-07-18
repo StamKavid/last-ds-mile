@@ -9,11 +9,16 @@ happens so it stays watchable.
 
 1. Load `.last-ds-mile/contract.json` (via `sealed_bet.contract.Contract.load`)
    for `target`, `task`, `metric`, `budget`, `ceiling_score`, `ceiling_source`,
-   `seed`, and the split `strategy`/`group_key`/`time_col`. Load
-   `.last-ds-mile/dev.csv` into `dev_df`, and `.last-ds-mile/held/features.csv`
+   `seed`, `excluded_features`, and the split `strategy`/`group_key`/`time_col`.
+   Load `.last-ds-mile/dev.csv` into `dev_df`, and `.last-ds-mile/held/features.csv`
    into `held_df` — any feature engineered into `dev_df` during the loop
    (step 3b) must be applied identically to `held_df` in the same step, so the
-   two stay column-aligned for the final prediction in step 5. Determine
+   two stay column-aligned for the final prediction in step 5. (`excluded_features`
+   is informational here, not something to re-apply: `seal()` already dropped those
+   columns from `dev.csv`/`held/features.csv` themselves, so `best_feature_cols`'s
+   "all columns except target" start point never sees them — mention them in
+   `06-model.md`'s narrative if non-empty, so the exclusion is visible in the
+   record, not just enforced silently.) Determine
    `ledger_path`: the Contract itself doesn't persist which `--ledger` path
    `/ds-seal` used, so use `LEDGER.md` unless this session's own `/ds-seal`
    run (or the user) said otherwise — it must match whatever `/ds-seal`/

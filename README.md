@@ -75,18 +75,39 @@ build on earlier ones and `/ds` can detect your progress.
 ## The Sealed Bet (experimental)
 
 A trust core you can run in any coding agent: `python -m sealed_bet.seal` locks a
-holdout's labels and records a Contract; you build freely on the dev split; then
-`python -m sealed_bet.score` opens the holdout **once** and reports
-`lift = (sealed − baseline)/σ` — ship only if it beats the dumb baseline by more
-than the noise (> 2σ). `seal()` also certifies its own dev/held split by running
-the split-adversary as a non-blocking Probe, recording the verdict in the Ledger
-— warn-only, so a failed probe never stops the seal. The scoring/contract/ledger
-math itself has zero Claude-Code-only imports, so it's portable to any agent. The physical
-Read-blocking (`seal_guard` hook) is a Claude Code-specific hook this plugin
-ships, and it currently gates the `Read` tool only — `Bash`/`Grep` are not
-gated, so a careless or malicious agent could still `cat`/`grep` the sealed
-file directly and bypass the guard. In Claude Code, use `/ds-seal` and
+holdout's labels and records a Contract — against a real non-ML heuristic baseline if
+you pass one (`--baseline-py path/to/file.py:function`; otherwise a constant
+median/mean, which for `roc_auc` scores exactly 0.5 on every dataset by construction and
+isn't much of a rival). Supports `rmse`, `roc_auc`, and `auprc` (a materially better fit
+than `roc_auc` for an imbalanced classification decision, since its constant baseline
+converges to the positive-class prevalence rather than a universal 0.5). A `random`
+split on a classification target stratifies by the target automatically — no flag
+needed — and `--exclude-from-features col1,col2` keeps a column (e.g. a raw `time_col`
+with no standalone predictive legitimacy) out of the model's own inputs while still
+using it to build the split. You build freely on the dev split; then `python -m
+sealed_bet.score` opens the holdout **once** and reports `lift = (sealed − baseline)/σ`,
+where σ is the paired bootstrap difference between the model's and baseline's scores on
+the same held rows — ship only if it beats the baseline by more than the noise (> 2σ).
+Opening also writes `held/revealed.csv` (the true target plus your submitted
+predictions) so `/ds-evaluate`/`/ds-explain` can legitimately compute slice/calibration/
+importance numbers afterward, without a second look at the sealed labels. `seal()` also
+runs two non-blocking Probes and records both verdicts in the Ledger — the
+split-adversary (certifies dev/held are statistically indistinguishable, the right check
+for a `random`/`group` split) and the leakage-adversary (flags any single feature whose
+solo predictive power is implausibly high) — both warn-only, so a failed probe never
+stops the seal. The scoring/contract/ledger math itself has zero Claude-Code-only
+imports, so it's portable to any agent. The physical Read-blocking (`seal_guard` hook)
+is a Claude Code-specific hook this plugin ships, and it currently gates the `Read` tool
+only — `Bash`/`Grep` are not gated, so a careless or malicious agent could still
+`cat`/`grep` the sealed file directly and bypass the guard. In Claude Code, use
+`/ds-seal` and
 `/ds-open`.
+
+**Real runs, not just design:** `benchmarks/house-prices/` and `benchmarks/telco-churn/`
+are two full `/ds-frame` → `/ds-handoff` pipeline runs against real Kaggle-style
+datasets, kept as durable evidence (stage docs, Contract, Ledger — not the raw data or
+model binaries). See [`BENCHMARKS.md`](BENCHMARKS.md) for what running the plugin
+against real data found and fixed that reading the code alone didn't.
 
 ## Discipline, not just steps
 
@@ -175,13 +196,29 @@ skill for what's worth capturing.
 
 ## Development
 
-    uv venv --python 3.13
-    uv pip install -r requirements-dev.txt
-    uv run pytest tests/ -v
+Tooling is [uv](https://github.com/astral-sh/uv) + [ruff](https://github.com/astral-sh/ruff)
++ [prek](https://github.com/j178/prek), configured in `pyproject.toml`.
 
-Requires Python >=3.10,<3.14 — AutoGluon's `pyarrow` dependency has no
-prebuilt wheel for 3.14 yet at time of writing, so the dev venv must stay on
-3.13 or earlier until that catches up upstream.
+    uv sync --group dev          # core + test deps, seconds
+    uv run pytest                # 210 passed, 7 skipped
+    uv run ruff check .
+
+The 7 skips are the Build-loop tests that need AutoGluon. It is an **optional
+extra**, not a core dependency — `sealed_bet` imports it lazily, so the
+seal/score/contract path never pays for a multi-GB install. To run the full
+suite and reproduce `benchmarks/`:
+
+    uv sync --group dev --extra benchmarks   # minutes
+    uv run pytest                            # 217 passed
+
+Git hooks (ruff, whitespace, large-file guard):
+
+    uv tool install prek && prek install
+
+`sealed_bet` itself needs only Python >=3.10 with numpy/pandas/scikit-learn.
+The `benchmarks` extra is what pins the dev interpreter to 3.13 (see
+`.python-version`): AutoGluon's `pyarrow` dependency still has no prebuilt
+wheel for 3.14.
 
 `tests/test_plugin_structure.py` validates plugin structure (frontmatter, required
 sections, command↔skill wiring, lesson citations); `tests/test_hooks.py`

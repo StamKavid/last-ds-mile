@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -39,8 +41,8 @@ def test_split_adversary_handles_small_held_set_without_nan(tmp_path=None):
     dev = pd.DataFrame({"a": rng.normal(size=196), "b": rng.normal(size=196)})
     held = pd.DataFrame({"a": rng.normal(size=4), "b": rng.normal(size=4)})
     result = split_adversary(dev, held, feature_cols=["a", "b"], seed=0)
-    assert not (result["sigma"] != result["sigma"])  # not NaN
-    assert not (result["lift"] != result["lift"])  # not NaN
+    assert not math.isnan(result["sigma"])
+    assert not math.isnan(result["lift"])
 
 
 def test_split_adversary_raises_on_too_small_held_set():
@@ -144,3 +146,56 @@ def test_leakage_adversary_raises_on_negative_encoded_labels():
     with pytest.raises(ValueError, match="non-negative"):
         leakage_adversary(df, target_col="y", feature_cols=["noise"],
                           task="classification", seed=0)
+
+
+# --- Regression coverage: both probes used to crash on the first categorical
+# column or the first NaN ("could not convert string to float: 'Male'") on
+# any realistic tabular dataset -- every real benchmark run in this repo hit
+# it. These tests prove the fix on the exact shape of data that broke it,
+# not just on the all-numeric, no-missing-values frames above. ---
+
+def _mixed_dtype_frame(n=200, seed=0):
+    rng = np.random.default_rng(seed)
+    df = pd.DataFrame({
+        "num": rng.normal(size=n),
+        "num_with_gaps": rng.normal(size=n),
+        "cat": rng.choice(["Male", "Female"], size=n),
+        "cat_with_gaps": rng.choice(["A", "B", "C"], size=n),
+    })
+    df.loc[rng.choice(n, size=n // 10, replace=False), "num_with_gaps"] = np.nan
+    df.loc[rng.choice(n, size=n // 10, replace=False), "cat_with_gaps"] = np.nan
+    return df
+
+
+def test_split_adversary_handles_categorical_and_missing_columns():
+    dev = _mixed_dtype_frame(n=160, seed=0)
+    held = _mixed_dtype_frame(n=40, seed=1)
+    result = split_adversary(dev, held, feature_cols=list(dev.columns), seed=0)
+    assert 0.0 <= result["auc"] <= 1.0
+
+
+def test_leakage_adversary_handles_categorical_and_missing_columns():
+    rng = np.random.default_rng(0)
+    n = 200
+    y = rng.integers(0, 2, size=n)
+    df = _mixed_dtype_frame(n=n, seed=0)
+    df["y"] = y
+    findings = leakage_adversary(df, target_col="y", feature_cols=list(df.columns[:-1]),
+                                 task="classification", seed=0)
+    assert len(findings) == 4
+    assert all(0.0 <= f["solo_score"] <= 1.0 for f in findings)
+
+
+def test_leakage_adversary_catches_a_categorical_bijection_a_linear_probe_would_miss():
+    # A nominal category that alternates non-monotonically with the target is
+    # a real leak (e.g. a status code that happens to be a proxy for the
+    # outcome) but its arbitrary ordinal code is not linearly/monotonically
+    # related to the target -- this is exactly why categorical columns get a
+    # DecisionTree probe instead of Logistic/Linear (see adversary.py).
+    n = 400
+    codes = np.tile(np.arange(8), n // 8)
+    y = (codes % 2)  # alternates 0,1,0,1,... across increasing codes
+    df = pd.DataFrame({"leaky_cat": [f"code_{c}" for c in codes], "y": y})
+    findings = leakage_adversary(df, target_col="y", feature_cols=["leaky_cat"],
+                                 task="classification", seed=0)
+    assert findings[0]["flagged"] is True
