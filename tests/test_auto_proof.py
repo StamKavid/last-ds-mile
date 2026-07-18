@@ -1,7 +1,14 @@
 import numpy as np
 import pandas as pd
+from helpers import requires_autogluon
 
-from sealed_bet.auto import diagnose, ladder_accept, run_iteration, ceiling_baseline, EARLY_STOP_AFTER
+from sealed_bet.auto import (
+    EARLY_STOP_AFTER,
+    ceiling_baseline,
+    diagnose,
+    ladder_accept,
+    run_iteration,
+)
 
 
 def _run_build_loop(dev, target, feature_cols_by_iter, task, metric, ceiling_score,
@@ -14,7 +21,6 @@ def _run_build_loop(dev, target, feature_cols_by_iter, task, metric, ceiling_sco
     from sealed_bet.metrics import METRICS
     m = METRICS[metric]
     best_score = None
-    best_train_score = None
     consecutive_rejections = 0
     history = []
 
@@ -31,7 +37,6 @@ def _run_build_loop(dev, target, feature_cols_by_iter, task, metric, ceiling_sco
                                      m.greater_is_better)
         if accepted:
             best_score = result["dev_score"]
-            best_train_score = result["train_score"]
             consecutive_rejections = 0
         else:
             consecutive_rejections += 1
@@ -44,6 +49,7 @@ def _run_build_loop(dev, target, feature_cols_by_iter, task, metric, ceiling_sco
     return {"best_score": best_score, "history": history}
 
 
+@requires_autogluon
 def test_build_loop_converges_toward_the_ceiling_on_a_genuinely_learnable_problem(tmp_path):
     # Iteration 1 gets only a noise feature; iteration 2+ get the real signal.
     # A working loop should show the 2nd (and later) iteration's dev_score
@@ -74,6 +80,7 @@ def test_build_loop_converges_toward_the_ceiling_on_a_genuinely_learnable_proble
     assert result["best_score"] > 0.75
 
 
+@requires_autogluon
 def test_build_loop_early_stops_when_every_framing_is_genuine_noise(tmp_path):
     # every iteration gets an unrelated random feature -- none should ever
     # meaningfully beat the first iteration's score, so the Ladder should

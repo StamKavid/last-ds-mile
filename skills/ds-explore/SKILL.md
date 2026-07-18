@@ -27,8 +27,14 @@ hypothesis for each finding instead of plotting aimlessly.
    hypothesis: because ...") rather than producing plots with no question behind them.
 4. Flag anything that looks too predictive at this stage (see `ds-method`'s Red Flags)
    as a leakage candidate for `/ds-prep` to resolve.
-5. Write to `.last-ds-mile/stages/02-explore.md`: key findings, the hypothesis log, and
-   leakage candidates flagged for follow-up.
+5. Export the 1-3 plots that actually back the strongest findings from steps 1-2 (not
+   every plot considered) to `.last-ds-mile/figures/02-<name>.png` — per `data-viz-standards`,
+   state the hypothesis before building each one. Typically: the target's distribution
+   (and its transform, if skewed) and the single strongest bivariate relationship found.
+   This is the "critical/important only" bar, not exhaustive EDA output.
+6. Write to `.last-ds-mile/stages/02-explore.md`: key findings, the hypothesis log,
+   leakage candidates flagged for follow-up, and a reference to each exported figure next
+   to the finding it illustrates.
 
 ## Common Rationalizations
 
@@ -52,4 +58,6 @@ See `ds-method` for the shared Red Flags that apply to every stage.
 - [ ] Hypothesis log has one entry per notable finding.
 - [ ] Any suspiciously predictive feature is flagged as a leakage candidate, not
       celebrated.
+- [ ] The 1-3 most important plots are exported to `.last-ds-mile/figures/`, not just
+      described in prose.
 - [ ] `.last-ds-mile/stages/02-explore.md` written.

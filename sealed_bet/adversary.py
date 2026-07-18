@@ -19,6 +19,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.metrics import r2_score, roc_auc_score
 from sklearn.model_selection import cross_val_predict
+from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 
 from sealed_bet.metrics import bootstrap_sigma, lift
 
@@ -31,10 +32,63 @@ def _cv_folds(minority_count: int) -> int:
     return min(5, max(2, minority_count))
 
 
+def _is_categorical(series: pd.Series) -> bool:
+    return series.dtype == object or isinstance(series.dtype, pd.CategoricalDtype)
+
+
+def _encode_numeric(df: pd.DataFrame, cols: list[str]) -> np.ndarray:
+    """Make an arbitrary feature frame safe for a diagnostic sklearn model.
+
+    Both adversaries are throwaway probes, not the model that ships, so a
+    simple ordinal-encode + median/mode-impute here isn't a leakage concern
+    the way it would be in /ds-prep -- it never touches the target and never
+    leaves this function. Real tabular data (Ames' LotFrontage/GarageYrBlt,
+    Telco's every categorical column) is almost always a mix of dtypes and
+    has real missing values; without this, both probes raise on the first
+    string column or first NaN, which is exactly the failure mode this
+    exists to fix -- a leakage check that has never once run on a realistic
+    dataset isn't a leakage check.
+
+    Ordinal codes are fine for split_adversary's RandomForest (many features,
+    many trees, splitting jointly) but NOT for leakage_adversary's per-feature
+    linear/logistic probe -- see _onehot_single_column for why that needs a
+    different encoding.
+    """
+    sub = df[cols].copy()
+    obj_cols = [c for c in cols if _is_categorical(sub[c])]
+    if obj_cols:
+        sub[obj_cols] = sub[obj_cols].astype(str)
+        enc = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        sub[obj_cols] = enc.fit_transform(sub[obj_cols])
+    sub = sub.apply(lambda s: pd.to_numeric(s, errors="coerce"))
+    sub = sub.fillna(sub.median(numeric_only=True))
+    return sub.fillna(0.0).to_numpy(dtype=float)
+
+
+def _onehot_single_column(df: pd.DataFrame, col: str) -> np.ndarray:
+    """One-hot encode one categorical column for leakage_adversary's per-feature probe.
+
+    An ordinal code forces an arbitrary total order onto a nominal column, and
+    a linear/logistic model can then only see a monotonic relationship along
+    that order -- it misses a real leak whose category-to-target mapping
+    doesn't happen to sort that way (e.g. a status code that alternates with
+    the target). One-hot gives the linear model one coefficient per category,
+    i.e. an arbitrary lookup table, so it can represent ANY category-to-target
+    mapping regardless of ordering -- proven by
+    test_leakage_adversary_catches_a_categorical_bijection_a_linear_probe_would_miss.
+    """
+    sub = df[[col]].astype(str)
+    enc = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
+    return enc.fit_transform(sub)
+
+
 def split_adversary(dev_df: pd.DataFrame, held_features_df: pd.DataFrame,
                     feature_cols: list[str], seed: int = 0) -> dict:
-    dev_X = dev_df[feature_cols].to_numpy()
-    held_X = held_features_df[feature_cols].to_numpy()
+    combined = _encode_numeric(pd.concat(
+        [dev_df[feature_cols], held_features_df[feature_cols]], ignore_index=True
+    ), feature_cols)
+    dev_X = combined[: len(dev_df)]
+    held_X = combined[len(dev_df):]
     minority_count = min(len(dev_X), len(held_X))
     if minority_count < 2:
         offending = "dev" if len(dev_X) < len(held_X) else "held"
@@ -81,7 +135,8 @@ def leakage_adversary(dev_df: pd.DataFrame, target_col: str,
 
     findings = []
     for col in feature_cols:
-        X = dev_df[[col]].to_numpy()
+        X = (_onehot_single_column(dev_df, col) if _is_categorical(dev_df[col])
+             else _encode_numeric(dev_df, [col]))
         if task == "classification":
             model = LogisticRegression(max_iter=1000, random_state=seed)
             proba = cross_val_predict(model, X, y, cv=cv, method="predict_proba")[:, 1]

@@ -1,0 +1,123 @@
+[project]
+name = "last-ds-mile"
+version = "0.2.0"
+description = "A guided data-science lifecycle for Claude Code, with leakage and honesty checks built into every stage."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Stamatis" }]
+requires-python = ">=3.10"
+keywords = [
+    "data-science",
+    "machine-learning",
+    "eda",
+    "validation",
+    "leakage",
+    "mlops",
+    "skills",
+]
+
+# sealed_bet core only. Verified against the actual import surface: adversary/
+# metrics/splits use scikit-learn; contract/ledger/state are pure stdlib.
+# AutoGluon is deliberately NOT here -- it is imported lazily inside
+# sealed_bet/auto.py::_fit_predictor, so nothing in the core path pays for it.
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.0",
+    "scikit-learn>=1.4",
+]
+
+[project.urls]
+Homepage = "https://thelastaimile.substack.com"
+Repository = "https://github.com/stamkavid/last-ds-mile"
+
+[project.optional-dependencies]
+# Only needed to REPRODUCE benchmarks/. AutoGluon's pyarrow dependency has no
+# prebuilt wheel for Python 3.14 yet, so this extra -- not the core package --
+# is the reason the dev interpreter stays on 3.13 (see .python-version).
+benchmarks = [
+    "autogluon.tabular[lightgbm,catboost,xgboost]>=1.5.0",
+    # autogluon.core imports typing_extensions (models/abstract/abstract_model.py)
+    # without declaring it, so `from autogluon.tabular import TabularPredictor`
+    # dies with ModuleNotFoundError unless it is pinned here explicitly. This
+    # carries over the same workaround the former requirements-dev.txt had.
+    "typing_extensions>=4.12",
+    "matplotlib>=3.8",
+    "shap>=0.44",
+]
+# Reproduces benchmarks/telco-churn/causal_analysis.py only.
+causal = [
+    "dowhy>=0.11",
+    "causalml>=0.15",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "PyYAML>=6.0", # tests/test_plugin_structure.py parses SKILL.md frontmatter
+    "ruff>=0.9",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["sealed_bet"]
+
+[tool.pytest.ini_options]
+# Replaces the former conftest.py, whose only job was putting the repo root on
+# sys.path for pytest's "prepend" import mode so `import sealed_bet` resolves.
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = [
+    ".venv",
+    "benchmarks/*/last-ds-mile-run",
+    ".last-ds-mile",
+]
+
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "UP", # pyupgrade
+    "B", # flake8-bugbear
+    "SIM", # flake8-simplify
+    "RUF",
+]
+ignore = [
+    "E501", # line length is enforced by the formatter, not the linter
+    # This project's domain language is statistical: sigma, arrows, >=, and
+    # approx signs appear throughout ledger output, error messages, and docs
+    # (e.g. "lift = 9.46 sigma", "26.4 -> 9.46"). They are deliberate, not
+    # homoglyph smuggling, so the ambiguous-unicode rules are pure noise here.
+    "RUF001", # ambiguous character in string
+    "RUF002", # ambiguous character in docstring
+    "RUF003", # ambiguous character in comment
+]
+
+[tool.ruff.lint.per-file-ignores]
+# The test suite deliberately places imports next to the tests they serve
+# rather than all at the top -- each test reads as a self-contained narrative
+# of the behavior it pins. E402 fights that style for no safety benefit.
+"tests/*" = [
+    "B011", # assert False is idiomatic in tests
+    "E402", # literate import placement, see above
+    "RUF059", # tuple unpacking where only some values are asserted on
+]
+# benchmarks/ holds one-off reproducible analysis and figure scripts, not
+# library code. They are committed as evidence that the numbers in
+# BENCHMARKS.md came from real runs, so they are held to a looser bar than
+# sealed_bet/ -- and reformatting them risks invalidating that evidence.
+"benchmarks/*" = [
+    "B905", # zip() without strict= in plotting loops
+    "E402",
+    "E702", # semicolon-joined matplotlib calls
+    "RUF059",
+]

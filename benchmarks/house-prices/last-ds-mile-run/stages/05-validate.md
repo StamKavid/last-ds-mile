@@ -30,9 +30,26 @@ across both sides).
 sealed_bet.seal.seal(
     data_path="prepared_with_sale_period.csv", target="log_saleprice",
     task="regression", metric="rmse", strategy="time", time_col="sale_period",
-    out_dir=".last-ds-mile", ...,
+    out_dir="last-ds-mile-run", baseline_fn=neighborhood_price_per_sqft, ...,
 )
 ```
+(`out_dir` corrected here to match what this run actually used —
+`benchmarks/house-prices/last-ds-mile-run`, not `.last-ds-mile` — since every skill
+hardcodes the latter path, which is also blanket-`.gitignore`d, so a committed benchmark
+has to use a different directory name to keep its evidence out of the ignore rule. See
+`BENCHMARKS.md` for this as its own product gap.)
+
+**Verified after sealing — split-adversary probe fires a false positive here, by
+design:** `sealed_bet.adversary.split_adversary` (see `sealed_bet/seal.py`) certifies
+that dev and held are statistically indistinguishable, which is the right check for a
+`random` split (Telco's `05-validate.md` shows it passing cleanly there). For a *time*
+split it is expected to fail — dev and held are deliberately different (held is always
+strictly later), which is the entire point of choosing this strategy in the first place.
+Here it reports train-vs-held AUC 0.887 (lift 35.3σ, "⚠ SUSPECT"), which is not evidence
+of a leak; it is evidence the split-adversary's certification only means something for a
+`random`/`group` split and should be read as N/A rather than failing for `time`. Noted
+for `BENCHMARKS.md` as a real product gap (the probe should skip or re-frame its verdict
+for `strategy="time"`), not something fixed in this run.
 
 **Architecture finding worth flagging (not a blocker for this run, but a real gap):**
 `sealed_bet.seal()` always builds `feature_cols` as *every* non-target column in the CSV

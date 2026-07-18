@@ -5,7 +5,7 @@ def _c():
     return Contract(
         target="y", task="classification", metric="roc_auc",
         split={"strategy": "random", "group_key": None, "time_col": None},
-        baseline_score=0.5, held_frac=0.2, seed=0, data_hash="abc",
+        baseline_score=0.5, baseline_kind="constant", held_frac=0.2, seed=0, data_hash="abc",
         input_mode="full", created_at="2026-07-10T00:00:00Z",
         budget=15, ceiling_score=0.5, ceiling_source="proxy",
     )
@@ -26,7 +26,7 @@ def test_rejects_unknown_metric():
         Contract(
             target="y", task="classification", metric="not_a_metric",
             split={"strategy": "random", "group_key": None, "time_col": None},
-            baseline_score=0.5, held_frac=0.2, seed=0, data_hash="abc",
+            baseline_score=0.5, baseline_kind="constant", held_frac=0.2, seed=0, data_hash="abc",
             input_mode="full", created_at="2026-07-10T00:00:00Z",
             budget=15, ceiling_score=0.5, ceiling_source="proxy",
         ).validate()
@@ -42,6 +42,7 @@ def test_rejects_unknown_task():
 
 def test_rejects_non_finite_baseline_score():
     import math
+
     import pytest
     c = _c()
     c.baseline_score = float("nan")
@@ -49,6 +50,14 @@ def test_rejects_non_finite_baseline_score():
         c.validate()
     c.baseline_score = math.inf
     with pytest.raises(ValueError, match="baseline_score"):
+        c.validate()
+
+
+def test_rejects_unknown_baseline_kind():
+    import pytest
+    c = _c()
+    c.baseline_kind = "vibes"
+    with pytest.raises(ValueError, match="baseline_kind"):
         c.validate()
 
 
@@ -91,7 +100,7 @@ def test_contract_validates_budget_and_ceiling_fields():
     c = Contract(
         target="y", task="classification", metric="roc_auc",
         split={"strategy": "random", "group_key": None, "time_col": None},
-        baseline_score=0.5, held_frac=0.2, seed=0, data_hash="abc",
+        baseline_score=0.5, baseline_kind="constant", held_frac=0.2, seed=0, data_hash="abc",
         input_mode="full", created_at="2026-07-13T00:00:00Z",
         budget=15, ceiling_score=0.9, ceiling_source="human",
     )
@@ -106,7 +115,7 @@ def test_contract_rejects_non_positive_budget():
     c = Contract(
         target="y", task="classification", metric="roc_auc",
         split={"strategy": "random", "group_key": None, "time_col": None},
-        baseline_score=0.5, held_frac=0.2, seed=0, data_hash="abc",
+        baseline_score=0.5, baseline_kind="constant", held_frac=0.2, seed=0, data_hash="abc",
         input_mode="full", created_at="2026-07-13T00:00:00Z",
         budget=0, ceiling_score=0.9, ceiling_source="human",
     )
@@ -119,7 +128,7 @@ def test_contract_rejects_non_finite_ceiling_score():
     c = Contract(
         target="y", task="classification", metric="roc_auc",
         split={"strategy": "random", "group_key": None, "time_col": None},
-        baseline_score=0.5, held_frac=0.2, seed=0, data_hash="abc",
+        baseline_score=0.5, baseline_kind="constant", held_frac=0.2, seed=0, data_hash="abc",
         input_mode="full", created_at="2026-07-13T00:00:00Z",
         budget=15, ceiling_score=float("nan"), ceiling_source="human",
     )
@@ -132,9 +141,41 @@ def test_contract_rejects_unknown_ceiling_source():
     c = Contract(
         target="y", task="classification", metric="roc_auc",
         split={"strategy": "random", "group_key": None, "time_col": None},
-        baseline_score=0.5, held_frac=0.2, seed=0, data_hash="abc",
+        baseline_score=0.5, baseline_kind="constant", held_frac=0.2, seed=0, data_hash="abc",
         input_mode="full", created_at="2026-07-13T00:00:00Z",
         budget=15, ceiling_score=0.9, ceiling_source="guess",
     )
     with pytest.raises(ValueError, match="ceiling_source"):
         c.validate()
+
+
+def test_excluded_features_defaults_to_empty_list():
+    c = _c()
+    assert c.excluded_features == []
+    c.validate()  # must not raise
+
+
+def test_rejects_non_list_excluded_features():
+    import pytest
+    c = _c()
+    c.excluded_features = "t"  # a bare string, not a list -- iterating it would silently
+                               # treat each character as a column name
+    with pytest.raises(ValueError, match="excluded_features"):
+        c.validate()
+
+
+def test_rejects_target_in_excluded_features():
+    import pytest
+    c = _c()
+    c.excluded_features = [c.target]
+    with pytest.raises(ValueError, match="excluded_features"):
+        c.validate()
+
+
+def test_roundtrips_excluded_features(tmp_path):
+    c = _c()
+    c.excluded_features = ["t", "raw_timestamp"]
+    p = tmp_path / "contract.json"
+    c.save(p)
+    loaded = Contract.load(p)
+    assert loaded.excluded_features == ["t", "raw_timestamp"]

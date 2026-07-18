@@ -13,6 +13,9 @@
 | `tenure` (bucketed) | 0–12 months | **47.4%** |
 | `tenure` (bucketed) | 48–72 months | 9.5% |
 
+See `figures/02-churn-by-contract.png` and `figures/02-tenure-relationship.png` for the
+`Contract` and `tenure` rows as charts — the two strongest, cleanest patterns here.
+
 **Hypothesis log:**
 - `Contract` is the single strongest categorical driver found — a 15x spread between
   month-to-month and two-year churn rates. Hypothesis: contract length is a direct proxy
