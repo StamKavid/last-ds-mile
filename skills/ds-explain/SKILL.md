@@ -50,12 +50,6 @@ survived evaluation because they didn't hurt the metric.
    finding, any base-model cross-check finding, sanity commentary, any features sent
    back for a leakage re-check, and a reference to each exported figure.
 
-**If computing importance on the held set for a Sealed Bet project:** the true labels
-are off-limits until `/ds-open` has run. Once it has, join the already-readable
-`held/features.csv` with `held/revealed.csv` (written by `open_seal()`'s call to
-`sealed_bet.score.reveal()`) to get a labeled held-set frame — never read
-`held/_sealed_target.csv` directly. See `ds-evaluate`'s identical note.
-
 ## Common Rationalizations
 
 | Rationalization | Reality |
