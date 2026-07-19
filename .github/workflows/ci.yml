@@ -71,6 +71,33 @@ jobs:
       - name: SARIF for code scanning
         if: always()
         run: skillspector scan . --no-llm --baseline .skillspector-baseline.yaml --format sarif --output skillspector.sarif
+      - name: Strip baselined findings from the SARIF before upload
+        if: always()
+        # skillspector's --baseline correctly marks suppressed results with a
+        # SARIF `suppressions` field (verified: {kind: "external", justification:
+        # ...} per result), and GitHub's code-scanning alert LIST does respect
+        # it -- 0 open alerts. But GitHub's separate per-PR "new alerts" check
+        # (the github-advanced-security app, distinct from this job) does NOT:
+        # it failed on the 6 error-severity findings even though every one of
+        # them carries a suppression entry with our written justification.
+        # Fix at the source rather than fighting GitHub's check: only upload
+        # results that are NOT already suppressed. The Security tab should show
+        # genuinely open, untriaged findings -- .skillspector-baseline.yaml
+        # (committed, with a written reason per entry) is the durable audit
+        # record for what's already been reviewed, and this job's own "Scan
+        # against the documented baseline" step above is the real enforcement
+        # gate for that; neither depends on what gets uploaded here.
+        run: |
+          python3 -c "
+          import json
+          path = 'skillspector.sarif'
+          d = json.load(open(path, encoding='utf-8'))
+          for run in d.get('runs', []):
+              before = len(run.get('results', []))
+              run['results'] = [r for r in run.get('results', []) if not r.get('suppressions')]
+              print(f'{path}: {before} -> {len(run[\"results\"])} results after dropping baselined findings')
+          json.dump(d, open(path, 'w', encoding='utf-8'))
+          "
       - uses: github/codeql-action/upload-sarif@v3
         # Requires GitHub Advanced Security (or a public repo). Non-blocking so
         # a private repo without GHAS does not fail the build on upload alone.
