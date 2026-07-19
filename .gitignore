@@ -3,4 +3,50 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
-.last-ds-mile/
+
+# .last-ds-mile/ (every skill's hardcoded stage/Contract path -- see
+# skills/*/SKILL.md and sealed_bet's own --out defaults) used to be
+# blanket-ignored here, which meant NO project following the documented
+# /ds-frame -> ... -> /ds-handoff workflow could ever commit its own
+# stage docs or Contract without a workaround. Scoped instead, matching
+# the pattern below: keep the narrative evidence (stages/*.md,
+# contract.json, LEDGER.md), never the raw data or heavy artifacts
+# (dev/held splits, AutoGluon model binaries, seal state) that live
+# alongside it.
+.last-ds-mile/dev.csv
+.last-ds-mile/held/
+.last-ds-mile/auto/
+.last-ds-mile/seal_state.json
+.last-ds-mile/preds.csv
+
+# benchmarks/: same convention, kept under last-ds-mile-run/ (no leading
+# dot) for these two historical runs -- they predate the fix above, back
+# when .last-ds-mile/ was still blanket-ignored and this was the only way
+# to get committable evidence. New benchmark runs can use .last-ds-mile/
+# directly; this block stays for benchmarks/*/last-ds-mile-run/ specifically
+# so these two runs' evidence keeps working unchanged.
+benchmarks/*/*.csv
+benchmarks/*/*.txt
+# Unanchored (no leading path) so they match at ANY depth under a run
+# directory. The credit-card-fraud benchmark nests one level deeper --
+# last-ds-mile-run/{time,random}/ -- to hold two seals of the same data, and the
+# previous `benchmarks/*/last-ds-mile-run/auto/` form silently failed to match
+# that, which would have committed 506 MB of dev.csv splits and AutoGluon model
+# binaries. Caught by the SkillSpector scan flagging a .pkl inside the run dir.
+**/last-ds-mile-run/**/dev.csv
+**/last-ds-mile-run/**/held/
+**/last-ds-mile-run/**/auto/
+**/last-ds-mile-run/**/seal_state.json
+**/last-ds-mile-run/**/preds.csv
+benchmarks/*/last-ds-mile-run/dev.csv
+benchmarks/*/last-ds-mile-run/held/
+benchmarks/*/last-ds-mile-run/auto/
+benchmarks/*/last-ds-mile-run/seal_state.json
+benchmarks/*/last-ds-mile-run/preds.csv
+.gstack/
+
+# Raw datasets pulled down to run a pipeline locally (Kaggle CSVs etc.).
+# Same convention as the benchmarks/ block above: this repo commits the
+# narrative evidence a run produced, never the source data it ran against --
+# which also keeps redistribution of third-party dataset licenses out of scope.
+data/

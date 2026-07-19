@@ -5,11 +5,32 @@ import pandas as pd
 from sklearn.model_selection import GroupShuffleSplit, train_test_split
 
 
+def auto_stratify_col(task: str, strategy: str, target: str) -> str | None:
+    """The one place that decides whether a split should be stratified.
+
+    Only a random split on a classification target is a candidate: group and
+    time splits are ordered/entity-partitioned by design, so stratifying them
+    would fight the strategy's own point. Centralized here so seal() and
+    run_iteration()'s internal outer split apply the same policy instead of
+    each guessing independently -- the exact kind of inconsistency that grew
+    into the .last-ds-mile/ vs last-ds-mile-run/ split-path problem elsewhere
+    in this project.
+    """
+    return target if (task == "classification" and strategy == "random") else None
+
+
 def split(df: pd.DataFrame, strategy: str, seed: int, held_frac: float = 0.2,
-          group_key: str | None = None, time_col: str | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
+          group_key: str | None = None, time_col: str | None = None,
+          stratify_col: str | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Split df into (dev, held) using the given strategy.
 
-    - random: i.i.d. shuffle split; no ordering or grouping guarantee.
+    - random: i.i.d. shuffle split; no ordering or grouping guarantee. If
+      stratify_col is given, dev/held preserve that column's class
+      proportions (see auto_stratify_col) -- without this, a random split on
+      an imbalanced classification target can by chance produce a held set
+      whose positive rate differs enough from dev's to make the sealed score
+      noisier than it needs to be, or (at severe imbalance, e.g. <1% positive)
+      leave too few positives in held to score at all.
     - group: dev and held never share a group_key value (no group straddles the
       split boundary).
     - time: held is always strictly chronologically later than dev — every row
@@ -18,8 +39,16 @@ def split(df: pd.DataFrame, strategy: str, seed: int, held_frac: float = 0.2,
       point is pushed entirely into dev, the actual held fraction may end up
       somewhat smaller than the requested held_frac when ties exist there.
     """
+    if stratify_col and strategy != "random":
+        raise ValueError(
+            f"stratify_col is only supported for strategy='random', not {strategy!r} "
+            f"-- group/time splits are already partitioned by entity/chronology, and "
+            f"stratifying them would fight that partitioning"
+        )
     if strategy == "random":
-        dev, held = train_test_split(df, test_size=held_frac, random_state=seed, shuffle=True)
+        stratify = df[stratify_col] if stratify_col else None
+        dev, held = train_test_split(df, test_size=held_frac, random_state=seed,
+                                     shuffle=True, stratify=stratify)
         return dev.reset_index(drop=True), held.reset_index(drop=True)
     if strategy == "group":
         if not group_key:

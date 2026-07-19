@@ -1,3 +1,5 @@
+from helpers import requires_autogluon
+
 from sealed_bet.auto import ladder_accept
 
 
@@ -72,6 +74,7 @@ import pandas as pd
 from sealed_bet.auto import run_iteration
 
 
+@requires_autogluon
 def test_run_iteration_returns_expected_keys_and_plausible_scores(tmp_path):
     rng = np.random.default_rng(0)
     n = 300
@@ -94,6 +97,7 @@ def test_run_iteration_returns_expected_keys_and_plausible_scores(tmp_path):
     assert result["noise_floor"] >= 0.0
 
 
+@requires_autogluon
 def test_run_iteration_respects_the_contracts_split_strategy(tmp_path):
     # smoke test: strategy="group" with a valid group_key runs end to end
     # without raising. This alone doesn't prove strategy/group_key were
@@ -154,6 +158,7 @@ def test_ceiling_baseline_uses_human_estimate_when_given(tmp_path):
     assert result == {"score": 0.97, "source": "human"}
 
 
+@requires_autogluon
 def test_ceiling_baseline_falls_back_to_autogluon_proxy(tmp_path):
     rng = np.random.default_rng(3)
     n = 200
@@ -172,6 +177,7 @@ def test_ceiling_baseline_falls_back_to_autogluon_proxy(tmp_path):
 from sealed_bet.auto import refit_winner
 
 
+@requires_autogluon
 def test_refit_winner_returns_a_predictor_that_predicts_all_held_rows(tmp_path):
     rng = np.random.default_rng(4)
     n = 200

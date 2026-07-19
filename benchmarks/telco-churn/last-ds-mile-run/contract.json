@@ -1,0 +1,21 @@
+{
+  "target": "Churn",
+  "task": "classification",
+  "metric": "roc_auc",
+  "split": {
+    "strategy": "random",
+    "group_key": null,
+    "time_col": null
+  },
+  "baseline_score": 0.742049652535586,
+  "baseline_kind": "heuristic",
+  "held_frac": 0.2,
+  "seed": 0,
+  "data_hash": "07e3f18757c64d47",
+  "input_mode": "full",
+  "created_at": "2026-07-17T19:57:00+00:00",
+  "budget": 15,
+  "ceiling_score": 0.85,
+  "ceiling_source": "human",
+  "excluded_features": []
+}

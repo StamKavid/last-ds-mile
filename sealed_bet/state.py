@@ -28,11 +28,11 @@ def is_opened(out_dir) -> bool:
     try:
         data = json.loads(p.read_text(encoding="utf-8"))
         opened = data["opened"]
-    except (json.JSONDecodeError, KeyError, TypeError, AttributeError):
+    except (json.JSONDecodeError, KeyError, TypeError, AttributeError) as exc:
         raise RuntimeError(
             f"seal state file {p} is corrupted and cannot be trusted — the "
             f"holdout's opened/unopened status is unknown; resolve manually before proceeding"
-        )
+        ) from exc
     if not isinstance(opened, bool):
         raise RuntimeError(
             f"seal state file {p} is corrupted and cannot be trusted — the "

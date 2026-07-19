@@ -1,0 +1,23 @@
+{
+  "target": "Class",
+  "task": "classification",
+  "metric": "auprc",
+  "split": {
+    "strategy": "time",
+    "group_key": null,
+    "time_col": "Time"
+  },
+  "baseline_score": 0.05177132191636979,
+  "baseline_kind": "heuristic",
+  "held_frac": 0.2,
+  "seed": 0,
+  "data_hash": "76274b691b16a6c4",
+  "input_mode": "full",
+  "created_at": "2026-07-19T07:36:17+00:00",
+  "budget": 15,
+  "ceiling_score": 0.85,
+  "ceiling_source": "human",
+  "excluded_features": [
+    "Time"
+  ]
+}

@@ -9,6 +9,24 @@ honesty checks built into every stage.
 
 A product of [The Last AI Mile](https://thelastaimile.substack.com).
 
+## Scope — what this does and doesn't cover
+
+Worth knowing before you install, so nothing here is a surprise later:
+
+- **Tabular supervised learning.** Regression and classification on rows and
+  columns, via pandas/scikit-learn (and AutoGluon for the optional Build loop).
+  No text, vision, recommenders, or time-series *forecasting* — time-ordered
+  data is handled as a splitting and leakage concern, not as a forecasting stack.
+- **The pipeline ends at handoff.** `/ds-handoff` packages a model and pins an
+  environment. Deployment, serving, monitoring, drift detection, and retraining
+  triggers are **not** covered yet — despite the name, that part of the last mile
+  is on the roadmap, not in the box.
+- **The Sealed Bet is experimental, and its guard is friction rather than a
+  sandbox.** `seal_guard.py` denies the `Read` tool on sealed label files;
+  `Bash` and `Grep` are **not** gated, so an agent that runs `cat` or `grep` can
+  still reach them. Treat it as a mechanism that makes peeking deliberate and
+  visible, not as one that makes it impossible. See [`AUDIT.md`](AUDIT.md).
+
 ## Quickstart (60-second setup)
 
 **Option A — one command, from any terminal (recommended):**
@@ -75,18 +93,70 @@ build on earlier ones and `/ds` can detect your progress.
 ## The Sealed Bet (experimental)
 
 A trust core you can run in any coding agent: `python -m sealed_bet.seal` locks a
-holdout's labels and records a Contract; you build freely on the dev split; then
-`python -m sealed_bet.score` opens the holdout **once** and reports
-`lift = (sealed − baseline)/σ` — ship only if it beats the dumb baseline by more
-than the noise (> 2σ). `seal()` also certifies its own dev/held split by running
-the split-adversary as a non-blocking Probe, recording the verdict in the Ledger
-— warn-only, so a failed probe never stops the seal. The scoring/contract/ledger
-math itself has zero Claude-Code-only imports, so it's portable to any agent. The physical
-Read-blocking (`seal_guard` hook) is a Claude Code-specific hook this plugin
-ships, and it currently gates the `Read` tool only — `Bash`/`Grep` are not
-gated, so a careless or malicious agent could still `cat`/`grep` the sealed
-file directly and bypass the guard. In Claude Code, use `/ds-seal` and
+holdout's labels and records a Contract — against a real non-ML heuristic baseline if
+you pass one (`--baseline-py path/to/file.py:function`; otherwise a constant
+median/mean, which for `roc_auc` scores exactly 0.5 on every dataset by construction and
+isn't much of a rival). Supports `rmse`, `roc_auc`, and `auprc` (a materially better fit
+than `roc_auc` for an imbalanced classification decision, since its constant baseline
+converges to the positive-class prevalence rather than a universal 0.5). A `random`
+split on a classification target stratifies by the target automatically — no flag
+needed — and `--exclude-from-features col1,col2` keeps a column (e.g. a raw `time_col`
+with no standalone predictive legitimacy) out of the model's own inputs while still
+using it to build the split. You build freely on the dev split; then `python -m
+sealed_bet.score` opens the holdout **once** and reports `lift = (sealed − baseline)/σ`,
+where predictions are joined to the sealed labels on a `row_id` echoed from
+`held/row_ids.csv` rather than by row position — so a pipeline that sorts or reindexes
+before writing `preds.csv` gets a hard error instead of a silently wrong verdict, and
+where σ is the paired bootstrap difference between the model's and baseline's scores on
+the same held rows — ship only if it beats the baseline by more than the noise (> 2σ).
+Opening also writes `held/revealed.csv` (the true target plus your submitted
+predictions) so `/ds-evaluate`/`/ds-explain` can legitimately compute slice/calibration/
+importance numbers afterward, without a second look at the sealed labels. `seal()` also
+runs two non-blocking Probes and records both verdicts in the Ledger — the
+split-adversary (certifies dev/held are statistically indistinguishable, the right check
+for a `random`/`group` split) and the leakage-adversary (flags any single feature whose
+solo predictive power is implausibly high) — both warn-only, so a failed probe never
+stops the seal. The scoring/contract/ledger math itself has zero Claude-Code-only
+imports, so it's portable to any agent. The physical Read-blocking (`seal_guard` hook)
+is a Claude Code-specific hook this plugin ships, and it currently gates the `Read` tool
+only — `Bash`/`Grep` are not gated, so a careless or malicious agent could still
+`cat`/`grep` the sealed file directly and bypass the guard. In Claude Code, use
+`/ds-seal` and
 `/ds-open`.
+
+**Real runs, not just design:** `benchmarks/` holds three full pipeline runs against real
+Kaggle datasets, kept as durable evidence (stage docs, Contract, Ledger — not the raw
+data or model binaries). See [`BENCHMARKS.md`](BENCHMARKS.md) for what running the plugin
+against real data found and fixed that reading the code alone didn't.
+
+## Results
+
+| Dataset | Task | Metric | Real heuristic baseline | Sealed score | Lift | Honest ceiling |
+|---|---|---|---|---|---|---|
+| [House Prices](benchmarks/house-prices/) (Ames) | regression | RMSE, log ↓ | 0.2487 — neighborhood median price per sqft | **0.1311** | 9.46σ | ~0.115 |
+| [Telco Churn](benchmarks/telco-churn/) (IBM) | classification | ROC-AUC ↑ | 0.7420 — churn rate per contract type | **0.8471** | 11.68σ | ~0.85 |
+| [Credit Card Fraud](benchmarks/credit-card-fraud/) (ULB) | classification | AUPRC ↑ | 0.0518 — unsupervised anomaly distance | **0.8158** | 20.45σ | ~0.85 |
+
+**How to read this table.** These are single honest runs, not leaderboard entries. Each
+score is measured **once**, on a holdout sealed before modeling began, against a real
+non-ML heuristic rather than a constant — for AUPRC on the fraud set, a constant scores
+the positive-class prevalence, ~0.0017, so the 0.0518 anomaly rule is roughly 30× a
+floor rather than a rival. The "honest ceiling" is a human, community-informed estimate
+of what each problem tops out at *without* overfitting to a years-public test set; we
+compare against that on purpose rather than the public leaderboard, which in all three
+communities is understood to contain leaked and overfit submissions. Exact numbers shift
+between re-seals (AutoGluon's internal search is unseeded) — the mechanism and its
+reproducibility are the claim, not the decimals.
+
+**What the benchmarks found is the more useful output.** Running these surfaced ~15 real
+product defects that reading the code did not, all recorded in
+[`BENCHMARKS.md`](BENCHMARKS.md): a ship gate computing the wrong σ, two adversary probes
+that had never once run on a realistic dataset, a baseline that was never a real rival,
+predictions joined to labels by row position, and a warn-only probe costing 10× the model
+it protects. The fraud benchmark also ran under *both* split strategies to test whether a
+random split inflates scores on time-ordered data. **It didn't** — the predicted result
+failed to reproduce, and [that report](benchmarks/credit-card-fraud/REPORT.md) says so
+plainly instead of reframing it.
 
 ## Discipline, not just steps
 
@@ -143,6 +213,43 @@ for the `Read` tool specifically; `Bash`/`Grep` are not yet gated (see AUDIT.md'
 See [`AUDIT.md`](AUDIT.md) for exactly what each hook reads, writes, and calls
 (nothing over the network, ever).
 
+### Independent scan
+
+This plugin is scanned with [NVIDIA SkillSpector](https://github.com/NVIDIA/skillspector)
+(v2.3.13, static analysis) on every push, and the scan gates CI. Reproduce it:
+
+    uv tool install git+https://github.com/NVIDIA/skillspector.git
+    skillspector scan . --no-llm --baseline .skillspector-baseline.yaml
+
+**Read the number honestly:** the result is 0/100 (SAFE) *with 30 findings
+suppressed* via [`.skillspector-baseline.yaml`](.skillspector-baseline.yaml).
+A suppressed finding is not a finding that vanished — so every entry in that
+file carries a written reason, and CI fails on any finding that doesn't have
+one. Inspect them yourself with `--show-suppressed`. The two largest groups:
+
+- **5 dependency CVE findings (3 CRITICAL)** against numpy/pandas/scikit-learn/
+  PyYAML/pytest. SkillSpector's `SC4` check queries OSV by package *name* and
+  reports every advisory ever filed, without filtering by the version declared —
+  verified by raising the floors to numpy 2.3 / scikit-learn 1.7 / PyYAML 6.0.2
+  and re-scanning, which changed nothing. Any project depending on the standard
+  DS stack scores 100/100 "DO NOT INSTALL" here regardless of what it pins.
+- **4 "external script fetching" findings (HIGH)** matching the literal string
+  `curl * | bash`. In both files it appears, that string is the *deny rule*
+  blocking the pattern — in `settings-baseline.json`'s `permissions.deny`, and
+  in the test asserting that rule exists.
+
+There is no NVIDIA verification or certification programme, and this is not one:
+it's a self-run scan, reproducible with the command above.
+
+**On a fork with GitHub Advanced Security enabled:** the CI workflow strips
+baselined findings from the SARIF before uploading, so GitHub's Security tab
+shows only genuinely open, untriaged findings — matching the 0/100 above rather
+than the raw 30-finding count. This exists because SkillSpector's `--baseline`
+correctly marks suppressed results with a SARIF `suppressions` field, and
+GitHub's alert *list* honors it, but its separate per-PR "new alerts" check does
+not — it will fail on every already-triaged finding otherwise, even ones
+carrying a written justification.
+
 To adopt the recommended permission baseline in your own project, merge
 [`settings-baseline.json`](settings-baseline.json) into your project's
 `.claude/settings.json` (this plugin never modifies your settings automatically):
@@ -175,13 +282,29 @@ skill for what's worth capturing.
 
 ## Development
 
-    uv venv --python 3.13
-    uv pip install -r requirements-dev.txt
-    uv run pytest tests/ -v
+Tooling is [uv](https://github.com/astral-sh/uv) + [ruff](https://github.com/astral-sh/ruff)
++ [prek](https://github.com/j178/prek), configured in `pyproject.toml`.
 
-Requires Python >=3.10,<3.14 — AutoGluon's `pyarrow` dependency has no
-prebuilt wheel for 3.14 yet at time of writing, so the dev venv must stay on
-3.13 or earlier until that catches up upstream.
+    uv sync --group dev          # core + test deps, seconds
+    uv run pytest                # 7 skipped (the AutoGluon Build-loop tests)
+    uv run ruff check .
+
+The 7 skips are the Build-loop tests that need AutoGluon. It is an **optional
+extra**, not a core dependency — `sealed_bet` imports it lazily, so the
+seal/score/contract path never pays for a multi-GB install. To run the full
+suite and reproduce `benchmarks/`:
+
+    uv sync --group dev --extra benchmarks   # minutes
+    uv run pytest                            # full suite, nothing skipped
+
+Git hooks (ruff, whitespace, large-file guard):
+
+    uv tool install prek && prek install
+
+`sealed_bet` itself needs only Python >=3.10 with numpy/pandas/scikit-learn.
+The `benchmarks` extra is what pins the dev interpreter to 3.13 (see
+`.python-version`): AutoGluon's `pyarrow` dependency still has no prebuilt
+wheel for 3.14.
 
 `tests/test_plugin_structure.py` validates plugin structure (frontmatter, required
 sections, command↔skill wiring, lesson citations); `tests/test_hooks.py`

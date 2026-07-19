@@ -1,0 +1,21 @@
+{
+  "target": "log_saleprice",
+  "task": "regression",
+  "metric": "rmse",
+  "split": {
+    "strategy": "time",
+    "group_key": null,
+    "time_col": "sale_period"
+  },
+  "baseline_score": 0.2487044829368433,
+  "baseline_kind": "heuristic",
+  "held_frac": 0.2,
+  "seed": 0,
+  "data_hash": "71f76f0fcc2f8610",
+  "input_mode": "full",
+  "created_at": "2026-07-17T19:56:48+00:00",
+  "budget": 15,
+  "ceiling_score": 0.115,
+  "ceiling_source": "human",
+  "excluded_features": []
+}
