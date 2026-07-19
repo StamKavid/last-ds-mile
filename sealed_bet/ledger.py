@@ -45,11 +45,19 @@ def append_verdict(ledger_path, sealed_score: float, baseline_score: float,
         f.write(f"- sealed−baseline gap: {gap:+.4f}\n")
 
 
-def append_probe(ledger_path, auc: float, sigma: float, lift_val: float, certified: bool) -> None:
+def append_probe(ledger_path, auc: float, sigma: float, lift_val: float, certified: bool,
+                 n_rows: int | None = None, n_rows_total: int | None = None) -> None:
     stamp = "CERTIFIED ✅" if certified else "⚠ SUSPECT — split may leak a forgotten group/time key"
     with open(ledger_path, "a", encoding="utf-8") as f:
         f.write("\n## Probe (split-adversary, warn-only)\n")
         f.write(f"- train-vs-held AUC: {auc:.4f} · σ: {sigma:.4f} · lift: {lift_val:.2f}σ\n")
+        # State the row count the verdict actually rests on whenever the probe
+        # subsampled. A capped probe that reports its number as though it saw
+        # every row would be exactly the kind of quiet overclaim this project
+        # exists to catch.
+        if n_rows is not None and n_rows_total is not None and n_rows < n_rows_total:
+            f.write(f"- scored on a stratified {n_rows:,}-row sample of {n_rows_total:,} "
+                    f"(probe cap — see sealed_bet.adversary.PROBE_MAX_ROWS)\n")
         f.write(f"- **{stamp}**\n")
 
 

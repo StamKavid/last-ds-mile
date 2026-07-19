@@ -124,11 +124,39 @@ only — `Bash`/`Grep` are not gated, so a careless or malicious agent could sti
 `/ds-seal` and
 `/ds-open`.
 
-**Real runs, not just design:** `benchmarks/house-prices/` and `benchmarks/telco-churn/`
-are two full `/ds-frame` → `/ds-handoff` pipeline runs against real Kaggle-style
-datasets, kept as durable evidence (stage docs, Contract, Ledger — not the raw data or
-model binaries). See [`BENCHMARKS.md`](BENCHMARKS.md) for what running the plugin
+**Real runs, not just design:** `benchmarks/` holds three full pipeline runs against real
+Kaggle datasets, kept as durable evidence (stage docs, Contract, Ledger — not the raw
+data or model binaries). See [`BENCHMARKS.md`](BENCHMARKS.md) for what running the plugin
 against real data found and fixed that reading the code alone didn't.
+
+## Results
+
+| Dataset | Task | Metric | Real heuristic baseline | Sealed score | Lift | Honest ceiling |
+|---|---|---|---|---|---|---|
+| [House Prices](benchmarks/house-prices/) (Ames) | regression | RMSE, log ↓ | 0.2487 — neighborhood median price per sqft | **0.1311** | 9.46σ | ~0.115 |
+| [Telco Churn](benchmarks/telco-churn/) (IBM) | classification | ROC-AUC ↑ | 0.7420 — churn rate per contract type | **0.8471** | 11.68σ | ~0.85 |
+| [Credit Card Fraud](benchmarks/credit-card-fraud/) (ULB) | classification | AUPRC ↑ | 0.0518 — unsupervised anomaly distance | **0.8158** | 20.45σ | ~0.85 |
+
+**How to read this table.** These are single honest runs, not leaderboard entries. Each
+score is measured **once**, on a holdout sealed before modeling began, against a real
+non-ML heuristic rather than a constant — for AUPRC on the fraud set, a constant scores
+the positive-class prevalence, ~0.0017, so the 0.0518 anomaly rule is roughly 30× a
+floor rather than a rival. The "honest ceiling" is a human, community-informed estimate
+of what each problem tops out at *without* overfitting to a years-public test set; we
+compare against that on purpose rather than the public leaderboard, which in all three
+communities is understood to contain leaked and overfit submissions. Exact numbers shift
+between re-seals (AutoGluon's internal search is unseeded) — the mechanism and its
+reproducibility are the claim, not the decimals.
+
+**What the benchmarks found is the more useful output.** Running these surfaced ~15 real
+product defects that reading the code did not, all recorded in
+[`BENCHMARKS.md`](BENCHMARKS.md): a ship gate computing the wrong σ, two adversary probes
+that had never once run on a realistic dataset, a baseline that was never a real rival,
+predictions joined to labels by row position, and a warn-only probe costing 10× the model
+it protects. The fraud benchmark also ran under *both* split strategies to test whether a
+random split inflates scores on time-ordered data. **It didn't** — the predicted result
+failed to reproduce, and [that report](benchmarks/credit-card-fraud/REPORT.md) says so
+plainly instead of reframing it.
 
 ## Discipline, not just steps
 
