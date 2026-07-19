@@ -80,7 +80,7 @@ jobs:
           sarif_file: skillspector.sarif
 
   benchmarks:
-    name: pytest + AutoGluon (full 217)
+    name: pytest + AutoGluon (full suite)
     runs-on: ubuntu-latest
     # The `test` job above skips 7 tests that need the optional `benchmarks`
     # extra (sealed_bet.auto's run_iteration / ceiling_baseline proxy /
@@ -99,5 +99,5 @@ jobs:
         # resolvable while the real import raises -- which would silently skip
         # all 7 tests here and turn this job into a no-op that looks green.
         run: uv run python -c "from autogluon.tabular import TabularPredictor"
-      - name: Full suite (expects 217 passed, 0 skipped)
+      - name: Full suite (nothing skipped)
         run: uv run pytest

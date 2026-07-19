@@ -151,11 +151,5 @@ rules:
     reason: >-
       "Context Window Stuffing" matched whitespace/line-length in a test file.
       No prompt content is involved.
-  - id: "TM1"
-    path: "PUBLISH_PLAN.md"
-    reason: >-
-      "Tool Parameter Abuse" matched flag names quoted in the pre-release
-      planning document's own prose. PUBLISH_PLAN.md is a working file deleted
-      at release, at which point this entry can go too.
 
 fingerprints: []

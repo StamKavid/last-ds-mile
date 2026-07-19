@@ -277,7 +277,7 @@ Tooling is [uv](https://github.com/astral-sh/uv) + [ruff](https://github.com/ast
 + [prek](https://github.com/j178/prek), configured in `pyproject.toml`.
 
     uv sync --group dev          # core + test deps, seconds
-    uv run pytest                # 210 passed, 7 skipped
+    uv run pytest                # 7 skipped (the AutoGluon Build-loop tests)
     uv run ruff check .
 
 The 7 skips are the Build-loop tests that need AutoGluon. It is an **optional
@@ -286,7 +286,7 @@ seal/score/contract path never pays for a multi-GB install. To run the full
 suite and reproduce `benchmarks/`:
 
     uv sync --group dev --extra benchmarks   # minutes
-    uv run pytest                            # 217 passed
+    uv run pytest                            # full suite, nothing skipped
 
 Git hooks (ruff, whitespace, large-file guard):
 
