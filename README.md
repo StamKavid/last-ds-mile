@@ -1,33 +1,50 @@
 # Last DS Mile
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-8dbb3c)](https://claude.com/claude-code)
+<div align="center">
+  <img src="assets/last-ds-mile-logo.png" alt="Last DS Mile logo" width="320">
+</div>
 
-A guided data-science lifecycle for [Claude Code](https://claude.com/claude-code) —
-frame, explore, baseline, validate, model, evaluate, and report — with leakage and
-honesty checks built into every stage.
+**Production-grade data science discipline for AI coding agents.**
+
+Skills encode the workflows, honesty checks, and hard gates that experienced data scientists apply at every stage — from problem framing to reproducible handoff. Packaged so AI agents follow them consistently, instead of taking the shortest path to a metric that looks good.
 
 A product of [The Last AI Mile](https://thelastaimile.substack.com).
 
-## Scope — what this does and doesn't cover
+---
 
-Worth knowing before you install, so nothing here is a surprise later:
+<p align="center">
+  <img src="assets/last-ds-mile-1.png" alt="Last DS Mile pipeline" width="900">
+</p>
 
-- **Tabular supervised learning.** Regression and classification on rows and
-  columns, via pandas/scikit-learn (and AutoGluon for the optional Build loop).
-  No text, vision, recommenders, or time-series *forecasting* — time-ordered
-  data is handled as a splitting and leakage concern, not as a forecasting stack.
-- **The pipeline ends at handoff.** `/ds-handoff` packages a model and pins an
-  environment. Deployment, serving, monitoring, drift detection, and retraining
-  triggers are **not** covered yet — despite the name, that part of the last mile
-  is on the roadmap, not in the box.
-- **The Sealed Bet is experimental, and its guard is friction rather than a
-  sandbox.** `seal_guard.py` denies the `Read` tool on sealed label files;
-  `Bash` and `Grep` are **not** gated, so an agent that runs `cat` or `grep` can
-  still reach them. Treat it as a mechanism that makes peeking deliberate and
-  visible, not as one that makes it impossible. See [`AUDIT.md`](AUDIT.md).
+---
 
-## Quickstart (60-second setup)
+## Commands
+
+13 slash commands — one navigator and 11 pipeline stages, plus `/ds-learn` to capture project-local lessons. Each activates the right skills automatically. Three stages are hard gates that stop and verify discipline before proceeding.
+
+| What you're doing | Command | Key principle |
+|-------------------|---------|---------------|
+| Navigate the pipeline | `/ds` | Know where you are before the next step |
+| Frame the problem | `/ds-frame` | Decide what winning looks like before touching data |
+| Audit the data | `/ds-data` | Understand before transforming |
+| Explore distributions and relationships | `/ds-explore` | Surface surprises before they become bugs |
+| Clean and engineer features | `/ds-prep` | Features should represent what you know, not what you measured |
+| Establish an honest baseline | `/ds-baseline` | Complexity must beat the dumbest thing that could work |
+| Design the validation scheme | `/ds-validate` | The split is part of the model |
+| Train models | `/ds-model` ⚠ | No model without a baseline and a validation plan |
+| Evaluate with slices | `/ds-evaluate` | Aggregate scores lie; slice performance reveals |
+| Interpret results | `/ds-explain` | Explanation is evidence, not decoration |
+| Communicate findings | `/ds-report` ⚠ | Slices and uncertainty, not one number |
+| Package for handoff | `/ds-handoff` ⚠ | Pinned environment before shipping any model |
+| Capture a lesson | `/ds-learn` | What broke and what fixed it, for the next session |
+
+The three ⚠ stages are **hard gates**: `/ds-model` requires a completed baseline and validation strategy to exist first; `/ds-report` requires subgroup performance, not just an aggregate metric; `/ds-handoff` requires a pinned environment before packaging a model.
+
+Each stage writes its output to `.last-ds-mile/stages/` in your project, so later stages build on earlier ones and `/ds` can always detect your progress.
+
+---
+
+## Quick Start
 
 **Option A — one command, from any terminal (recommended):**
 
@@ -35,8 +52,7 @@ Worth knowing before you install, so nothing here is a surprise later:
 npx stamkavid/last-ds-mile
 ```
 
-This finds your `claude` CLI, adds the marketplace, and installs the plugin —
-no npm publish, no account, nothing to configure first.
+This finds your `claude` CLI, adds the marketplace, and installs the plugin — no npm publish, no account, nothing to configure first.
 
 **Option B — inside Claude Code:**
 
@@ -45,16 +61,14 @@ no npm publish, no account, nothing to configure first.
 /plugin install last-ds-mile
 ```
 
-Either way, once it's installed: open Claude Code in any project and run
-`/ds-frame` to start the pipeline, or `/ds` at any point to see the map and get
-routed to the next stage.
+Once installed, open Claude Code in any project and run `/ds-frame` to start the pipeline, or `/ds` at any point to see the map and get routed to the next stage.
 
-**Requirements:** [Claude Code](https://claude.com/claude-code) (either option),
-plus [Node.js](https://nodejs.org) 18+ if you use the `npx` one-liner.
+**Requirements:** [Claude Code](https://claude.com/claude-code) (either option), plus [Node.js](https://nodejs.org) 18+ for the `npx` one-liner.
 
-**Troubleshooting:** if `claude plugin install` fails with `Permission denied
-(publickey)` or another SSH clone error, it's trying to clone over SSH but you
-likely use HTTPS-based GitHub auth (no SSH key registered). Fix once, globally:
+<details>
+<summary><b>Troubleshooting: SSH clone errors</b></summary>
+
+If `claude plugin install` fails with `Permission denied (publickey)` or another SSH clone error, it's trying to clone over SSH but you likely use HTTPS-based GitHub auth. Fix once, globally:
 
 ```bash
 git config --global url."https://github.com/".insteadOf git@github.com:
@@ -62,250 +76,239 @@ git config --global url."https://github.com/".insteadOf git@github.com:
 
 then re-run the install command.
 
-## Why
+</details>
 
-Data science projects don't die in the modeling cell. They die in the last mile: target
-leakage, inflated metrics, a validation scheme that lied, results nobody trusts, and
-notebooks nobody can rerun. This plugin walks you through the full lifecycle on a guided
-rail, and enforces the discipline that keeps the results honest.
+---
 
-## The pipeline
+## All 21 Skills
 
-| # | Command | Stage |
-|---|---------|-------|
-| 0 | `/ds-frame` | Problem framing |
-| 1 | `/ds-data` | Data understanding |
-| 2 | `/ds-explore` | EDA |
-| 3 | `/ds-prep` | Cleaning + feature engineering |
-| 4 | `/ds-baseline` | Honest baseline |
-| 5 | `/ds-validate` | Validation design |
-| 6 | `/ds-model` | Modeling |
-| 7 | `/ds-evaluate` | Evaluation + error analysis |
-| 8 | `/ds-explain` | Interpretation |
-| 9 | `/ds-report` | Communication |
-| 10 | `/ds-handoff` | Reproducibility & handoff |
+The commands above are entry points. Behind them are 21 skills total — 11 pipeline skills, 8 domain skills that auto-trigger by situation, and 2 shared methodology skills. Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
 
-Run `/ds` at any point to see the pipeline map and get routed to the next stage.
+### Navigate — Find your stage
 
-Each stage writes its output to `.last-ds-mile/stages/` in your project, so later stages
-build on earlier ones and `/ds` can detect your progress.
+| Skill | What It Does | Use When |
+|-------|-------------|----------|
+| [ds-method](skills/ds-method/SKILL.md) | Shared discipline layer — the Red Flags, Rationalizations, and Hard Gates every stage inherits | Running any pipeline stage, or when asked to skip a gate |
 
-## The Sealed Bet (experimental)
+### Frame — Define the problem
 
-A trust core you can run in any coding agent: `python -m sealed_bet.seal` locks a
-holdout's labels and records a Contract — against a real non-ML heuristic baseline if
-you pass one (`--baseline-py path/to/file.py:function`; otherwise a constant
-median/mean, which for `roc_auc` scores exactly 0.5 on every dataset by construction and
-isn't much of a rival). Supports `rmse`, `roc_auc`, and `auprc` (a materially better fit
-than `roc_auc` for an imbalanced classification decision, since its constant baseline
-converges to the positive-class prevalence rather than a universal 0.5). A `random`
-split on a classification target stratifies by the target automatically — no flag
-needed — and `--exclude-from-features col1,col2` keeps a column (e.g. a raw `time_col`
-with no standalone predictive legitimacy) out of the model's own inputs while still
-using it to build the split. You build freely on the dev split; then `python -m
-sealed_bet.score` opens the holdout **once** and reports `lift = (sealed − baseline)/σ`,
-where predictions are joined to the sealed labels on a `row_id` echoed from
-`held/row_ids.csv` rather than by row position — so a pipeline that sorts or reindexes
-before writing `preds.csv` gets a hard error instead of a silently wrong verdict, and
-where σ is the paired bootstrap difference between the model's and baseline's scores on
-the same held rows — ship only if it beats the baseline by more than the noise (> 2σ).
-Opening also writes `held/revealed.csv` (the true target plus your submitted
-predictions) so `/ds-evaluate`/`/ds-explain` can legitimately compute slice/calibration/
-importance numbers afterward, without a second look at the sealed labels. `seal()` also
-runs two non-blocking Probes and records both verdicts in the Ledger — the
-split-adversary (certifies dev/held are statistically indistinguishable, the right check
-for a `random`/`group` split) and the leakage-adversary (flags any single feature whose
-solo predictive power is implausibly high) — both warn-only, so a failed probe never
-stops the seal. The scoring/contract/ledger math itself has zero Claude-Code-only
-imports, so it's portable to any agent. The physical Read-blocking (`seal_guard` hook)
-is a Claude Code-specific hook this plugin ships, and it currently gates the `Read` tool
-only — `Bash`/`Grep` are not gated, so a careless or malicious agent could still
-`cat`/`grep` the sealed file directly and bypass the guard. In Claude Code, use
-`/ds-seal` and
-`/ds-open`.
+| Skill | What It Does | Use When |
+|-------|-------------|----------|
+| [ds-frame](skills/ds-frame/SKILL.md) | Frame the business problem, define success criteria, and agree on what winning looks like before any data is touched | Starting a project or when the goal is unclear |
 
-**Real runs, not just design:** `benchmarks/` holds three full pipeline runs against real
-Kaggle datasets, kept as durable evidence (stage docs, Contract, Ledger — not the raw
-data or model binaries). See [`BENCHMARKS.md`](BENCHMARKS.md) for what running the plugin
-against real data found and fixed that reading the code alone didn't.
+### Understand — Know your data
 
-## Results
+| Skill | What It Does | Use When |
+|-------|-------------|----------|
+| [ds-data](skills/ds-data/SKILL.md) | Audit data quality, surface structural issues, detect sanitization risks, and understand what each row actually represents | Before any feature engineering or modeling |
+| [ds-explore](skills/ds-explore/SKILL.md) | EDA — distributions, correlations, class balance, temporal patterns, anomalies — with visualization standards built in | Between data audit and feature engineering |
 
-| Dataset | Task | Metric | Real heuristic baseline | Sealed score | Lift | Honest ceiling |
-|---|---|---|---|---|---|---|
-| [House Prices](benchmarks/house-prices/) (Ames) | regression | RMSE, log ↓ | 0.2487 — neighborhood median price per sqft | **0.1311** | 9.46σ | ~0.115 |
-| [Telco Churn](benchmarks/telco-churn/) (IBM) | classification | ROC-AUC ↑ | 0.7420 — churn rate per contract type | **0.8471** | 11.68σ | ~0.85 |
-| [Credit Card Fraud](benchmarks/credit-card-fraud/) (ULB) | classification | AUPRC ↑ | 0.0518 — unsupervised anomaly distance | **0.8158** | 20.45σ | ~0.85 |
+### Prepare — Build honest features
 
-**How to read this table.** These are single honest runs, not leaderboard entries. Each
-score is measured **once**, on a holdout sealed before modeling began, against a real
-non-ML heuristic rather than a constant — for AUPRC on the fraud set, a constant scores
-the positive-class prevalence, ~0.0017, so the 0.0518 anomaly rule is roughly 30× a
-floor rather than a rival. The "honest ceiling" is a human, community-informed estimate
-of what each problem tops out at *without* overfitting to a years-public test set; we
-compare against that on purpose rather than the public leaderboard, which in all three
-communities is understood to contain leaked and overfit submissions. Exact numbers shift
-between re-seals (AutoGluon's internal search is unseeded) — the mechanism and its
-reproducibility are the claim, not the decimals.
+| Skill | What It Does | Use When |
+|-------|-------------|----------|
+| [ds-prep](skills/ds-prep/SKILL.md) | Clean, transform, and engineer features while flagging leakage risk on every column that touches the target | Before modeling |
+| [ds-baseline](skills/ds-baseline/SKILL.md) | Build and record the dumbest thing that could work — dummy classifier, simple heuristic — before reaching for complexity | Before any model training |
+| [ds-validate](skills/ds-validate/SKILL.md) | Design the train/validation/test split for your data type — holdout, k-fold, stratified, time-ordered — and document why | Before model training; required before `/ds-model` |
 
-**What the benchmarks found is the more useful output.** Running these surfaced ~15 real
-product defects that reading the code did not, all recorded in
-[`BENCHMARKS.md`](BENCHMARKS.md): a ship gate computing the wrong σ, two adversary probes
-that had never once run on a realistic dataset, a baseline that was never a real rival,
-predictions joined to labels by row position, and a warn-only probe costing 10× the model
-it protects. The fraud benchmark also ran under *both* split strategies to test whether a
-random split inflates scores on time-ordered data. **It didn't** — the predicted result
-failed to reproduce, and [that report](benchmarks/credit-card-fraud/REPORT.md) says so
-plainly instead of reframing it.
+### Model — Train with discipline
 
-## Discipline, not just steps
+| Skill | What It Does | Use When |
+|-------|-------------|----------|
+| [ds-model](skills/ds-model/SKILL.md) | Train candidates against the validated baseline, track all experiments, and refuse to proceed without a baseline and validation plan ⚠ | After baseline and validation are confirmed |
 
-Three stages are Hard Gates and will stop to ask rather than silently proceed:
-- `/ds-model` requires a baseline (`/ds-baseline`) and a validation strategy
-  (`/ds-validate`) to exist first.
-- `/ds-report` requires slice/subgroup performance from `/ds-evaluate`, not just one
-  aggregate metric.
-- `/ds-handoff` requires a pinned environment before packaging a model.
+### Evaluate — Prove it works
 
-See `skills/ds-method/SKILL.md` for the full set of Red Flags and Rationalizations every
-stage shares.
+| Skill | What It Does | Use When |
+|-------|-------------|----------|
+| [ds-evaluate](skills/ds-evaluate/SKILL.md) | Evaluate on held-out data with slices and subgroups, run error analysis, check calibration, and compare against the baseline | After training; required before `/ds-report` |
+| [ds-explain](skills/ds-explain/SKILL.md) | Interpret model behavior with feature importance, SHAP, and partial dependence — then sanity-check the explanation against domain knowledge | Before any stakeholder communication |
 
-## Domain skills
+### Communicate & Ship
 
-These aren't slash commands — they auto-trigger by description match whenever a
-situation calls for them, whether or not you're mid-pipeline:
+| Skill | What It Does | Use When |
+|-------|-------------|----------|
+| [ds-report](skills/ds-report/SKILL.md) | Build the findings report with uncertainty, subgroup performance, and limitations — requires slice results, not just aggregate metrics ⚠ | After full evaluation |
+| [ds-handoff](skills/ds-handoff/SKILL.md) | Pin the environment, write the reproduction guide, package artifacts, and verify results replicate before handing off ⚠ | Finishing a project or transferring ownership |
+
+---
+
+## Domain Skills
+
+These don't correspond to slash commands. They auto-trigger when a situation calls for them — during any pipeline stage — based on description match:
 
 | Skill | Fires when |
-|---|---|
-| `target-leakage-detection` | a metric looks too good on the first try, or a feature dominates importance |
-| `validation-strategy` | setting up CV, or deciding whether hyperparameter tuning needs nested CV |
-| `imbalanced-data` | a classification target is skewed and accuracy stops being trustworthy |
-| `metric-selection` | choosing or defending an evaluation metric |
-| `error-analysis` | a model's aggregate score looks fine but you need to know where it fails |
-| `notebook-hygiene` | finishing exploratory work that will be shared or handed off |
-| `dataframe-performance` | a pandas operation is slow, or deciding whether to reach for Polars |
-| `data-viz-standards` | building EDA plots, or preparing stakeholder-facing figures and tables |
+|-------|-----------|
+| [target-leakage-detection](skills/target-leakage-detection/SKILL.md) | A metric looks too good on the first try, or a single feature dominates importance |
+| [validation-strategy](skills/validation-strategy/SKILL.md) | Setting up cross-validation, or deciding whether hyperparameter tuning needs nested CV |
+| [imbalanced-data](skills/imbalanced-data/SKILL.md) | A classification target is skewed and accuracy stops being meaningful |
+| [metric-selection](skills/metric-selection/SKILL.md) | Choosing or defending an evaluation metric against stakeholder pressure |
+| [error-analysis](skills/error-analysis/SKILL.md) | An aggregate score looks fine but you need to know where the model actually fails |
+| [notebook-hygiene](skills/notebook-hygiene/SKILL.md) | Finishing exploratory work that will be shared or handed off |
+| [dataframe-performance](skills/dataframe-performance/SKILL.md) | A pandas operation is slow, or deciding whether to reach for Polars or chunked processing |
+| [data-viz-standards](skills/data-viz-standards/SKILL.md) | Building EDA plots or preparing stakeholder-facing figures and tables |
 
-## Status
+---
 
-This release covers the full lifecycle spine, 8 domain skills (leakage detection,
-validation strategy, imbalanced data, metric selection, error analysis, notebook
-hygiene, dataframe performance, and data viz standards) that auto-trigger whenever a
-matching situation comes up, and the safe set: 5 hooks, a documented permission
-baseline, a real sanitization gate in `/ds-data`, `AUDIT.md`, and 3 subagents
-(`leakage-auditor`, `ds-reviewer`, `data-profiler`). See the "Safety" section below.
-The learnings system now ships too: a curated `lessons/` corpus (4 real DS
-failure/fix write-ups, cited from the skills that teach them) and project-local
-capture via `/ds-learn` — both resurface automatically at the start of your
-next session if tagged to the stage you're about to work on. Cross-project
-sharing of captured lessons is still on the roadmap.
+## Subagents
 
-## Safety
-
-This plugin ships a "safe set": hooks that scan for untrusted-input risk (a
-poisoned CSV, a pickle file that executes code on load, a shell magic hidden in a
-notebook), a sanitization gate built into `/ds-data`, and 3 subagents. 4 of the 5
-hooks are **warn, don't block** — they never stop your work. The one exception is
-`seal_guard.py`, which deliberately denies Read access to the sealed holdout
-labels — that block is the physical basis of the Sealed Bet's trust guarantee
-for the `Read` tool specifically; `Bash`/`Grep` are not yet gated (see AUDIT.md's
-"Known limitation" note under `seal_guard.py`).
-See [`AUDIT.md`](AUDIT.md) for exactly what each hook reads, writes, and calls
-(nothing over the network, ever).
-
-### Independent scan
-
-This plugin is scanned with [NVIDIA SkillSpector](https://github.com/NVIDIA/skillspector)
-(v2.3.13, static analysis) on every push, and the scan gates CI. Reproduce it:
-
-    uv tool install git+https://github.com/NVIDIA/skillspector.git
-    skillspector scan . --no-llm --baseline .skillspector-baseline.yaml
-
-**Read the number honestly:** the result is 0/100 (SAFE) *with 30 findings
-suppressed* via [`.skillspector-baseline.yaml`](.skillspector-baseline.yaml).
-A suppressed finding is not a finding that vanished — so every entry in that
-file carries a written reason, and CI fails on any finding that doesn't have
-one. Inspect them yourself with `--show-suppressed`. The two largest groups:
-
-- **5 dependency CVE findings (3 CRITICAL)** against numpy/pandas/scikit-learn/
-  PyYAML/pytest. SkillSpector's `SC4` check queries OSV by package *name* and
-  reports every advisory ever filed, without filtering by the version declared —
-  verified by raising the floors to numpy 2.3 / scikit-learn 1.7 / PyYAML 6.0.2
-  and re-scanning, which changed nothing. Any project depending on the standard
-  DS stack scores 100/100 "DO NOT INSTALL" here regardless of what it pins.
-- **4 "external script fetching" findings (HIGH)** matching the literal string
-  `curl * | bash`. In both files it appears, that string is the *deny rule*
-  blocking the pattern — in `settings-baseline.json`'s `permissions.deny`, and
-  in the test asserting that rule exists.
-
-There is no NVIDIA verification or certification programme, and this is not one:
-it's a self-run scan, reproducible with the command above.
-
-**On a fork with GitHub Advanced Security enabled:** the CI workflow strips
-baselined findings from the SARIF before uploading, so GitHub's Security tab
-shows only genuinely open, untriaged findings — matching the 0/100 above rather
-than the raw 30-finding count. This exists because SkillSpector's `--baseline`
-correctly marks suppressed results with a SARIF `suppressions` field, and
-GitHub's alert *list* honors it, but its separate per-PR "new alerts" check does
-not — it will fail on every already-triaged finding otherwise, even ones
-carrying a written justification.
-
-To adopt the recommended permission baseline in your own project, merge
-[`settings-baseline.json`](settings-baseline.json) into your project's
-`.claude/settings.json` (this plugin never modifies your settings automatically):
-
-    cat settings-baseline.json
-    # then merge its "permissions" block into your own settings.json by hand,
-    # or with a JSON-merging tool if you already have one in your workflow.
-
-### Subagents
+Three specialist agents that pipeline skills invoke for targeted, focused analysis:
 
 | Subagent | Model | Use for |
-|---|---|---|
-| `leakage-auditor` | Opus | Adversarially hunting target/temporal/validation leakage before `/ds-model` or `/ds-report` |
-| `ds-reviewer` | Sonnet | Running the discipline checklist (baseline, validation, metric, slices, reproducibility) before `/ds-report` |
-| `data-profiler` | Haiku | Fast structural profiling sweep for `/ds-data` or `/ds-explore` |
+|----------|-------|---------|
+| [leakage-auditor](agents/leakage-auditor.md) | Opus | Adversarially hunting target, temporal, and validation leakage before `/ds-model` or `/ds-report` |
+| [ds-reviewer](agents/ds-reviewer.md) | Sonnet | Running the full discipline checklist — baseline, validation, metric, slices, reproducibility — before `/ds-report` |
+| [data-profiler](agents/data-profiler.md) | Haiku | Fast structural profiling sweep during `/ds-data` or `/ds-explore` |
+
+---
+
+## How Skills Work
+
+Every skill follows a consistent anatomy:
+
+```
+┌─────────────────────────────────────────────────┐
+│  SKILL.md                                       │
+│                                                 │
+│  ┌─ Frontmatter ─────────────────────────────┐  │
+│  │ name: ds-skill-name                       │  │
+│  │ description: Guides agents through [task].│  │
+│  │              Fires when…                  │  │
+│  └───────────────────────────────────────────┘  │
+│  Overview         → What this skill does        │
+│  When to Use      → Triggering conditions       │
+│  Process          → Step-by-step workflow       │
+│  Rationalizations → Excuses + rebuttals         │
+│  Red Flags        → Signs something's wrong     │
+│  Verification     → Evidence requirements       │
+└─────────────────────────────────────────────────┘
+```
+
+---
+
+<p align="center">
+  <img src="assets/last-ds-mile-2.png" alt="Last DS Mile architecture" width="900">
+</p>
+
+---
+
+**Key design choices:**
+
+- **Process, not reference.** Skills are workflows agents follow, not documentation they read. Each has steps, checkpoints, and exit criteria.
+- **Hard gates, not suggestions.** Three stages actively refuse to proceed without prior-stage evidence — a baseline, a validation plan, a pinned environment. The gate is structural, not advisory.
+- **Anti-rationalization built in.** Every skill includes a table of excuses agents (and humans) use to skip steps — "the metric looks fine", "I'll validate later" — with documented counter-arguments.
+- **Verification is non-negotiable.** Every skill ends with evidence requirements. "Seems reasonable" is never sufficient — there must be slice results, a baseline comparison, a locked environment file.
+
+---
+
+## Project Structure
+
+```
+last-ds-mile/
+├── skills/                          # 21 skills total
+│   ├── ds-method/                   #   Shared discipline layer (meta)
+│   ├── ds-frame/                    #   Frame
+│   ├── ds-data/                     #   Understand
+│   ├── ds-explore/                  #   Understand
+│   ├── ds-prep/                     #   Prepare
+│   ├── ds-baseline/                 #   Prepare
+│   ├── ds-validate/                 #   Prepare
+│   ├── ds-model/                    #   Model      ⚠ Hard gate
+│   ├── ds-evaluate/                 #   Evaluate
+│   ├── ds-explain/                  #   Evaluate
+│   ├── ds-report/                   #   Ship       ⚠ Hard gate
+│   ├── ds-handoff/                  #   Ship       ⚠ Hard gate
+│   ├── target-leakage-detection/    #   Domain (auto-trigger)
+│   ├── validation-strategy/         #   Domain (auto-trigger)
+│   ├── imbalanced-data/             #   Domain (auto-trigger)
+│   ├── metric-selection/            #   Domain (auto-trigger)
+│   ├── error-analysis/              #   Domain (auto-trigger)
+│   ├── notebook-hygiene/            #   Domain (auto-trigger)
+│   ├── dataframe-performance/       #   Domain (auto-trigger)
+│   ├── data-viz-standards/          #   Domain (auto-trigger)
+│   └── capturing-learnings/         #   Capture project-local lessons
+├── agents/                          # 3 specialist subagents
+├── commands/                        # 13 slash commands
+├── hooks/                           # Session lifecycle hooks (warn, never block)
+├── lessons/                         # 4 real DS failure-and-fix write-ups
+├── benchmarks/                      # Reference runs on public datasets
+├── tests/                           # Plugin structure + hook behavior tests
+├── settings-baseline.json           # Opt-in permission baseline
+└── AUDIT.md                         # What every hook reads, writes, and calls
+```
+
+---
+
+## Why Last DS Mile?
+
+Data science projects don't fail in the modeling cell. They fail in the last mile: target leakage that inflates a metric, a validation scheme that trains on the future, evaluation that reports one aggregate number while hiding where the model fails, and notebooks that can't be rerun six months later.
+
+AI coding agents make this worse by default — they optimize for a result that looks right quickly, skipping the steps that reveal whether the result *is* right. Last DS Mile gives agents structured workflows with checkpoints that match how experienced data scientists actually work: baselines before complexity, honest splits before training, slices before reporting.
+
+Three principles run through every stage:
+
+- **Leakage first.** Target leakage, temporal leakage, and validation leakage are actively hunted — not left to chance. The `leakage-auditor` subagent is available for adversarial review before any model ships.
+- **Baselines are required, not optional.** A model that doesn't beat the simplest thing that could work has proven nothing. `/ds-baseline` is a hard prerequisite for `/ds-model`.
+- **Aggregate scores are not enough.** Slice performance, calibration, and error analysis are required before any model ships. `/ds-evaluate` results are a hard prerequisite for `/ds-report`.
+
+---
 
 ## Learnings
 
-Four real DS failure-and-fix write-ups ship in `lessons/`, cited from the
-skills that teach the pattern they illustrate — read one alongside the skill
-it's cited from for a concrete example, not just the abstract rule. Most of
-them are also tagged to a pipeline stage, so it will surface automatically at
-the start of a session heading into that stage.
+Four real failure-and-fix write-ups ship in `lessons/`, cited from the skills that teach the pattern they illustrate. Read one alongside the skill it's cited from for a concrete example, not just the abstract rule. Each is tagged to a pipeline stage and surfaces automatically at the start of a session heading into that stage.
 
-Run `/ds-learn` to capture your own project-local lesson (what broke, what
-fixed it) — it's appended to `.last-ds-mile/learnings.jsonl` and resurfaces
-the same way: automatically, at the start of your next session, if it's
-tagged to the stage you're about to work on. See the `capturing-learnings`
-skill for what's worth capturing.
+| Lesson | Pattern |
+|--------|---------|
+| [the-time-traveling-feature.md](lessons/the-time-traveling-feature.md) | Temporal leakage hidden in a join |
+| [the-99-percent-fraud-model.md](lessons/the-99-percent-fraud-model.md) | Class imbalance masking a useless model |
+| [the-leaderboard-that-lied.md](lessons/the-leaderboard-that-lied.md) | Validation leakage via repeated k-fold tuning |
+| [the-notebook-nobody-could-rerun.md](lessons/the-notebook-nobody-could-rerun.md) | Reproducibility failure at handoff |
+
+Run `/ds-learn` to capture your own project-local lesson — what broke and what fixed it. It's appended to `.last-ds-mile/learnings.jsonl` and resurfaces the same way at the relevant stage. See the [capturing-learnings](skills/capturing-learnings/SKILL.md) skill for what's worth capturing.
+
+---
+
+## Safety
+
+This plugin ships four hooks that **warn, never block** — none of them can stop your work:
+
+- **Untrusted-input scan** — warns before loading a CSV with embedded shell characters, a pickle that executes code on load, or a shell magic hidden in a notebook cell.
+- **Session learnings injection** — surfaces relevant prior lessons at session start.
+- **Pre-compaction state** — persists pipeline state before Claude compacts context.
+- **Session note capture** — saves a note on stop for continuity.
+
+A sanitization gate is also built into `/ds-data`. The opt-in permission baseline lives in [`settings-baseline.json`](settings-baseline.json) — this plugin **never modifies your settings automatically**. See [`AUDIT.md`](AUDIT.md) for exactly what each hook reads, writes, and calls. Nothing over the network, ever. Nothing beyond the Python standard library.
+
+To adopt the recommended permission baseline, merge its `"permissions"` block into your project's `.claude/settings.json`:
+
+```bash
+cat settings-baseline.json
+```
+
+---
+
+## Scope
+
+Worth knowing before you install:
+
+- **Tabular supervised learning.** Regression and classification on rows and columns via pandas and scikit-learn. No text, vision, recommenders, or time-series forecasting — time-ordered data is handled as a splitting and leakage concern, not a forecasting stack.
+- **The pipeline ends at handoff.** `/ds-handoff` packages a model and pins an environment. Deployment, serving, monitoring, drift detection, and retraining triggers are not covered yet — that part of the last mile is on the roadmap.
+
+---
 
 ## Development
 
-Tooling is [uv](https://github.com/astral-sh/uv) + [ruff](https://github.com/astral-sh/ruff)
-+ [prek](https://github.com/j178/prek), configured in `pyproject.toml`.
+The hooks are pure-standard-library Python 3 — no dependencies, no build step. The only test dependencies are `pytest` and `PyYAML` (used to parse `SKILL.md` frontmatter):
 
-    uv sync --group dev          # core + test deps, seconds
-    uv run pytest                # 7 skipped (the AutoGluon Build-loop tests)
-    uv run ruff check .
+```bash
+python -m pip install pytest pyyaml
+python -m pytest
+```
 
-The 7 skips are the Build-loop tests that need AutoGluon. It is an **optional
-extra**, not a core dependency — `sealed_bet` imports it lazily, so the
-seal/score/contract path never pays for a multi-GB install. To run the full
-suite and reproduce `benchmarks/`:
+`tests/test_plugin_structure.py` validates plugin structure (frontmatter, required sections, command↔skill wiring, lesson citations). `tests/test_hooks.py` unit-tests the runtime hooks via subprocess. CI runs both on Python 3.10–3.13.
 
-    uv sync --group dev --extra benchmarks   # minutes
-    uv run pytest                            # full suite, nothing skipped
+---
 
-Git hooks (ruff, whitespace, large-file guard):
+## License
 
-    uv tool install prek && prek install
-
-`sealed_bet` itself needs only Python >=3.10 with numpy/pandas/scikit-learn.
-The `benchmarks` extra is what pins the dev interpreter to 3.13 (see
-`.python-version`): AutoGluon's `pyarrow` dependency still has no prebuilt
-wheel for 3.14.
-
-`tests/test_plugin_structure.py` validates plugin structure (frontmatter, required
-sections, command↔skill wiring, lesson citations); `tests/test_hooks.py`
-unit-tests the runtime hooks' actual behavior via subprocess.
+MIT — use these skills in your projects, teams, and tools.

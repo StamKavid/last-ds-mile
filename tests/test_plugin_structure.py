@@ -58,7 +58,6 @@ REQUIRED_HOOK_EVENTS = ["SessionStart", "PostToolUse", "PreCompact", "Stop"]
 
 HOOK_SCRIPTS = [
     "session_start.py",
-    "seal_guard.py",
     "scan_untrusted_input.py",
     "pre_compact.py",
     "stop_persist_learnings.py",
@@ -263,44 +262,21 @@ def test_readme_documents_npx_install():
     assert "npx stamkavid/last-ds-mile" in text
 
 
-def test_sealed_bet_core_is_importable_without_plugin_adapter():
-    # The portable core must not import any Claude-Code-only module.
-    import importlib
-    for mod in ["sealed_bet.seal", "sealed_bet.score", "sealed_bet.metrics",
-                "sealed_bet.contract", "sealed_bet.ledger", "sealed_bet.splits",
-                "sealed_bet.state"]:
-        importlib.import_module(mod)
+def test_version_is_identical_across_both_manifests():
+    """The release version lives in two files that nothing else keeps in sync.
 
-
-def test_seal_and_open_commands_exist():
-    from pathlib import Path
-    root = Path(__file__).resolve().parents[1]
-    assert (root / "commands" / "ds-seal.md").exists()
-    assert (root / "commands" / "ds-open.md").exists()
-
-
-def test_version_is_identical_across_all_three_manifests():
-    """The release version lives in three files that nothing else keeps in sync.
-
-    plugin.json is what Claude Code shows, package.json is what `npx` resolves,
-    and pyproject.toml is what the Python package reports. Bumping one and
-    forgetting another ships a release that reports two different versions
-    depending on where you look, which is exactly the kind of small dishonesty
-    this project should not tolerate in itself.
+    plugin.json is what Claude Code shows and package.json is what `npx`
+    resolves. Bumping one and forgetting the other ships a release that reports
+    two different versions depending on where you look, which is exactly the
+    kind of small dishonesty this project should not tolerate in itself.
     """
     import json
-    import re
 
     plugin = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
     package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
 
-    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    match = re.search(r'^version\s*=\s*"([^"]+)"', pyproject, re.MULTILINE)
-    assert match, "pyproject.toml has no top-level version"
-
     versions = {
         ".claude-plugin/plugin.json": plugin["version"],
         "package.json": package["version"],
-        "pyproject.toml": match.group(1),
     }
     assert len(set(versions.values())) == 1, f"version mismatch across manifests: {versions}"
