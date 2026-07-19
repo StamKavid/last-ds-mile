@@ -27,6 +27,22 @@ CERTIFY_LIFT_THRESHOLD = 2.0  # same language as the ship invariant
 LEAKAGE_AUC_THRESHOLD = 0.95
 LEAKAGE_R2_THRESHOLD = 0.95
 
+# Both adversaries are warn-only diagnostics, so their cost must stay well under
+# the cost of the model they exist to protect. Before this cap they did not:
+# on the 284,807-row credit-card-fraud benchmark, split_adversary ran 5-fold
+# cross-validation of a 100-tree RandomForest over every row, then bootstrapped
+# roc_auc 1000x over all of them -- 27m38s, against a 2m47s AutoGluon fit. A
+# user on a few-hundred-thousand-row dataset would reasonably conclude /ds-seal
+# had hung, with no output and no way to skip.
+#
+# Subsampling is not a compromise here: both probes answer a question about a
+# DISTRIBUTION (can dev and held be told apart? does this feature solo-predict
+# the target?), and those are answerable to far more precision than the ship
+# gate needs from tens of thousands of rows. The cap is recorded in the Ledger
+# so a reader always knows how many rows the verdict rests on, rather than the
+# subsampling being invisible.
+PROBE_MAX_ROWS = 50_000
+
 
 def _cv_folds(minority_count: int) -> int:
     return min(5, max(2, minority_count))
@@ -82,8 +98,32 @@ def _onehot_single_column(df: pd.DataFrame, col: str) -> np.ndarray:
     return enc.fit_transform(sub)
 
 
+def _subsample_stratified(X: np.ndarray, y: np.ndarray, max_rows: int,
+                          seed: int) -> tuple[np.ndarray, np.ndarray]:
+    """Cap rows while preserving each class's share, deterministically.
+
+    Stratified rather than uniform because the dev/held ratio is the thing
+    split_adversary is measuring: a uniform sample of a 4:1 split would still
+    be roughly 4:1, but a stratified one is exactly 4:1, which keeps the AUC
+    comparable across runs with different cap behaviour.
+    """
+    if len(y) <= max_rows:
+        return X, y
+    rng = np.random.default_rng(seed)
+    keep: list[np.ndarray] = []
+    for cls in np.unique(y):
+        idx = np.flatnonzero(y == cls)
+        # At least 2 per class so cross-validation still has something to fold.
+        n = max(2, round(max_rows * len(idx) / len(y)))
+        n = min(n, len(idx))
+        keep.append(rng.choice(idx, size=n, replace=False))
+    sel = np.sort(np.concatenate(keep))
+    return X[sel], y[sel]
+
+
 def split_adversary(dev_df: pd.DataFrame, held_features_df: pd.DataFrame,
-                    feature_cols: list[str], seed: int = 0) -> dict:
+                    feature_cols: list[str], seed: int = 0,
+                    max_rows: int = PROBE_MAX_ROWS) -> dict:
     combined = _encode_numeric(pd.concat(
         [dev_df[feature_cols], held_features_df[feature_cols]], ignore_index=True
     ), feature_cols)
@@ -100,6 +140,11 @@ def split_adversary(dev_df: pd.DataFrame, held_features_df: pd.DataFrame,
         )
     X = np.vstack([dev_X, held_X])
     y = np.concatenate([np.zeros(len(dev_X)), np.ones(len(held_X))])
+    n_total = len(y)
+    X, y = _subsample_stratified(X, y, max_rows, seed)
+    # Re-derive after subsampling: the fold count must reflect the rows actually
+    # being cross-validated, not the pre-cap population.
+    minority_count = int(min(np.sum(y == 0), np.sum(y == 1)))
 
     clf = RandomForestClassifier(n_estimators=100, random_state=seed)
     cv = _cv_folds(minority_count)
@@ -108,7 +153,8 @@ def split_adversary(dev_df: pd.DataFrame, held_features_df: pd.DataFrame,
     sigma = bootstrap_sigma(y, proba, "roc_auc", seed=seed)
     lift_val = lift(auc, 0.5, sigma, greater_is_better=True)
     certified = lift_val <= CERTIFY_LIFT_THRESHOLD
-    return {"auc": auc, "sigma": sigma, "lift": lift_val, "certified": certified}
+    return {"auc": auc, "sigma": sigma, "lift": lift_val, "certified": certified,
+            "n_rows": len(y), "n_rows_total": n_total}
 
 
 def leakage_adversary(dev_df: pd.DataFrame, target_col: str,

@@ -27,6 +27,17 @@ venv/
 # so these two runs' evidence keeps working unchanged.
 benchmarks/*/*.csv
 benchmarks/*/*.txt
+# Unanchored (no leading path) so they match at ANY depth under a run
+# directory. The credit-card-fraud benchmark nests one level deeper --
+# last-ds-mile-run/{time,random}/ -- to hold two seals of the same data, and the
+# previous `benchmarks/*/last-ds-mile-run/auto/` form silently failed to match
+# that, which would have committed 506 MB of dev.csv splits and AutoGluon model
+# binaries. Caught by the SkillSpector scan flagging a .pkl inside the run dir.
+**/last-ds-mile-run/**/dev.csv
+**/last-ds-mile-run/**/held/
+**/last-ds-mile-run/**/auto/
+**/last-ds-mile-run/**/seal_state.json
+**/last-ds-mile-run/**/preds.csv
 benchmarks/*/last-ds-mile-run/dev.csv
 benchmarks/*/last-ds-mile-run/held/
 benchmarks/*/last-ds-mile-run/auto/

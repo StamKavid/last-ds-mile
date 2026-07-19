@@ -277,3 +277,30 @@ def test_seal_and_open_commands_exist():
     root = Path(__file__).resolve().parents[1]
     assert (root / "commands" / "ds-seal.md").exists()
     assert (root / "commands" / "ds-open.md").exists()
+
+
+def test_version_is_identical_across_all_three_manifests():
+    """The release version lives in three files that nothing else keeps in sync.
+
+    plugin.json is what Claude Code shows, package.json is what `npx` resolves,
+    and pyproject.toml is what the Python package reports. Bumping one and
+    forgetting another ships a release that reports two different versions
+    depending on where you look, which is exactly the kind of small dishonesty
+    this project should not tolerate in itself.
+    """
+    import json
+    import re
+
+    plugin = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
+
+    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    match = re.search(r'^version\s*=\s*"([^"]+)"', pyproject, re.MULTILINE)
+    assert match, "pyproject.toml has no top-level version"
+
+    versions = {
+        ".claude-plugin/plugin.json": plugin["version"],
+        "package.json": package["version"],
+        "pyproject.toml": match.group(1),
+    }
+    assert len(set(versions.values())) == 1, f"version mismatch across manifests: {versions}"

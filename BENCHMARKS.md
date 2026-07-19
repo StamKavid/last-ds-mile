@@ -215,6 +215,41 @@ which shows perfect predictions collapsing toward chance under the old join, alo
 `test_shuffled_preds_score_identically_when_row_ids_are_carried`, which shows shuffling
 is now a no-op.
 
+**The split-adversary probe did not scale, and on a large dataset it dominated the
+run.** Found by the third benchmark (`benchmarks/credit-card-fraud/`, 284,807 rows).
+With `strategy="random"` the seal took **27m38s**; the identical pipeline with
+`strategy="time"`, where the probe is skipped by design, took **2m47s**. The AutoGluon
+fit itself was ~2m46s — so a *warn-only diagnostic* was costing roughly 10× the model it
+exists to protect, with no progress output and no way to skip it. A user running
+`/ds-seal` on a few-hundred-thousand-row dataset (entirely normal in production DS)
+would reasonably conclude the tool had hung. Cause:
+`cross_val_predict(RandomForestClassifier(n_estimators=100), cv=5)` over every row — 500
+trees on ~228k rows each — followed by a 1000-resample `roc_auc` bootstrap over all
+284,807. None of those constants scale with anything the user chose; they were fine at
+Ames' 1,460 rows and Telco's 7,043 and pathological here. Fixed with
+`sealed_bet.adversary.PROBE_MAX_ROWS` (50,000) and a seeded, stratified subsample —
+stratified because the dev/held ratio is the very thing the probe measures. Measured on
+this dataset's own random split: **284,807 rows / ~25 min / AUC 0.4990 / σ 0.0013 /
+CERTIFIED** became **50,000 rows / 178 s / AUC 0.4930 / σ 0.0032 / CERTIFIED** — same
+verdict, ~8× faster, with σ honestly widening to reflect the smaller sample. The row
+count is written into the Ledger line whenever the cap bites, so a reader always knows
+how many rows a verdict rests on rather than the subsampling being invisible.
+
+**The leakage-adversary false-positives on legitimately strong features — and that
+completes the picture of what it can tell you.** Both credit-card-fraud variants flagged
+`⚠ SUSPECT` on `V14` (solo_score 0.9513 / 0.9529, just over the 0.95 threshold). This is
+not leakage: `V1..V28` are PCA components computed *unsupervised* over transaction
+attributes and never saw the `Class` label, so a component solo-predicting fraud at 0.95
+AUC is genuine discriminative power in a dataset whose design concentrates signal into a
+few components. Read against the house-prices `SaleCondition` finding above, this bounds
+the probe from both directions: there it reported CLEAR (R²=0.123) on a real
+known-at-prediction-time violation; here it reports SUSPECT on a non-violation. The
+probe detects exactly one thing — a feature that is nearly a copy of the target — and
+cannot distinguish strong legitimate signal from a leak, nor catch a timeline violation
+at all. Both verdicts require a human reading them, which is why it is warn-only. Not
+"fixed" (there is nothing to fix); recorded so the threshold is not mistaken for a
+verdict.
+
 ## Open — not fixed here
 
 **The Build loop rejects nearly everything after iteration 1, in every run so far.**

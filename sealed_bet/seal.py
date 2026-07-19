@@ -155,7 +155,8 @@ def seal(data_path: str, target: str, task: str, metric: str, out_dir: str,
         _run_probe(
             ledger_path, "split-adversary",
             lambda: split_adversary(dev, held_features, feature_cols, seed=seed),
-            lambda r: append_probe(ledger_path, r["auc"], r["sigma"], r["lift"], r["certified"]),
+            lambda r: append_probe(ledger_path, r["auc"], r["sigma"], r["lift"], r["certified"],
+                                   r.get("n_rows"), r.get("n_rows_total")),
         )
     _run_probe(
         ledger_path, "leakage-adversary",
