@@ -35,17 +35,6 @@ calibration, subgroup performance, and where it fails — not a single leaderboa
 6. Write to `.last-ds-mile/stages/07-evaluate.md`: the aggregate metric, the calibration
    check, the slice table, error-analysis notes, and a reference to each exported figure.
 
-**If this project went through the Sealed Bet (`/ds-seal` → `/ds-auto`/`/ds-model` →
-`/ds-open`):** steps 2–4 need the true held-set labels, which are off-limits until
-`/ds-open` has run. Once it has, `open_seal()` has already called
-`sealed_bet.score.reveal()`, which writes `held/revealed.csv` (the true target plus the
-submitted predictions) — join it with the already-readable `held/features.csv` by row
-order to get everything this stage needs. Never read `held/_sealed_target.csv` directly
-(it's guard-blocked for exactly this reason, and reading it through a workaround — a
-shell command, a script, anything other than `held/revealed.csv` — defeats the point of
-the guard even if it isn't literally intercepted). If `held/revealed.csv` doesn't exist
-yet, the seal hasn't been opened — stop and run `/ds-open` first, don't work around it.
-
 ## Common Rationalizations
 
 See `ds-method` for the shared Rationalizations that apply to every stage, in particular
