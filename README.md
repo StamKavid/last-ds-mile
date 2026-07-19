@@ -1,25 +1,20 @@
 # Last DS Mile
 
+<div align="center">
+  <img src="assets/last-ds-mile-logo.png" alt="Last DS Mile logo" width="320">
+</div>
+
 **Production-grade data science discipline for AI coding agents.**
 
 Skills encode the workflows, honesty checks, and hard gates that experienced data scientists apply at every stage — from problem framing to reproducible handoff. Packaged so AI agents follow them consistently, instead of taking the shortest path to a metric that looks good.
 
 A product of [The Last AI Mile](https://thelastaimile.substack.com).
 
-<div align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
-  <a href="https://claude.com/claude-code"><img src="https://img.shields.io/badge/Claude%20Code-Plugin-8dbb3c" alt="Claude Code Plugin"></a>
-  <br><br>
-  <img src="assets/last-ds-mile-logo.png" alt="Last DS Mile logo" width="320">
-</div>
+---
 
-```
-  /ds-frame ──▶ /ds-data ──▶ /ds-explore ──▶ /ds-prep ──▶ /ds-baseline ──▶ /ds-validate
-                                                                                    │
-                                                                                    ▼
-  /ds-handoff ◀── /ds-report ◀── /ds-explain ◀── /ds-evaluate ◀── /ds-model ◀────┘
-  ⚠ Gate          ⚠ Gate                                            ⚠ Gate
-```
+<p align="center">
+  <img src="assets/last-ds-mile-1.png" alt="Last DS Mile pipeline" width="900">
+</p>
 
 ---
 
@@ -188,6 +183,14 @@ Every skill follows a consistent anatomy:
 │  Verification     → Evidence requirements       │
 └─────────────────────────────────────────────────┘
 ```
+
+---
+
+<p align="center">
+  <img src="assets/last-ds-mile-2.png" alt="Last DS Mile architecture" width="900">
+</p>
+
+---
 
 **Key design choices:**
 
