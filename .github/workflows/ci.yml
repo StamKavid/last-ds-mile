@@ -49,6 +49,36 @@ jobs:
         # runtime behavior of the five hooks.
         run: uv run pytest tests/test_plugin_structure.py tests/test_hooks.py -v
 
+  security:
+    name: skillspector
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Install SkillSpector
+        run: uv tool install git+https://github.com/NVIDIA/skillspector.git
+      - name: Scan against the documented baseline
+        # Static-only: no API key needed, and deterministic. The LLM pass is run
+        # manually before a release, not on every push.
+        #
+        # This FAILS on any finding not already justified in
+        # .skillspector-baseline.yaml. That is the point: the baseline is a list
+        # of findings someone wrote a reason for, so a new one means either a
+        # real issue or a reason still to be written.
+        run: skillspector scan . --no-llm --baseline .skillspector-baseline.yaml
+      - name: SARIF for code scanning
+        if: always()
+        run: skillspector scan . --no-llm --baseline .skillspector-baseline.yaml --format sarif --output skillspector.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        # Requires GitHub Advanced Security (or a public repo). Non-blocking so
+        # a private repo without GHAS does not fail the build on upload alone.
+        continue-on-error: true
+        if: always()
+        with:
+          sarif_file: skillspector.sarif
+
   benchmarks:
     name: pytest + AutoGluon (full 217)
     runs-on: ubuntu-latest

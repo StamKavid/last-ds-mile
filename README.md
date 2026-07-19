@@ -9,6 +9,24 @@ honesty checks built into every stage.
 
 A product of [The Last AI Mile](https://thelastaimile.substack.com).
 
+## Scope — what this does and doesn't cover
+
+Worth knowing before you install, so nothing here is a surprise later:
+
+- **Tabular supervised learning.** Regression and classification on rows and
+  columns, via pandas/scikit-learn (and AutoGluon for the optional Build loop).
+  No text, vision, recommenders, or time-series *forecasting* — time-ordered
+  data is handled as a splitting and leakage concern, not as a forecasting stack.
+- **The pipeline ends at handoff.** `/ds-handoff` packages a model and pins an
+  environment. Deployment, serving, monitoring, drift detection, and retraining
+  triggers are **not** covered yet — despite the name, that part of the last mile
+  is on the roadmap, not in the box.
+- **The Sealed Bet is experimental, and its guard is friction rather than a
+  sandbox.** `seal_guard.py` denies the `Read` tool on sealed label files;
+  `Bash` and `Grep` are **not** gated, so an agent that runs `cat` or `grep` can
+  still reach them. Treat it as a mechanism that makes peeking deliberate and
+  visible, not as one that makes it impossible. See [`AUDIT.md`](AUDIT.md).
+
 ## Quickstart (60-second setup)
 
 **Option A — one command, from any terminal (recommended):**
@@ -166,6 +184,34 @@ for the `Read` tool specifically; `Bash`/`Grep` are not yet gated (see AUDIT.md'
 "Known limitation" note under `seal_guard.py`).
 See [`AUDIT.md`](AUDIT.md) for exactly what each hook reads, writes, and calls
 (nothing over the network, ever).
+
+### Independent scan
+
+This plugin is scanned with [NVIDIA SkillSpector](https://github.com/NVIDIA/skillspector)
+(v2.3.13, static analysis) on every push, and the scan gates CI. Reproduce it:
+
+    uv tool install git+https://github.com/NVIDIA/skillspector.git
+    skillspector scan . --no-llm --baseline .skillspector-baseline.yaml
+
+**Read the number honestly:** the result is 0/100 (SAFE) *with 31 findings
+suppressed* via [`.skillspector-baseline.yaml`](.skillspector-baseline.yaml).
+A suppressed finding is not a finding that vanished — so every entry in that
+file carries a written reason, and CI fails on any finding that doesn't have
+one. Inspect them yourself with `--show-suppressed`. The two largest groups:
+
+- **5 dependency CVE findings (3 CRITICAL)** against numpy/pandas/scikit-learn/
+  PyYAML/pytest. SkillSpector's `SC4` check queries OSV by package *name* and
+  reports every advisory ever filed, without filtering by the version declared —
+  verified by raising the floors to numpy 2.3 / scikit-learn 1.7 / PyYAML 6.0.2
+  and re-scanning, which changed nothing. Any project depending on the standard
+  DS stack scores 100/100 "DO NOT INSTALL" here regardless of what it pins.
+- **4 "external script fetching" findings (HIGH)** matching the literal string
+  `curl * | bash`. In both files it appears, that string is the *deny rule*
+  blocking the pattern — in `settings-baseline.json`'s `permissions.deny`, and
+  in the test asserting that rule exists.
+
+There is no NVIDIA verification or certification programme, and this is not one:
+it's a self-run scan, reproducible with the command above.
 
 To adopt the recommended permission baseline in your own project, merge
 [`settings-baseline.json`](settings-baseline.json) into your project's
