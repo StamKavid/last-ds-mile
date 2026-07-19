@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -39,8 +41,8 @@ def test_split_adversary_handles_small_held_set_without_nan(tmp_path=None):
     dev = pd.DataFrame({"a": rng.normal(size=196), "b": rng.normal(size=196)})
     held = pd.DataFrame({"a": rng.normal(size=4), "b": rng.normal(size=4)})
     result = split_adversary(dev, held, feature_cols=["a", "b"], seed=0)
-    assert not (result["sigma"] != result["sigma"])  # not NaN
-    assert not (result["lift"] != result["lift"])  # not NaN
+    assert not math.isnan(result["sigma"])
+    assert not math.isnan(result["lift"])
 
 
 def test_split_adversary_raises_on_too_small_held_set():
@@ -144,3 +146,142 @@ def test_leakage_adversary_raises_on_negative_encoded_labels():
     with pytest.raises(ValueError, match="non-negative"):
         leakage_adversary(df, target_col="y", feature_cols=["noise"],
                           task="classification", seed=0)
+
+
+# --- Regression coverage: both probes used to crash on the first categorical
+# column or the first NaN ("could not convert string to float: 'Male'") on
+# any realistic tabular dataset -- every real benchmark run in this repo hit
+# it. These tests prove the fix on the exact shape of data that broke it,
+# not just on the all-numeric, no-missing-values frames above. ---
+
+def _mixed_dtype_frame(n=200, seed=0):
+    rng = np.random.default_rng(seed)
+    df = pd.DataFrame({
+        "num": rng.normal(size=n),
+        "num_with_gaps": rng.normal(size=n),
+        "cat": rng.choice(["Male", "Female"], size=n),
+        "cat_with_gaps": rng.choice(["A", "B", "C"], size=n),
+    })
+    df.loc[rng.choice(n, size=n // 10, replace=False), "num_with_gaps"] = np.nan
+    df.loc[rng.choice(n, size=n // 10, replace=False), "cat_with_gaps"] = np.nan
+    return df
+
+
+def test_split_adversary_handles_categorical_and_missing_columns():
+    dev = _mixed_dtype_frame(n=160, seed=0)
+    held = _mixed_dtype_frame(n=40, seed=1)
+    result = split_adversary(dev, held, feature_cols=list(dev.columns), seed=0)
+    assert 0.0 <= result["auc"] <= 1.0
+
+
+def test_leakage_adversary_handles_categorical_and_missing_columns():
+    rng = np.random.default_rng(0)
+    n = 200
+    y = rng.integers(0, 2, size=n)
+    df = _mixed_dtype_frame(n=n, seed=0)
+    df["y"] = y
+    findings = leakage_adversary(df, target_col="y", feature_cols=list(df.columns[:-1]),
+                                 task="classification", seed=0)
+    assert len(findings) == 4
+    assert all(0.0 <= f["solo_score"] <= 1.0 for f in findings)
+
+
+def test_leakage_adversary_catches_a_categorical_bijection_a_linear_probe_would_miss():
+    # A nominal category that alternates non-monotonically with the target is
+    # a real leak (e.g. a status code that happens to be a proxy for the
+    # outcome) but its arbitrary ordinal code is not linearly/monotonically
+    # related to the target -- this is exactly why categorical columns get a
+    # DecisionTree probe instead of Logistic/Linear (see adversary.py).
+    n = 400
+    codes = np.tile(np.arange(8), n // 8)
+    y = (codes % 2)  # alternates 0,1,0,1,... across increasing codes
+    df = pd.DataFrame({"leaky_cat": [f"code_{c}" for c in codes], "y": y})
+    findings = leakage_adversary(df, target_col="y", feature_cols=["leaky_cat"],
+                                 task="classification", seed=0)
+    assert findings[0]["flagged"] is True
+
+
+# --- probe row cap -----------------------------------------------------------
+#
+# split_adversary is warn-only, but on the 284,807-row credit-card-fraud
+# benchmark it cost 27m38s (5-fold CV of a 100-tree RandomForest over every row,
+# then a 1000x roc_auc bootstrap over all of them) against a 2m47s model fit.
+# The same run with strategy="time", where the probe is skipped, took 2m47s
+# total. These pin the cap that fixed it.
+
+
+def test_split_adversary_caps_rows_and_reports_both_counts():
+    from sealed_bet.adversary import PROBE_MAX_ROWS
+
+    dev, held = _iid_frames(n_dev=4000, n_held=1000, seed=0)
+    result = split_adversary(dev, held, feature_cols=["a", "b"], seed=0, max_rows=500)
+    assert result["n_rows_total"] == 5000
+    assert result["n_rows"] <= 500
+    # the default is the shared constant, not a magic number local to the call
+    assert PROBE_MAX_ROWS == 50_000
+
+
+def test_subsample_preserves_the_dev_held_ratio():
+    # The dev/held ratio is the thing split_adversary measures, so the cap must
+    # not distort it -- a uniform sample would preserve it only approximately.
+    from sealed_bet.adversary import _subsample_stratified
+
+    X = np.arange(10000).reshape(-1, 1).astype(float)
+    y = np.concatenate([np.zeros(8000), np.ones(2000)])  # 80/20
+
+    Xs, ys = _subsample_stratified(X, y, max_rows=1000, seed=0)
+    assert len(ys) <= 1000
+    # 80/20 in, 80/20 out, within one row of rounding
+    assert abs((ys == 0).sum() - 800) <= 1
+    assert abs((ys == 1).sum() - 200) <= 1
+    assert len(np.unique(Xs)) == len(Xs)  # sampled without replacement
+
+
+def test_subsample_is_a_noop_below_the_cap():
+    from sealed_bet.adversary import _subsample_stratified
+
+    X = np.arange(50).reshape(-1, 1).astype(float)
+    y = np.concatenate([np.zeros(40), np.ones(10)])
+    Xs, ys = _subsample_stratified(X, y, max_rows=1000, seed=0)
+    assert len(ys) == 50
+    assert np.array_equal(Xs, X)
+
+
+def test_subsample_keeps_at_least_two_rows_of_a_tiny_class():
+    # A held set that is a vanishing fraction of the total must not be sampled
+    # down to zero or one row, or cross-validation downstream cannot fold.
+    from sealed_bet.adversary import _subsample_stratified
+
+    X = np.arange(100000).reshape(-1, 1).astype(float)
+    y = np.concatenate([np.zeros(99997), np.ones(3)])
+    _, ys = _subsample_stratified(X, y, max_rows=1000, seed=0)
+    assert (ys == 1).sum() >= 2
+
+
+def test_split_adversary_still_certifies_an_iid_split_after_capping():
+    # The cap must not change the verdict on a genuinely indistinguishable
+    # split: subsampling costs precision, not correctness.
+    dev, held = _iid_frames(n_dev=6000, n_held=1500, seed=2)
+    uncapped = split_adversary(dev, held, feature_cols=["a", "b"], seed=2, max_rows=10**9)
+    capped = split_adversary(dev, held, feature_cols=["a", "b"], seed=2, max_rows=1500)
+    assert uncapped["certified"] is True
+    assert capped["certified"] is True
+    assert capped["n_rows"] < uncapped["n_rows"]
+
+
+def test_split_adversary_cap_is_materially_faster_on_a_large_frame():
+    # The point of the cap is wall-clock, so measure wall-clock rather than
+    # asserting the constant exists and calling it fixed.
+    import time
+
+    dev, held = _iid_frames(n_dev=16000, n_held=4000, seed=3)
+
+    t0 = time.perf_counter()
+    split_adversary(dev, held, feature_cols=["a", "b"], seed=3, max_rows=10**9)
+    uncapped_s = time.perf_counter() - t0
+
+    t0 = time.perf_counter()
+    split_adversary(dev, held, feature_cols=["a", "b"], seed=3, max_rows=2000)
+    capped_s = time.perf_counter() - t0
+
+    assert capped_s < uncapped_s, f"cap was not faster ({capped_s:.2f}s vs {uncapped_s:.2f}s)"

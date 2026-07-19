@@ -18,8 +18,7 @@ from __future__ import annotations
 import tempfile
 
 from sealed_bet.metrics import METRICS, bootstrap_sigma
-from sealed_bet.splits import split
-
+from sealed_bet.splits import auto_stratify_col, split
 
 EARLY_STOP_AFTER = 5  # consecutive Ladder rejections before the Build loop gives up
 
@@ -60,8 +59,10 @@ def _fit_predictor(train_df, target: str, task: str, model_dir: str | None,
         raise ImportError(
             "AutoGluon is required for this operation (sealed_bet.auto's "
             "run_iteration/ceiling_baseline-without-a-human-estimate/refit_winner). "
-            "Install it (see requirements-dev.txt), or pass --ceiling-estimate to "
-            "seal() to avoid the proxy ceiling fit and skip AutoGluon entirely."
+            "Install it with `uv sync --extra benchmarks` (it is an optional "
+            "extra, not a core dependency -- see pyproject.toml), or pass "
+            "--ceiling-estimate to seal() to avoid the proxy ceiling fit and "
+            "skip AutoGluon entirely."
         ) from exc
     problem_type = "regression" if task == "regression" else "binary"
     path = model_dir or tempfile.mkdtemp(prefix="sealed_bet_autogluon_")
@@ -88,8 +89,9 @@ def run_iteration(dev_df, target: str, feature_cols: list[str], task: str, metri
                   seed: int = 0, held_frac: float = 0.2, time_limit: int = 30,
                   model_dir: str | None = None) -> dict:
     outer_train, outer_val = split(dev_df, strategy=strategy, seed=seed,
-                                   held_frac=held_frac, group_key=group_key, time_col=time_col)
-    predictor = _fit_predictor(outer_train[feature_cols + [target]], target, task, model_dir, time_limit)
+                                   held_frac=held_frac, group_key=group_key, time_col=time_col,
+                                   stratify_col=auto_stratify_col(task, strategy, target))
+    predictor = _fit_predictor(outer_train[[*feature_cols, target]], target, task, model_dir, time_limit)
     train_score, _, _ = _score(predictor, outer_train, target, feature_cols, task, metric)
     val_score, val_y_true, val_y_pred = _score(predictor, outer_val, target, feature_cols, task, metric)
     noise_floor = bootstrap_sigma(val_y_true, val_y_pred, metric, seed=seed)
@@ -106,11 +108,11 @@ def ceiling_baseline(dev_df, target: str, feature_cols: list[str], task: str, me
     # as a real achievable score the way you would run_iteration's dev_score.
     if human_estimate is not None:
         return {"score": float(human_estimate), "source": "human"}
-    predictor = _fit_predictor(dev_df[feature_cols + [target]], target, task, model_dir, time_limit)
+    predictor = _fit_predictor(dev_df[[*feature_cols, target]], target, task, model_dir, time_limit)
     score, _, _ = _score(predictor, dev_df, target, feature_cols, task, metric)
     return {"score": score, "source": "proxy"}
 
 
 def refit_winner(dev_df, target: str, feature_cols: list[str], task: str,
                  seed: int = 0, time_limit: int = 30, model_dir: str | None = None):
-    return _fit_predictor(dev_df[feature_cols + [target]], target, task, model_dir, time_limit)
+    return _fit_predictor(dev_df[[*feature_cols, target]], target, task, model_dir, time_limit)

@@ -1,12 +1,18 @@
-from sealed_bet.state import init_state, is_opened, mark_opened
-from sealed_bet.ledger import write_header, append_experiment, append_verdict, append_probe, append_build_iteration
 from sealed_bet.contract import Contract
+from sealed_bet.ledger import (
+    append_build_iteration,
+    append_experiment,
+    append_probe,
+    append_verdict,
+    write_header,
+)
+from sealed_bet.state import init_state, is_opened, mark_opened
 
 
 def _c():
     return Contract("y", "classification", "roc_auc",
                     {"strategy": "random", "group_key": None, "time_col": None},
-                    0.5, 0.2, 0, "abc", "full", "2026-07-10T00:00:00Z",
+                    0.5, "constant", 0.2, 0, "abc", "full", "2026-07-10T00:00:00Z",
                     budget=15, ceiling_score=0.5, ceiling_source="proxy")
 
 

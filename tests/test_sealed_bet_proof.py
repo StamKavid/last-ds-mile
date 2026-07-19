@@ -4,8 +4,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_predict
 from sklearn.tree import DecisionTreeClassifier
 
-from sealed_bet.seal import seal
 from sealed_bet.score import open_seal, score_dev
+from sealed_bet.seal import seal
 
 
 def _make_dataset(tmp_path, seed=0, scale=30.0):
@@ -58,7 +58,8 @@ def test_optimistic_overfit_model_is_refused(tmp_path):
     held_feats = pd.read_csv(out / "held" / "features.csv")
     held_pred = overfit.predict_proba(held_feats[Xcols])[:, 1]
     preds = tmp_path / "preds.csv"
-    pd.DataFrame({"pred": held_pred}).to_csv(preds, index=False)
+    row_ids = pd.read_csv(out / "held" / "row_ids.csv")["row_id"]
+    pd.DataFrame({"row_id": row_ids, "pred": held_pred}).to_csv(preds, index=False)
 
     result = open_seal(str(preds), str(out), str(led))
     assert result["shipped"] is False              # refused
@@ -90,7 +91,8 @@ def test_honest_model_ships(tmp_path):
     held_feats = pd.read_csv(out / "held" / "features.csv")
     held_pred = model.predict_proba(held_feats[Xcols])[:, 1]
     preds = tmp_path / "preds.csv"
-    pd.DataFrame({"pred": held_pred}).to_csv(preds, index=False)
+    row_ids = pd.read_csv(out / "held" / "row_ids.csv")["row_id"]
+    pd.DataFrame({"row_id": row_ids, "pred": held_pred}).to_csv(preds, index=False)
 
     result = open_seal(str(preds), str(out), str(led))
     assert result["shipped"] is True               # beats baseline by > 2σ

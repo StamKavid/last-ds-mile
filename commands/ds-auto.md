@@ -7,13 +7,26 @@ this turn, up to the Contract's `budget` or 5 consecutive Ladder rejections —
 no mid-loop check-ins, but every iteration is logged to the ledger as it
 happens so it stays watchable.
 
+**What this loop is and isn't.** It demonstrates the Ladder mechanism —
+propose one framing change, score it honestly, accept only if it clears the
+noise floor — on a real dataset. It is *not* an exhaustive model search, and
+its acceptance rule has a hard resolution limit: improvements smaller than the
+noise floor are rejected whether or not they are real. Step 6 requires
+reporting that floor explicitly, so nobody reads a run's rejection count as
+proof the search was thorough.
+
 1. Load `.last-ds-mile/contract.json` (via `sealed_bet.contract.Contract.load`)
    for `target`, `task`, `metric`, `budget`, `ceiling_score`, `ceiling_source`,
-   `seed`, and the split `strategy`/`group_key`/`time_col`. Load
-   `.last-ds-mile/dev.csv` into `dev_df`, and `.last-ds-mile/held/features.csv`
+   `seed`, `excluded_features`, and the split `strategy`/`group_key`/`time_col`.
+   Load `.last-ds-mile/dev.csv` into `dev_df`, and `.last-ds-mile/held/features.csv`
    into `held_df` — any feature engineered into `dev_df` during the loop
    (step 3b) must be applied identically to `held_df` in the same step, so the
-   two stay column-aligned for the final prediction in step 5. Determine
+   two stay column-aligned for the final prediction in step 5. (`excluded_features`
+   is informational here, not something to re-apply: `seal()` already dropped those
+   columns from `dev.csv`/`held/features.csv` themselves, so `best_feature_cols`'s
+   "all columns except target" start point never sees them — mention them in
+   `06-model.md`'s narrative if non-empty, so the exclusion is visible in the
+   record, not just enforced silently.) Determine
    `ledger_path`: the Contract itself doesn't persist which `--ledger` path
    `/ds-seal` used, so use `LEDGER.md` unless this session's own `/ds-seal`
    run (or the user) said otherwise — it must match whatever `/ds-seal`/
@@ -75,7 +88,36 @@ happens so it stays watchable.
    way as `run_iteration`'s own internal scoring; `held_df` already carries
    any engineered columns from step 3b) using the refit predictor
    (`predict_proba(..., as_multiclass=False)` for classification, `predict(...)`
-   for regression). Write them as a single-column CSV to `preds.csv`.
+   for regression). Write them as a **two-column** CSV to `preds.csv` —
+   `row_id` read from `.last-ds-mile/held/row_ids.csv`, plus the prediction:
+
+       ids = pd.read_csv(".last-ds-mile/held/row_ids.csv")["row_id"]
+       pd.DataFrame({"row_id": ids, "pred": preds}).to_csv("preds.csv", index=False)
+
+   `/ds-open` joins on `row_id`, not row position, and refuses a `preds.csv`
+   without it. `held_df` is never reordered by this loop, so the ids line up
+   positionally — write them explicitly anyway, because that guarantee is not
+   something the scoring step can verify on its own.
 6. Report a summary: how many iterations ran, how many were accepted, the
    best dev score, the ceiling score and its source, and that `preds.csv` is
    ready. Tell the user `/ds-open` settles the bet next.
+
+   **Report the resolution floor honestly, alongside the counts.** State the
+   final `noise_floor` and what it implies: `ladder_accept` only accepts an
+   improvement strictly larger than it, so any change smaller than
+   `noise_floor` in `metric` terms is indistinguishable from noise at this
+   dev-set size and would be rejected no matter how real it is. Say this in
+   plain units, e.g. "noise floor 0.012 AUC — this loop cannot resolve any
+   improvement smaller than that."
+
+   This matters because of what every run so far actually looks like: across
+   all seven re-seals of the two committed benchmarks, iteration 1 wins and
+   every later iteration is rejected as within the noise floor (see
+   `BENCHMARKS.md`). At held-set sizes in the hundreds-to-low-thousands, the
+   floor is plausibly larger than any single feature-ablation's true effect.
+   So do **not** report "N rejections, early-stopped" as evidence the search
+   was thorough. It may equally mean the acceptance criterion could not
+   resolve anything smaller than a large effect, regardless of how many
+   iterations ran. If every iteration after the first was rejected, say that
+   the loop found no change it could distinguish from noise — not that it
+   confirmed the first framing was best.
