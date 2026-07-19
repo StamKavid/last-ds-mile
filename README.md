@@ -221,7 +221,7 @@ This plugin is scanned with [NVIDIA SkillSpector](https://github.com/NVIDIA/skil
     uv tool install git+https://github.com/NVIDIA/skillspector.git
     skillspector scan . --no-llm --baseline .skillspector-baseline.yaml
 
-**Read the number honestly:** the result is 0/100 (SAFE) *with 31 findings
+**Read the number honestly:** the result is 0/100 (SAFE) *with 30 findings
 suppressed* via [`.skillspector-baseline.yaml`](.skillspector-baseline.yaml).
 A suppressed finding is not a finding that vanished — so every entry in that
 file carries a written reason, and CI fails on any finding that doesn't have
@@ -240,6 +240,15 @@ one. Inspect them yourself with `--show-suppressed`. The two largest groups:
 
 There is no NVIDIA verification or certification programme, and this is not one:
 it's a self-run scan, reproducible with the command above.
+
+**On a fork with GitHub Advanced Security enabled:** the CI workflow strips
+baselined findings from the SARIF before uploading, so GitHub's Security tab
+shows only genuinely open, untriaged findings — matching the 0/100 above rather
+than the raw 30-finding count. This exists because SkillSpector's `--baseline`
+correctly marks suppressed results with a SARIF `suppressions` field, and
+GitHub's alert *list* honors it, but its separate per-PR "new alerts" check does
+not — it will fail on every already-triaged finding otherwise, even ones
+carrying a written justification.
 
 To adopt the recommended permission baseline in your own project, merge
 [`settings-baseline.json`](settings-baseline.json) into your project's
