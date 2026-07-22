@@ -1,0 +1,13 @@
+{
+  "model": "Blend(LightGBM via sklearn Pipeline one-hot, 50%; CatBoostRegressor native-categorical, 50%)",
+  "target": "log1p(SalePrice)",
+  "cv_mean_rmse": 0.1244,
+  "cv_std_rmse": 0.0141,
+  "baseline_rmse": 0.3999,
+  "training_rows": 1460,
+  "training_data_sha256_16": "ed142e0a97bd49fc",
+  "trained_at_utc": "2026-07-22T14:43:26.557335+00:00",
+  "lightgbm_version": "4.6.0",
+  "catboost_version": "1.2.10",
+  "predict_contract": "predict(df) = 0.5 * lgbm_pipeline.predict(df[numeric+categorical]) + 0.5 * catboost_model.predict(catboost_preprocessor.transform(df[numeric+categorical])); result is log1p(SalePrice), apply expm1() for a dollar figure"
+}

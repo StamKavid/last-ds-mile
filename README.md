@@ -20,7 +20,7 @@ A product of [The Last AI Mile](https://thelastaimile.substack.com).
 
 ## Commands
 
-13 slash commands — one navigator and 11 pipeline stages, plus `/ds-learn` to capture project-local lessons. Each activates the right skills automatically. Three stages are hard gates that stop and verify discipline before proceeding.
+15 slash commands — one navigator, 12 pipeline stages (including the `/ds-iterate` loop-back step), plus `/ds-learn` to capture project-local lessons and `/ds-brief` to translate `/ds-report` for a non-technical audience. Each activates the right skills automatically. Three stages are hard gates that stop and verify discipline before proceeding.
 
 | What you're doing | Command | Key principle |
 |-------------------|---------|---------------|
@@ -33,10 +33,12 @@ A product of [The Last AI Mile](https://thelastaimile.substack.com).
 | Design the validation scheme | `/ds-validate` | The split is part of the model |
 | Train models | `/ds-model` ⚠ | No model without a baseline and a validation plan |
 | Evaluate with slices | `/ds-evaluate` | Aggregate scores lie; slice performance reveals |
+| Diagnose and route back | `/ds-iterate` | One pass rarely finishes the job — name the gap, fix the right stage |
 | Interpret results | `/ds-explain` | Explanation is evidence, not decoration |
 | Communicate findings | `/ds-report` ⚠ | Slices and uncertainty, not one number |
 | Package for handoff | `/ds-handoff` ⚠ | Pinned environment before shipping any model |
 | Capture a lesson | `/ds-learn` | What broke and what fixed it, for the next session |
+| Brief a non-technical audience | `/ds-brief` | Translate the report, don't re-analyze — no jargon, one page |
 
 The three ⚠ stages are **hard gates**: `/ds-model` requires a completed baseline and validation strategy to exist first; `/ds-report` requires subgroup performance, not just an aggregate metric; `/ds-handoff` requires a pinned environment before packaging a model.
 
@@ -80,9 +82,9 @@ then re-run the install command.
 
 ---
 
-## All 21 Skills
+## All 27 Skills
 
-The commands above are entry points. Behind them are 21 skills total — 11 pipeline skills, 8 domain skills that auto-trigger by situation, and 2 shared methodology skills. Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
+The commands above are entry points. Behind them are 27 skills total — 13 pipeline skills, 12 domain skills that auto-trigger by situation, and 2 shared methodology skills. Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
 
 ### Navigate — Find your stage
 
@@ -115,20 +117,22 @@ The commands above are entry points. Behind them are 21 skills total — 11 pipe
 
 | Skill | What It Does | Use When |
 |-------|-------------|----------|
-| [ds-model](skills/ds-model/SKILL.md) | Train candidates against the validated baseline, track all experiments, and refuse to proceed without a baseline and validation plan ⚠ | After baseline and validation are confirmed |
+| [ds-model](skills/ds-model/SKILL.md) | Train candidates against the validated baseline, track all experiments with fold spread, diagnose bias vs. variance, consider ensembling, and refuse to proceed without a baseline and validation plan ⚠ | After baseline and validation are confirmed |
 
 ### Evaluate — Prove it works
 
 | Skill | What It Does | Use When |
 |-------|-------------|----------|
-| [ds-evaluate](skills/ds-evaluate/SKILL.md) | Evaluate on held-out data with slices and subgroups, run error analysis, check calibration, and compare against the baseline | After training; required before `/ds-report` |
+| [ds-evaluate](skills/ds-evaluate/SKILL.md) | Evaluate on held-out data with slices, subgroups, and protected-attribute checks, run error analysis, check calibration, and compare against the baseline | After training; required before `/ds-report` |
+| [ds-iterate](skills/ds-iterate/SKILL.md) | Diagnose `/ds-evaluate`'s findings (bias, variance, a slice weakness, leakage, or shift) and route back to the exact stage that fixes it, or confirm the result is ready to proceed | After every `/ds-evaluate` pass, before `/ds-explain` |
 | [ds-explain](skills/ds-explain/SKILL.md) | Interpret model behavior with feature importance, SHAP, and partial dependence — then sanity-check the explanation against domain knowledge | Before any stakeholder communication |
 
 ### Communicate & Ship
 
 | Skill | What It Does | Use When |
 |-------|-------------|----------|
-| [ds-report](skills/ds-report/SKILL.md) | Build the findings report with uncertainty, subgroup performance, and limitations — requires slice results, not just aggregate metrics ⚠ | After full evaluation |
+| [ds-report](skills/ds-report/SKILL.md) | Build the findings report with uncertainty, subgroup performance, the metric lift translated into `/ds-frame`'s cost terms, and limitations — requires slice results, not just aggregate metrics ⚠ | After full evaluation |
+| [ds-brief](skills/ds-brief/SKILL.md) | Translate `/ds-report` into a one-page, jargon-free brief — no metric names, dollar/percentage/count framing only | Explaining results to executives or any non-technical audience |
 | [ds-handoff](skills/ds-handoff/SKILL.md) | Pin the environment, write the reproduction guide, package artifacts, and verify results replicate before handing off ⚠ | Finishing a project or transferring ownership |
 
 ---
@@ -141,6 +145,10 @@ These don't correspond to slash commands. They auto-trigger when a situation cal
 |-------|-----------|
 | [target-leakage-detection](skills/target-leakage-detection/SKILL.md) | A metric looks too good on the first try, or a single feature dominates importance |
 | [validation-strategy](skills/validation-strategy/SKILL.md) | Setting up cross-validation, or deciding whether hyperparameter tuning needs nested CV |
+| [distribution-shift](skills/distribution-shift/SKILL.md) | A fixed test set or deployment population may not match training data, or CV looked fine but a holdout/production score didn't |
+| [uncertainty-quantification](skills/uncertainty-quantification/SKILL.md) | Reporting or comparing CV scores — every metric needs a spread, not a bare point estimate |
+| [model-ensembling](skills/model-ensembling/SKILL.md) | Two or more structurally different candidates exist and a single model's score has plateaued |
+| [causal-vs-predictive](skills/causal-vs-predictive/SKILL.md) | A driver finding gets worded as "reduces/causes/drives," or a recommendation implies intervening on a feature rather than just ranking with it |
 | [imbalanced-data](skills/imbalanced-data/SKILL.md) | A classification target is skewed and accuracy stops being meaningful |
 | [metric-selection](skills/metric-selection/SKILL.md) | Choosing or defending an evaluation metric against stakeholder pressure |
 | [error-analysis](skills/error-analysis/SKILL.md) | An aggregate score looks fine but you need to know where the model actually fails |
@@ -195,7 +203,7 @@ Every skill follows a consistent anatomy:
 **Key design choices:**
 
 - **Process, not reference.** Skills are workflows agents follow, not documentation they read. Each has steps, checkpoints, and exit criteria.
-- **Hard gates, not suggestions.** Three stages actively refuse to proceed without prior-stage evidence — a baseline, a validation plan, a pinned environment. The gate is structural, not advisory.
+- **Hard gates, not suggestions.** Three stages check for prior-stage evidence — a baseline, a validation plan, a pinned environment — and stop to tell the agent (and you) exactly what's missing rather than proceeding around it. Enforcement is by warning and stopping to ask, matching this plugin's warn-never-block safety posture (see `ds-method` and [Safety](#safety)), not by a mechanism that can silently block you.
 - **Anti-rationalization built in.** Every skill includes a table of excuses agents (and humans) use to skip steps — "the metric looks fine", "I'll validate later" — with documented counter-arguments.
 - **Verification is non-negotiable.** Every skill ends with evidence requirements. "Seems reasonable" is never sufficient — there must be slice results, a baseline comparison, a locked environment file.
 
@@ -205,7 +213,7 @@ Every skill follows a consistent anatomy:
 
 ```
 last-ds-mile/
-├── skills/                          # 21 skills total
+├── skills/                          # 27 skills total
 │   ├── ds-method/                   #   Shared discipline layer (meta)
 │   ├── ds-frame/                    #   Frame
 │   ├── ds-data/                     #   Understand
@@ -215,11 +223,17 @@ last-ds-mile/
 │   ├── ds-validate/                 #   Prepare
 │   ├── ds-model/                    #   Model      ⚠ Hard gate
 │   ├── ds-evaluate/                 #   Evaluate
+│   ├── ds-iterate/                  #   Evaluate   (loop back or proceed)
 │   ├── ds-explain/                  #   Evaluate
 │   ├── ds-report/                   #   Ship       ⚠ Hard gate
+│   ├── ds-brief/                    #   Ship       (non-technical translation)
 │   ├── ds-handoff/                  #   Ship       ⚠ Hard gate
 │   ├── target-leakage-detection/    #   Domain (auto-trigger)
 │   ├── validation-strategy/         #   Domain (auto-trigger)
+│   ├── distribution-shift/          #   Domain (auto-trigger)
+│   ├── uncertainty-quantification/  #   Domain (auto-trigger)
+│   ├── model-ensembling/            #   Domain (auto-trigger)
+│   ├── causal-vs-predictive/        #   Domain (auto-trigger)
 │   ├── imbalanced-data/             #   Domain (auto-trigger)
 │   ├── metric-selection/            #   Domain (auto-trigger)
 │   ├── error-analysis/              #   Domain (auto-trigger)
@@ -228,10 +242,11 @@ last-ds-mile/
 │   ├── data-viz-standards/          #   Domain (auto-trigger)
 │   └── capturing-learnings/         #   Capture project-local lessons
 ├── agents/                          # 3 specialist subagents
-├── commands/                        # 13 slash commands
+├── commands/                        # 15 slash commands
 ├── hooks/                           # Session lifecycle hooks (warn, never block)
-├── lessons/                         # 4 real DS failure-and-fix write-ups
-├── benchmarks/                      # Reference runs on public datasets
+├── lessons/                         # 6 real DS failure-and-fix write-ups
+├── benchmarks/                      # Full pipeline runs on 3 public datasets
+├── showcase/                        # Curated figures from the benchmark runs
 ├── tests/                           # Plugin structure + hook behavior tests
 ├── settings-baseline.json           # Opt-in permission baseline
 └── AUDIT.md                         # What every hook reads, writes, and calls
@@ -245,17 +260,18 @@ Data science projects don't fail in the modeling cell. They fail in the last mil
 
 AI coding agents make this worse by default — they optimize for a result that looks right quickly, skipping the steps that reveal whether the result *is* right. Last DS Mile gives agents structured workflows with checkpoints that match how experienced data scientists actually work: baselines before complexity, honest splits before training, slices before reporting.
 
-Three principles run through every stage:
+Four principles run through every stage:
 
 - **Leakage first.** Target leakage, temporal leakage, and validation leakage are actively hunted — not left to chance. The `leakage-auditor` subagent is available for adversarial review before any model ships.
 - **Baselines are required, not optional.** A model that doesn't beat the simplest thing that could work has proven nothing. `/ds-baseline` is a hard prerequisite for `/ds-model`.
-- **Aggregate scores are not enough.** Slice performance, calibration, and error analysis are required before any model ships. `/ds-evaluate` results are a hard prerequisite for `/ds-report`.
+- **Aggregate scores are not enough.** Slice performance (including protected/sensitive attributes where relevant), calibration, and error analysis are required before any model ships. `/ds-evaluate` results are a hard prerequisite for `/ds-report`.
+- **A point estimate is not a finding.** Every reported metric carries its fold spread, and a lift over baseline is only real if it exceeds that spread — see `uncertainty-quantification`. One pass through evaluation is also rarely the end: `/ds-iterate` diagnoses what's actually wrong and routes back to the stage that fixes it before the pipeline is allowed to call itself done.
 
 ---
 
 ## Learnings
 
-Four real failure-and-fix write-ups ship in `lessons/`, cited from the skills that teach the pattern they illustrate. Read one alongside the skill it's cited from for a concrete example, not just the abstract rule. Each is tagged to a pipeline stage and surfaces automatically at the start of a session heading into that stage.
+Six real failure-and-fix write-ups ship in `lessons/`, cited from the skills that teach the pattern they illustrate. Read one alongside the skill it's cited from for a concrete example, not just the abstract rule. Each is tagged to a pipeline stage and surfaces automatically at the start of a session heading into that stage.
 
 | Lesson | Pattern |
 |--------|---------|
@@ -263,8 +279,30 @@ Four real failure-and-fix write-ups ship in `lessons/`, cited from the skills th
 | [the-99-percent-fraud-model.md](lessons/the-99-percent-fraud-model.md) | Class imbalance masking a useless model |
 | [the-leaderboard-that-lied.md](lessons/the-leaderboard-that-lied.md) | Validation leakage via repeated k-fold tuning |
 | [the-notebook-nobody-could-rerun.md](lessons/the-notebook-nobody-could-rerun.md) | Reproducibility failure at handoff |
+| [the-imbalance-knob-that-broke-silently.md](lessons/the-imbalance-knob-that-broke-silently.md) | A library-specific imbalance parameter collapsing at an extreme ratio |
+| [the-contract-that-wasnt-the-cause.md](lessons/the-contract-that-wasnt-the-cause.md) | A correlational finding written up as a confirmed causal claim |
 
 Run `/ds-learn` to capture your own project-local lesson — what broke and what fixed it. It's appended to `.last-ds-mile/learnings.jsonl` and resurfaces the same way at the relevant stage. See the [capturing-learnings](skills/capturing-learnings/SKILL.md) skill for what's worth capturing.
+
+---
+
+## Benchmarks
+
+Three real datasets, each taken through the full `/ds-frame`→`/ds-handoff` pipeline, not just described in the abstract — proof the discipline produces real, reliable numbers rather than plausible-sounding prose. Full evidence trail for each run lives in [`benchmarks/`](benchmarks/); a curated set of figures is in [`showcase/`](showcase/).
+
+| Dataset | Problem | Shipped model | Score | 5-seed reliability | vs. published reference |
+|---|---|---|---|---|---|
+| [House Prices](benchmarks/house-prices/) | Regression | Blend (LightGBM + CatBoost-native) | RMSE 0.1244 ± 0.0141 | mean 0.1228, **seed std 0.0014** | 0.11–0.12 is "solid"; matches |
+| [Telco Churn](benchmarks/telco-churn/) | Classification (26.5% positive) | Blend (LogReg + CatBoost-native) | ROC-AUC 0.8477 ± 0.0113 | mean 0.8477, **seed std 0.0004** | ~0.84–0.86 published; matches |
+| [Credit Card Fraud](benchmarks/credit-card-fraud/) | Classification (0.17% positive) | Blend (LightGBM + CatBoost) | PR-AUC 0.8455 ± 0.0117 | mean 0.8465, **seed std 0.0010** | ~0.85–0.87 published; matches |
+
+**Reliability, checked, not assumed:** each score was verified across 5 independent CV-splitter seeds. In every case the seed-to-seed standard deviation is 10–30x smaller than the within-run fold-to-fold standard deviation — the number is a stable property of the model and data, not a lucky split. Each score also lands inside independently published reference ranges for its dataset, an external check, not just an internally consistent one.
+
+**Reproducibility, checked, not assumed:** each dataset's model-comparison script, evaluation script, and seed-reliability script were written separately, share only the dataset's `pipeline_lib.py`, and were each rerun fresh on demand — every run agrees with every other run to 4 decimal places. That agreement is recorded per-dataset in each `10-handoff.md`.
+
+Two real problems were caught and fixed during these runs, not glossed over — see the two newest entries in Learnings above. Both are now permanent checks in the pipeline, not one-off patches.
+
+To reproduce any run: `cd benchmarks/<dataset> && python scripts/model.py` (candidate comparison) `&& python scripts/evaluate.py` (OOF evaluation + figures) `&& python scripts/explain.py` (interpretation) — see `requirements-lock.txt` in each folder for the exact pinned environment.
 
 ---
 

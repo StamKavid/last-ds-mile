@@ -1,0 +1,14 @@
+{
+  "model": "Blend(LGBMClassifier 50%, CatBoostClassifier 50%), both class-weight-balanced",
+  "target": "Class (1=fraud, 0=genuine)",
+  "cv_pr_auc_mean": 0.8455,
+  "cv_pr_auc_std": 0.0117,
+  "baseline_pr_auc": 0.00167,
+  "frozen_threshold": 0.4932,
+  "training_rows": 283726,
+  "training_data_sha256_16": "76274b691b16a6c4",
+  "trained_at_utc": "2026-07-22T15:36:46.666874+00:00",
+  "lightgbm_version": "4.6.0",
+  "catboost_version": "1.2.10",
+  "predict_contract": "score(df) = 0.5*lgbm_model.predict_proba(df[numeric])[:,1] + 0.5*catboost_model.predict_proba(df[numeric])[:,1]; flag if score >= frozen_threshold"
+}
