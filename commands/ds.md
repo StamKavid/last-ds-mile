@@ -3,7 +3,7 @@ description: Show the Last DS Mile pipeline map and route to the next stage
 ---
 
 Check `.last-ds-mile/stages/` in the current project for existing stage output files
-(`00-frame.md` through `10-handoff.md`). Use the Glob tool on `.last-ds-mile/stages/*.md`
+(`00-frame.md` through `12-deploy.md`). Use the Glob tool on `.last-ds-mile/stages/*.md`
 to see what already exists.
 
 Print the pipeline map below, marking each stage done (✓) if its file exists, or next
@@ -22,6 +22,7 @@ Print the pipeline map below, marking each stage done (✓) if its file exists, 
     9.  /ds-report    Communication
     10. /ds-handoff   Reproducibility & handoff
     11. /ds-package   Package + training/serving parity check
+    12. /ds-deploy    Local endpoint + monitoring, drift, rollback
 
 Stages 3–7 are not strictly linear: `/ds-iterate` reads `/ds-evaluate`'s findings after
 every pass and either routes back to `/ds-prep`, `/ds-validate`, or `/ds-model` with a
@@ -33,8 +34,8 @@ If `.last-ds-mile/stages/` doesn't exist yet, recommend starting with `/ds-frame
 explain that each stage's output feeds the next.
 
 Otherwise, recommend the command matching the first missing stage in order. If the
-user asks to skip ahead to `/ds-model`, `/ds-report`, `/ds-handoff`, or `/ds-package`
-without the stages before it, remind them of that stage's Hard Gate (see `ds-method`)
-rather than silently letting them skip it — a missing baseline, validation strategy, or
-parity check is not something to route around. If `/ds-evaluate` exists but `/ds-iterate` hasn't run yet,
+user asks to skip ahead to `/ds-model`, `/ds-report`, `/ds-handoff`, `/ds-package`, or
+`/ds-deploy` without the stages before it, remind them of that stage's Hard Gate (see
+`ds-method`) rather than silently letting them skip it — a missing baseline, validation
+strategy, parity check, or monitoring/rollback plan is not something to route around. If `/ds-evaluate` exists but `/ds-iterate` hasn't run yet,
 recommend `/ds-iterate` next, not `/ds-explain`.
