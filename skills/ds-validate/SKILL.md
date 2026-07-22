@@ -26,10 +26,16 @@ structure (time, groups, imbalance) rather than by whatever split is easiest to 
    `GroupKFold`).
 3. Ask: is the target imbalanced? If yes, use stratified splits so folds preserve class
    balance.
-4. If none of the above apply, plain (or stratified) k-fold is fine — state that
+4. Ask: is there a fixed test set (Kaggle-style) or a known deployment population this
+   model will actually be scored against? If yes, run adversarial validation between
+   training data and that population before finalizing the split — see
+   `distribution-shift`. A split that looks fine internally can still fail to predict
+   real transfer if the test/production distribution differs from training.
+5. If none of the above apply, plain (or stratified) k-fold is fine — state that
    explicitly rather than choosing it by default without checking.
-5. Write to `.last-ds-mile/stages/05-validate.md`: the chosen strategy, why, and the
-   exact split/CV code to be reused identically in `/ds-model`.
+6. Write to `.last-ds-mile/stages/05-validate.md`: the chosen strategy, why, the
+   distribution-shift check and its result, and the exact split/CV code to be reused
+   identically in `/ds-model`.
 
 ## Common Rationalizations
 
@@ -47,7 +53,8 @@ failure mode.
 
 ## Verification
 
-- [ ] Time, group, and imbalance questions all answered explicitly, not skipped.
+- [ ] Time, group, imbalance, and distribution-shift questions all answered
+      explicitly, not skipped.
 - [ ] Chosen strategy documented with its justification.
 - [ ] Exact split/CV code recorded for identical reuse in `/ds-model`.
 - [ ] `.last-ds-mile/stages/05-validate.md` written.

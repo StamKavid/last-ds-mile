@@ -43,10 +43,15 @@ survived evaluation because they didn't hurt the metric.
    does a suspicious feature dominate — a leakage signal that slipped past `/ds-prep`?
 5. If a feature's importance is implausibly high, stop and re-check it against the
    `/ds-prep` known-at-prediction-time list before proceeding to `/ds-report`.
-6. Export the permutation importance (ensemble, and the base-model cross-check if step 3
+6. **Word every finding as predictive, not causal, unless a causal identification
+   strategy is stated** (see `causal-vs-predictive`) — "X is associated with Y," not
+   "X reduces/causes/drives Y," especially for any feature the subject chose
+   themselves (a contract, a plan tier, an opt-in), where self-selection is the
+   obvious confound.
+7. Export the permutation importance (ensemble, and the base-model cross-check if step 3
    applies) and the SHAP summary (beeswarm) as figures to
    `.last-ds-mile/figures/08-<name>.png`.
-7. Write to `.last-ds-mile/stages/08-explain.md`: the importance ranking, the SHAP
+8. Write to `.last-ds-mile/stages/08-explain.md`: the importance ranking, the SHAP
    finding, any base-model cross-check finding, sanity commentary, any features sent
    back for a leakage re-check, and a reference to each exported figure.
 
@@ -58,10 +63,19 @@ survived evaluation because they didn't hurt the metric.
 
 See `ds-method` for the shared Rationalizations that apply to every stage.
 
+See `causal-vs-predictive` for the Rationalizations specific to mistaking a strong
+predictive driver for a causal one.
+
 ## Red Flags
 
 See `ds-method`'s Red Flags — in particular, "a single feature has near-perfect
 importance" is exactly what this stage exists to catch.
+
+See `causal-vs-predictive`'s Red Flags — a driver the subject chose themselves
+(a contract, a plan, an opt-in) described as "reducing" or "causing" the outcome
+without a self-selection argument is this stage's other common failure mode.
+
+See `lessons/the-contract-that-wasnt-the-cause.md` for a real example.
 
 ## Verification
 
@@ -73,5 +87,7 @@ importance" is exactly what this stage exists to catch.
 - [ ] Top drivers checked against domain expectations, not accepted uncritically.
 - [ ] Any implausible driver re-checked against `/ds-prep`'s known-at-prediction-time
       list.
+- [ ] Every driver finding is worded as predictive/associational unless a causal
+      identification strategy is stated (see `causal-vs-predictive`).
 - [ ] Figures exported to `.last-ds-mile/figures/`, not only tables in prose.
 - [ ] `.last-ds-mile/stages/08-explain.md` written.

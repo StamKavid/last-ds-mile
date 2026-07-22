@@ -1,6 +1,6 @@
 {
   "name": "last-ds-mile",
-  "version": "0.2.0",
+  "version": "0.5.0",
   "private": true,
   "description": "One-command installer for the Last DS Mile Claude Code plugin. Run via: npx stamkavid/last-ds-mile",
   "type": "module",

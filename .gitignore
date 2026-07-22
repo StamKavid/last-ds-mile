@@ -15,3 +15,21 @@ venv/
 # repo never commits source data, which also keeps redistribution of
 # third-party dataset licenses out of scope.
 data/
+
+# Reference runs under benchmarks/: keep the narrative evidence a run produces
+# (stage markdown, LEDGER.md, contract.json/comparison.json, figures, the
+# scripts that generated a run) — never the raw Kaggle CSVs or the heavy
+# model/AutoGluon artifacts a run leaves behind alongside it.
+benchmarks/*/*.csv
+benchmarks/*/*.txt
+!benchmarks/**/requirements-lock.txt
+benchmarks/**/auto/
+benchmarks/**/held/
+benchmarks/**/*.pkl
+benchmarks/**/*.ubj
+benchmarks/**/*.joblib
+benchmarks/**/dev.csv
+benchmarks/**/preds.csv
+benchmarks/**/oof_predictions.csv
+benchmarks/**/seal_state.json
+benchmarks/**/catboost_info/
