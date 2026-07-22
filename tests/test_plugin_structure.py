@@ -2,7 +2,6 @@ import json
 import re
 
 import pytest
-
 from helpers import ROOT, parse_frontmatter
 
 STAGE_SKILLS = [
@@ -14,6 +13,7 @@ STAGE_SKILLS = [
     "ds-validate",
     "ds-model",
     "ds-evaluate",
+    "ds-iterate",
     "ds-explain",
     "ds-report",
     "ds-handoff",
@@ -22,6 +22,10 @@ STAGE_SKILLS = [
 DOMAIN_SKILLS = [
     "target-leakage-detection",
     "validation-strategy",
+    "distribution-shift",
+    "uncertainty-quantification",
+    "model-ensembling",
+    "causal-vs-predictive",
     "imbalanced-data",
     "metric-selection",
     "error-analysis",
@@ -29,6 +33,7 @@ DOMAIN_SKILLS = [
     "dataframe-performance",
     "data-viz-standards",
     "capturing-learnings",
+    "ds-brief",
 ]
 
 LESSONS = [
@@ -36,6 +41,8 @@ LESSONS = [
     "the-99-percent-fraud-model",
     "the-notebook-nobody-could-rerun",
     "the-leaderboard-that-lied",
+    "the-imbalance-knob-that-broke-silently",
+    "the-contract-that-wasnt-the-cause",
 ]
 
 SKILL_LESSON_CITATIONS = [
@@ -47,6 +54,11 @@ SKILL_LESSON_CITATIONS = [
     ("ds-handoff", "the-notebook-nobody-could-rerun"),
     ("validation-strategy", "the-leaderboard-that-lied"),
     ("ds-validate", "the-leaderboard-that-lied"),
+    ("imbalanced-data", "the-imbalance-knob-that-broke-silently"),
+    ("ds-model", "the-imbalance-knob-that-broke-silently"),
+    ("ds-explain", "the-contract-that-wasnt-the-cause"),
+    ("ds-report", "the-contract-that-wasnt-the-cause"),
+    ("causal-vs-predictive", "the-contract-that-wasnt-the-cause"),
 ]
 
 AGENTS = [
@@ -228,6 +240,14 @@ def test_ds_learn_command_exists():
     assert "capturing-learnings" in body
 
 
+def test_ds_brief_command_exists():
+    path = ROOT / "commands" / "ds-brief.md"
+    assert path.exists(), "missing commands/ds-brief.md"
+    frontmatter, body = parse_frontmatter(path)
+    assert "description" in frontmatter
+    assert "ds-brief" in body
+
+
 @pytest.mark.parametrize("skill,lesson", SKILL_LESSON_CITATIONS)
 def test_skill_cites_lesson(skill, lesson):
     path = ROOT / "skills" / skill / "SKILL.md"
@@ -261,3 +281,23 @@ def test_readme_documents_npx_install():
     path = ROOT / "README.md"
     text = path.read_text(encoding="utf-8")
     assert "npx stamkavid/last-ds-mile" in text
+
+
+def test_version_is_identical_across_both_manifests():
+    """The release version lives in two files that nothing else keeps in sync.
+
+    plugin.json is what Claude Code shows and package.json is what `npx`
+    resolves. Bumping one and forgetting the other ships a release that reports
+    two different versions depending on where you look, which is exactly the
+    kind of small dishonesty this project should not tolerate in itself.
+    """
+    import json
+
+    plugin = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
+
+    versions = {
+        ".claude-plugin/plugin.json": plugin["version"],
+        "package.json": package["version"],
+    }
+    assert len(set(versions.values())) == 1, f"version mismatch across manifests: {versions}"
