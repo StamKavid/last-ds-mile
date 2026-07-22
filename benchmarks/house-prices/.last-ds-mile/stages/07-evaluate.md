@@ -24,7 +24,7 @@ the 0.0141 fold std — noise-level, not a discrepancy.
 Mean residual (actual − predicted, log-space): **−0.0001** — negligible overall bias,
 consistent with `/ds-model`'s temporal-holdout check (0.1117).
 
-![Calibration by predicted decile](../.last-ds-mile/figures/07-calibration.png)
+![Calibration by predicted decile](../figures/07-calibration.png)
 
 This figure now plots every individual row's prediction (not just decile means) —
 fixed after review flagged that decile-only aggregation washes out row-level noise and
@@ -43,7 +43,7 @@ the low end.
 | Q4 | 295 | 0.1005 | +0.0049 |
 | Q5 (priciest) | 289 | 0.1285 | +0.0421 |
 
-![Slice performance vs overall](../.last-ds-mile/figures/07-slice-performance.png)
+![Slice performance vs overall](../figures/07-slice-performance.png)
 
 **Same finding as v1, confirmed under the corrected model:** meaningfully worse on the
 cheapest quintile (RMSE 0.172 vs. 0.100–0.129 elsewhere), over-predicting cheap homes

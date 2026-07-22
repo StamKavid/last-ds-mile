@@ -12,7 +12,7 @@ one. PR-AUC 0.6650, reported as the stricter secondary check.
 
 ## Calibration check
 
-![Calibration by predicted-score decile](../.last-ds-mile/figures/07-calibration.png)
+![Calibration by predicted-score decile](../figures/07-calibration.png)
 
 **The Blend's raw scores are not well-calibrated as literal probabilities, even
 though ranking (AUC) is solid.** The observed curve sits visibly below the perfect-
@@ -34,7 +34,7 @@ silent trap for a future consumer of this score.
 | One year | 1,473 | 11.3% | 0.714 |
 | Two year | 1,695 | 2.8% | 0.733 |
 
-![Slice performance vs overall](../.last-ds-mile/figures/07-slice-performance.png)
+![Slice performance vs overall](../figures/07-slice-performance.png)
 
 **Every contract-type slice scores below the overall ROC-AUC (0.848).** This is a
 real, generalizable finding, not a fluke of one slice: the model discriminates well

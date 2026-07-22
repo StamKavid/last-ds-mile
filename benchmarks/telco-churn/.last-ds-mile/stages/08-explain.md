@@ -19,7 +19,7 @@ see `06-model.md`), so this split is representative, not an easy or hard draw.
 | TotalCharges | 0.0116 |
 | OnlineSecurity | 0.0068 |
 
-![Permutation importance](../.last-ds-mile/figures/08-permutation-importance.png)
+![Permutation importance](../figures/08-permutation-importance.png)
 
 ## SHAP summary (1,057 held rows, exact TreeExplainer)
 
@@ -31,7 +31,7 @@ see `06-model.md`), so this split is representative, not an easy or hard draw.
 | PaymentMethod | 0.254 |
 | OnlineSecurity | 0.220 |
 
-![SHAP summary](../.last-ds-mile/figures/08-shap-summary.png)
+![SHAP summary](../figures/08-shap-summary.png)
 
 ## Sanity check against domain expectations
 

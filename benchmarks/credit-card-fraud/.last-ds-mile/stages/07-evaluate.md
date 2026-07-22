@@ -10,7 +10,7 @@ matching `/ds-model` exactly. ROC-AUC 0.9804, reported as the secondary check on
 
 ## Calibration check
 
-![Calibration by predicted-score decile](../.last-ds-mile/figures/07-calibration.png)
+![Calibration by predicted-score decile](../figures/07-calibration.png)
 
 The bottom 9 deciles correctly cluster near-zero (the model assigns near-zero fraud
 probability to the overwhelming bulk of genuine transactions, as it should). The top
@@ -33,7 +33,7 @@ rank above the frozen threshold.
 | $200–1000 | 25,835 | 73 | 0.742 |
 | >$1000 | 2,935 | 9 | 0.780 |
 
-![Slice performance vs overall](../.last-ds-mile/figures/07-slice-performance.png)
+![Slice performance vs overall](../figures/07-slice-performance.png)
 
 No clean monotonic pattern — best at $50–200, worse at both smaller and larger
 amounts. **Caution stated explicitly**: several buckets have under 100 fraud

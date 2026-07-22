@@ -26,7 +26,7 @@ flag, independent of knowing what the feature represents.
 | V3 | 0.0136 |
 | V11 | 0.0103 |
 
-![Permutation importance](../.last-ds-mile/figures/08-permutation-importance.png)
+![Permutation importance](../figures/08-permutation-importance.png)
 
 ## SHAP summary (42,559 held rows, exact TreeExplainer)
 
@@ -38,7 +38,7 @@ flag, independent of knowing what the feature represents.
 | V10 | 0.969 |
 | V1 | 0.759 |
 
-![SHAP summary](../.last-ds-mile/figures/08-shap-summary.png)
+![SHAP summary](../figures/08-shap-summary.png)
 
 ## Sanity check — the one check that's actually possible here
 
