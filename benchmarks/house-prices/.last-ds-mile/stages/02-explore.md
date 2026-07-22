@@ -8,7 +8,7 @@ stretch the tail. `log1p(SalePrice)` brings skew down to **0.12**, close to symm
 downstream model should be trained on `logSalePrice` directly rather than raw dollars
 — confirmed visually in the figure below.
 
-![Target distribution](../.last-ds-mile/figures/02-target-distribution.png)
+![Target distribution](../figures/02-target-distribution.png)
 
 ## Bivariate — strongest relationships with `log(SalePrice)`
 
@@ -28,7 +28,7 @@ recorded at the time of listing, before sale) is the single strongest driver, we
 ahead of raw size (`GrLivArea`). This makes sense: quality captures finish level and
 condition that raw square footage doesn't.
 
-![OverallQual vs log(SalePrice)](../.last-ds-mile/figures/02-top-correlation.png)
+![OverallQual vs log(SalePrice)](../figures/02-top-correlation.png)
 
 **Leakage check on the strongest correlation:** 0.82 is high but not the "near-perfect"
 (≥0.95) shape `ds-method`'s Red Flags warn about, and `OverallQual` is assessed at

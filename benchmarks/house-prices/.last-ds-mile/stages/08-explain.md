@@ -39,7 +39,7 @@ apply to this component individually — noted explicitly rather than skipped si
 | GarageFinish | 0.0078 |
 | TotalBath | 0.0059 |
 
-![Permutation importance](../.last-ds-mile/figures/08-permutation-importance.png)
+![Permutation importance](../figures/08-permutation-importance.png)
 
 ## SHAP summary (219 held rows, exact `TreeExplainer` — no sampling needed)
 
@@ -51,7 +51,7 @@ apply to this component individually — noted explicitly rather than skipped si
 | GarageFinish | 0.0275 |
 | OverallCond | 0.0221 |
 
-![SHAP summary](../.last-ds-mile/figures/08-shap-summary.png)
+![SHAP summary](../figures/08-shap-summary.png)
 
 Native categorical columns needed no encode/decode round-trip — `TreeExplainer` reads
 CatBoost's own categorical split structure directly, which is both why this is exact
