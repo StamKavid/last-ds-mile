@@ -1,6 +1,6 @@
 {
   "name": "last-ds-mile",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "A guided data-science lifecycle for Claude Code: frame, explore, baseline, validate, model, evaluate, and report — with leakage and honesty checks built into every stage.",
   "author": {
     "name": "last-ai-mile",
