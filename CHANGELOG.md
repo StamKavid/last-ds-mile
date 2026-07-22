@@ -30,6 +30,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   statistical terms permitted; every claim must trace back to `/ds-report` rather
   than introducing new analysis. Demonstrated with real examples for all three
   benchmarks (`09b-brief.md`), each verified jargon-free and under 350 words.
+- **`CONTRIBUTING.md`, `SECURITY.md`, `CLAUDE.md`** — contribution workflow, private
+  vulnerability reporting, and repo-specific instructions for Claude Code sessions
+  working in this codebase.
 
 ## [0.5.0] — association is not causation
 
