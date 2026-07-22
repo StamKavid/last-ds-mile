@@ -1,0 +1,13 @@
+{
+  "model": "Blend(LogisticRegression one-hot+balanced 50%, CatBoostClassifier native-cat+balanced 50%)",
+  "target": "Churn (1=Yes, 0=No)",
+  "cv_roc_auc_mean": 0.8477,
+  "cv_roc_auc_std": 0.0113,
+  "baseline_roc_auc": 0.5,
+  "frozen_threshold": 0.3338,
+  "training_rows": 7043,
+  "training_data_sha256_16": "88be4b93fbe0cc83",
+  "trained_at_utc": "2026-07-22T15:37:02.871409+00:00",
+  "catboost_version": "1.2.10",
+  "predict_contract": "score(df) = 0.5*lr_pipeline.predict_proba(df[numeric+categorical])[:,1] + 0.5*catboost_model.predict_proba(catboost_preprocessor.transform(df[numeric+categorical]))[:,1]; flag if score >= frozen_threshold"
+}

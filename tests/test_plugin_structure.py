@@ -13,6 +13,7 @@ STAGE_SKILLS = [
     "ds-validate",
     "ds-model",
     "ds-evaluate",
+    "ds-iterate",
     "ds-explain",
     "ds-report",
     "ds-handoff",
@@ -21,6 +22,10 @@ STAGE_SKILLS = [
 DOMAIN_SKILLS = [
     "target-leakage-detection",
     "validation-strategy",
+    "distribution-shift",
+    "uncertainty-quantification",
+    "model-ensembling",
+    "causal-vs-predictive",
     "imbalanced-data",
     "metric-selection",
     "error-analysis",
@@ -28,6 +33,7 @@ DOMAIN_SKILLS = [
     "dataframe-performance",
     "data-viz-standards",
     "capturing-learnings",
+    "ds-brief",
 ]
 
 LESSONS = [
@@ -35,6 +41,8 @@ LESSONS = [
     "the-99-percent-fraud-model",
     "the-notebook-nobody-could-rerun",
     "the-leaderboard-that-lied",
+    "the-imbalance-knob-that-broke-silently",
+    "the-contract-that-wasnt-the-cause",
 ]
 
 SKILL_LESSON_CITATIONS = [
@@ -46,6 +54,11 @@ SKILL_LESSON_CITATIONS = [
     ("ds-handoff", "the-notebook-nobody-could-rerun"),
     ("validation-strategy", "the-leaderboard-that-lied"),
     ("ds-validate", "the-leaderboard-that-lied"),
+    ("imbalanced-data", "the-imbalance-knob-that-broke-silently"),
+    ("ds-model", "the-imbalance-knob-that-broke-silently"),
+    ("ds-explain", "the-contract-that-wasnt-the-cause"),
+    ("ds-report", "the-contract-that-wasnt-the-cause"),
+    ("causal-vs-predictive", "the-contract-that-wasnt-the-cause"),
 ]
 
 AGENTS = [
@@ -225,6 +238,14 @@ def test_ds_learn_command_exists():
     frontmatter, body = parse_frontmatter(path)
     assert "description" in frontmatter
     assert "capturing-learnings" in body
+
+
+def test_ds_brief_command_exists():
+    path = ROOT / "commands" / "ds-brief.md"
+    assert path.exists(), "missing commands/ds-brief.md"
+    frontmatter, body = parse_frontmatter(path)
+    assert "description" in frontmatter
+    assert "ds-brief" in body
 
 
 @pytest.mark.parametrize("skill,lesson", SKILL_LESSON_CITATIONS)
