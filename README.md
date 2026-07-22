@@ -82,9 +82,9 @@ then re-run the install command.
 
 ---
 
-## All 27 Skills
+## All 28 Skills
 
-The commands above are entry points. Behind them are 27 skills total — 13 pipeline skills, 12 domain skills that auto-trigger by situation, and 2 shared methodology skills. Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
+The commands above are entry points. Behind them are 28 skills total — 13 pipeline skills, 12 domain skills that auto-trigger by situation, 2 shared methodology skills, and 1 entry-point skill (`data-science-project`) that auto-routes a cold-start user into the pipeline before any data or model is touched. Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
 
 ### Navigate — Find your stage
 
@@ -213,7 +213,7 @@ Every skill follows a consistent anatomy:
 
 ```
 last-ds-mile/
-├── skills/                          # 27 skills total
+├── skills/                          # 28 skills total
 │   ├── ds-method/                   #   Shared discipline layer (meta)
 │   ├── ds-frame/                    #   Frame
 │   ├── ds-data/                     #   Understand

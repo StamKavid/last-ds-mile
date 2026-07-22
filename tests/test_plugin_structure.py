@@ -151,6 +151,24 @@ def test_domain_skill_structure(skill):
         assert section in body, f"{skill} missing section {section}"
 
 
+def test_entry_point_skill_structure():
+    """The front-door skill auto-routes cold-start users into the pipeline.
+
+    It has no command (like the domain skills) and must point at both /ds-frame
+    and the /ds router so it can onboard or defer correctly.
+    """
+    path = ROOT / "skills" / "data-science-project" / "SKILL.md"
+    assert path.exists(), "missing skills/data-science-project/SKILL.md"
+    frontmatter, body = parse_frontmatter(path)
+    assert frontmatter["name"] == "data-science-project"
+    assert len(frontmatter["description"]) <= 1024
+    for section in REQUIRED_SECTIONS:
+        assert section in body, f"data-science-project missing section {section}"
+    assert "/ds-frame" in body, "entry-point skill must route to /ds-frame"
+    assert "/ds" in body, "entry-point skill must reference the /ds router"
+    assert ".last-ds-mile/stages/" in body, "entry-point skill must gate on pipeline state"
+
+
 def test_hooks_json_valid():
     path = ROOT / "hooks" / "hooks.json"
     data = json.loads(path.read_text(encoding="utf-8"))
