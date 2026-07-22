@@ -33,6 +33,7 @@ DOMAIN_SKILLS = [
     "dataframe-performance",
     "data-viz-standards",
     "capturing-learnings",
+    "ds-brief",
 ]
 
 LESSONS = [
@@ -237,6 +238,14 @@ def test_ds_learn_command_exists():
     frontmatter, body = parse_frontmatter(path)
     assert "description" in frontmatter
     assert "capturing-learnings" in body
+
+
+def test_ds_brief_command_exists():
+    path = ROOT / "commands" / "ds-brief.md"
+    assert path.exists(), "missing commands/ds-brief.md"
+    frontmatter, body = parse_frontmatter(path)
+    assert "description" in frontmatter
+    assert "ds-brief" in body
 
 
 @pytest.mark.parametrize("skill,lesson", SKILL_LESSON_CITATIONS)

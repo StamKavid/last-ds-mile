@@ -63,3 +63,11 @@ than quietly fixed and forgotten:
 
 Both are now permanent checks in the pipeline (`ds-model`'s Red Flags,
 `causal-vs-predictive`), not one-off fixes.
+
+## What a non-technical brief looks like
+
+`/ds-brief` translates `/ds-report` into a one-page, jargon-free version for anyone
+without a DS background — no metric names, dollar/percentage/count framing only.
+Real examples, not just the skill description: [house-prices](../benchmarks/house-prices/.last-ds-mile/stages/09b-brief.md),
+[telco-churn](../benchmarks/telco-churn/.last-ds-mile/stages/09b-brief.md),
+[credit-card-fraud](../benchmarks/credit-card-fraud/.last-ds-mile/stages/09b-brief.md).

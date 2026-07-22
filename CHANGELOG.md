@@ -7,6 +7,30 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] — fix broken figure links, add /ds-brief for non-technical audiences
+
+### Fixed
+
+- **Every figure link in every benchmark's `07-evaluate.md`/`08-explain.md`/
+  `02-explore.md` was broken** — written as `../.last-ds-mile/figures/...` from a
+  file already inside `.last-ds-mile/stages/`, adding a nonexistent extra
+  `.last-ds-mile/` segment (`stages/` and `figures/` are siblings, not nested).
+  This is also why no chart ever rendered inline on GitHub — the figures were
+  generated correctly, only the reference to them was wrong. Fixed across all 14
+  image references in all three benchmarks; verified every relative link in
+  `benchmarks/` and `showcase/` now resolves to a real file.
+- Swept all three benchmarks for other staleness (artifact filenames, cross-stage
+  number consistency, stray `/ds-iterate` references) — found nothing else wrong.
+
+### Added
+
+- **`ds-brief` skill and `/ds-brief` command** — translates `/ds-report`'s
+  technical narrative into a one-page, jargon-free brief for non-technical
+  stakeholders (executives, a board, a frontline team lead). No metric names or
+  statistical terms permitted; every claim must trace back to `/ds-report` rather
+  than introducing new analysis. Demonstrated with real examples for all three
+  benchmarks (`09b-brief.md`), each verified jargon-free and under 350 words.
+
 ## [0.5.0] — association is not causation
 
 Found while extending the 0.4.0 benchmarks to two new datasets (telco-churn,
@@ -158,7 +182,8 @@ domain skills, three subagents, four warn-don't-block safety hooks, and a curate
   standalone home rather than shipping in the flagship plugin — the honesty
   checks in the lifecycle stand on their own without it.
 
-[Unreleased]: https://github.com/stamkavid/last-ds-mile/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/stamkavid/last-ds-mile/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/stamkavid/last-ds-mile/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/stamkavid/last-ds-mile/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/stamkavid/last-ds-mile/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/stamkavid/last-ds-mile/compare/v0.2.0...v0.3.0

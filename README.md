@@ -20,7 +20,7 @@ A product of [The Last AI Mile](https://thelastaimile.substack.com).
 
 ## Commands
 
-14 slash commands — one navigator, 12 pipeline stages (including the `/ds-iterate` loop-back step), plus `/ds-learn` to capture project-local lessons. Each activates the right skills automatically. Three stages are hard gates that stop and verify discipline before proceeding.
+15 slash commands — one navigator, 12 pipeline stages (including the `/ds-iterate` loop-back step), plus `/ds-learn` to capture project-local lessons and `/ds-brief` to translate `/ds-report` for a non-technical audience. Each activates the right skills automatically. Three stages are hard gates that stop and verify discipline before proceeding.
 
 | What you're doing | Command | Key principle |
 |-------------------|---------|---------------|
@@ -38,6 +38,7 @@ A product of [The Last AI Mile](https://thelastaimile.substack.com).
 | Communicate findings | `/ds-report` ⚠ | Slices and uncertainty, not one number |
 | Package for handoff | `/ds-handoff` ⚠ | Pinned environment before shipping any model |
 | Capture a lesson | `/ds-learn` | What broke and what fixed it, for the next session |
+| Brief a non-technical audience | `/ds-brief` | Translate the report, don't re-analyze — no jargon, one page |
 
 The three ⚠ stages are **hard gates**: `/ds-model` requires a completed baseline and validation strategy to exist first; `/ds-report` requires subgroup performance, not just an aggregate metric; `/ds-handoff` requires a pinned environment before packaging a model.
 
@@ -81,9 +82,9 @@ then re-run the install command.
 
 ---
 
-## All 26 Skills
+## All 27 Skills
 
-The commands above are entry points. Behind them are 26 skills total — 12 pipeline skills, 12 domain skills that auto-trigger by situation, and 2 shared methodology skills. Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
+The commands above are entry points. Behind them are 27 skills total — 13 pipeline skills, 12 domain skills that auto-trigger by situation, and 2 shared methodology skills. Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
 
 ### Navigate — Find your stage
 
@@ -131,6 +132,7 @@ The commands above are entry points. Behind them are 26 skills total — 12 pipe
 | Skill | What It Does | Use When |
 |-------|-------------|----------|
 | [ds-report](skills/ds-report/SKILL.md) | Build the findings report with uncertainty, subgroup performance, the metric lift translated into `/ds-frame`'s cost terms, and limitations — requires slice results, not just aggregate metrics ⚠ | After full evaluation |
+| [ds-brief](skills/ds-brief/SKILL.md) | Translate `/ds-report` into a one-page, jargon-free brief — no metric names, dollar/percentage/count framing only | Explaining results to executives or any non-technical audience |
 | [ds-handoff](skills/ds-handoff/SKILL.md) | Pin the environment, write the reproduction guide, package artifacts, and verify results replicate before handing off ⚠ | Finishing a project or transferring ownership |
 
 ---
@@ -211,7 +213,7 @@ Every skill follows a consistent anatomy:
 
 ```
 last-ds-mile/
-├── skills/                          # 26 skills total
+├── skills/                          # 27 skills total
 │   ├── ds-method/                   #   Shared discipline layer (meta)
 │   ├── ds-frame/                    #   Frame
 │   ├── ds-data/                     #   Understand
@@ -224,6 +226,7 @@ last-ds-mile/
 │   ├── ds-iterate/                  #   Evaluate   (loop back or proceed)
 │   ├── ds-explain/                  #   Evaluate
 │   ├── ds-report/                   #   Ship       ⚠ Hard gate
+│   ├── ds-brief/                    #   Ship       (non-technical translation)
 │   ├── ds-handoff/                  #   Ship       ⚠ Hard gate
 │   ├── target-leakage-detection/    #   Domain (auto-trigger)
 │   ├── validation-strategy/         #   Domain (auto-trigger)
@@ -239,7 +242,7 @@ last-ds-mile/
 │   ├── data-viz-standards/          #   Domain (auto-trigger)
 │   └── capturing-learnings/         #   Capture project-local lessons
 ├── agents/                          # 3 specialist subagents
-├── commands/                        # 14 slash commands
+├── commands/                        # 15 slash commands
 ├── hooks/                           # Session lifecycle hooks (warn, never block)
 ├── lessons/                         # 6 real DS failure-and-fix write-ups
 ├── benchmarks/                      # Full pipeline runs on 3 public datasets
