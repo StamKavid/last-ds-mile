@@ -61,6 +61,10 @@ decimal places" is directly this failure mode.
 See `lessons/the-99-percent-fraud-model.md` for a real example of this exact
 failure mode.
 
+See `lessons/the-imbalance-knob-that-broke-silently.md` for a real example of a
+library-specific imbalance-weighting parameter collapsing at an extreme ratio — a
+different failure mode than a wrong metric, worth checking for separately.
+
 ## Verification
 
 - [ ] Actual class balance measured and stated (not assumed).
