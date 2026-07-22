@@ -20,7 +20,7 @@ A product of [The Last AI Mile](https://thelastaimile.substack.com).
 
 ## Commands
 
-15 slash commands — one navigator, 12 pipeline stages (including the `/ds-iterate` loop-back step), plus `/ds-learn` to capture project-local lessons and `/ds-brief` to translate `/ds-report` for a non-technical audience. Each activates the right skills automatically. Three stages are hard gates that stop and verify discipline before proceeding.
+17 slash commands — one navigator, 14 pipeline stages (including the `/ds-iterate` loop-back step), plus `/ds-learn` to capture project-local lessons and `/ds-brief` to translate `/ds-report` for a non-technical audience. Each activates the right skills automatically. Five stages are hard gates that stop and verify discipline before proceeding.
 
 | What you're doing | Command | Key principle |
 |-------------------|---------|---------------|
@@ -37,10 +37,12 @@ A product of [The Last AI Mile](https://thelastaimile.substack.com).
 | Interpret results | `/ds-explain` | Explanation is evidence, not decoration |
 | Communicate findings | `/ds-report` ⚠ | Slices and uncertainty, not one number |
 | Package for handoff | `/ds-handoff` ⚠ | Pinned environment before shipping any model |
+| Package to serve | `/ds-package` ⚠ | The served model must predict identically to the offline one |
+| Deploy behind monitoring | `/ds-deploy` ⚠ | No production model without monitoring, drift, and a rollback |
 | Capture a lesson | `/ds-learn` | What broke and what fixed it, for the next session |
 | Brief a non-technical audience | `/ds-brief` | Translate the report, don't re-analyze — no jargon, one page |
 
-The three ⚠ stages are **hard gates**: `/ds-model` requires a completed baseline and validation strategy to exist first; `/ds-report` requires subgroup performance, not just an aggregate metric; `/ds-handoff` requires a pinned environment before packaging a model.
+The five ⚠ stages are **hard gates**: `/ds-model` requires a completed baseline and validation strategy to exist first; `/ds-report` requires subgroup performance, not just an aggregate metric; `/ds-handoff` requires a pinned environment before packaging a model; `/ds-package` requires the training/serving parity check to pass before the model is servable; `/ds-deploy` requires monitoring, drift detection, and a rollback pointer before a full-traffic deploy.
 
 Each stage writes its output to `.last-ds-mile/stages/` in your project, so later stages build on earlier ones and `/ds` can always detect your progress.
 
@@ -82,9 +84,9 @@ then re-run the install command.
 
 ---
 
-## All 28 Skills
+## All 30 Skills
 
-The commands above are entry points. Behind them are 28 skills total — 13 pipeline skills, 12 domain skills that auto-trigger by situation, 2 shared methodology skills, and 1 entry-point skill (`data-science-project`) that auto-routes a cold-start user into the pipeline before any data or model is touched. Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
+The commands above are entry points. Behind them are 30 skills total — 15 pipeline skills (now including `ds-package` and `ds-deploy` for the deployment mile), 12 domain skills that auto-trigger by situation, 2 shared methodology skills, and 1 entry-point skill (`data-science-project`) that auto-routes a cold-start user into the pipeline before any data or model is touched. Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
 
 ### Navigate — Find your stage
 
@@ -213,7 +215,7 @@ Every skill follows a consistent anatomy:
 
 ```
 last-ds-mile/
-├── skills/                          # 28 skills total
+├── skills/                          # 30 skills total
 │   ├── ds-method/                   #   Shared discipline layer (meta)
 │   ├── ds-frame/                    #   Frame
 │   ├── ds-data/                     #   Understand
@@ -330,7 +332,7 @@ cat settings-baseline.json
 Worth knowing before you install:
 
 - **Tabular supervised learning.** Regression and classification on rows and columns via pandas and scikit-learn. No text, vision, recommenders, or time-series forecasting — time-ordered data is handled as a splitting and leakage concern, not a forecasting stack.
-- **The pipeline ends at handoff.** `/ds-handoff` packages a model and pins an environment. Deployment, serving, monitoring, drift detection, and retraining triggers are not covered yet — that part of the last mile is on the roadmap.
+- **The deployment mile is local-first.** `/ds-package` proves training/serving parity and produces a reproducible Dockerfile; `/ds-deploy` stands the model up as a local endpoint with monitoring, drift detection, and a rollback pointer. Cloud targets are documented adapter stubs you fill in — the plugin never pushes to a remote on its own. **Automated retraining triggers are the one part still on the roadmap.**
 
 ---
 

@@ -7,6 +7,29 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.8.0] — the deployment mile: /ds-package and /ds-deploy
+
+### Added
+
+- **`/ds-package` (stage 11)** — wraps a handed-off model behind an inference
+  contract and a framework-agnostic predict wrapper, then proves **training/serving
+  parity** (the packaged model must reproduce its offline predictions) before it will
+  proceed. Emits a reproducible `Dockerfile` (image digest recorded, binary never
+  committed). Hard gate on the `/ds-handoff` artifacts. Writes `11-package.md`.
+- **`/ds-deploy` (stage 12)** — stands the parity-verified package up as a
+  **local-first** callable endpoint, and gates a full-traffic deploy on a monitoring
+  hook (predictions logged against the live baseline), a drift hook (reusing the
+  `distribution-shift` skill), and a rollback pointer. Any push to a remote/registry/
+  cloud target stops and asks — the plugin never pushes to production on its own.
+  Writes `12-deploy.md`.
+
+### Changed
+
+- The pipeline now runs `0 → 12`; the `/ds` router, `ds-method` gates/red-flags, and
+  the README Commands table and Scope section reflect the deployment mile. The only
+  part of the last mile still on the roadmap is automated retraining triggers.
+- Skill count 28 → 30; commands 15 → 17; hard gates 3 → 5.
+
 ## [0.7.0] — add data-science-project entry-point skill
 
 ### Added
