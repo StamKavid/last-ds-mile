@@ -1,11 +1,14 @@
 """Shared feature engineering + preprocessing for the credit-card-fraud benchmark.
 
-Dataset: 284,807 European card transactions over 2 days (Sept 2013), 492 fraud
-(0.173%) — anonymized via PCA into V1-V28, plus Time (seconds since first
+Dataset (raw): 284,807 European card transactions over 2 days (Sept 2013), 492
+fraud (0.173%) — anonymized via PCA into V1-V28, plus Time (seconds since first
 transaction) and Amount. No missing values. 1081 exact duplicate rows found in
 /ds-data (19 of the "extra" copies are fraud-labeled) — deduped here, before any
 split, per target-leakage-detection's train/test-contamination check: an undeduped
-dataset risks the same transaction landing in both a training and a validation fold.
+dataset risks the same transaction landing in both a training and a validation
+fold. Every script downstream of `prepare_full()` therefore works with the
+post-dedup counts, not the raw ones above: 283,726 rows, 473 fraud (0.167%) — the
+figures reported everywhere else in this benchmark's stage docs.
 """
 import numpy as np
 import pandas as pd

@@ -23,6 +23,7 @@ y = df["Churn"].values
 folds = list(StratifiedKFold(n_splits=5, shuffle=True, random_state=42).split(np.zeros(len(y)), y))
 oof = np.zeros(len(df))
 fold_roc = []
+fold_pr = []
 for tr_idx, va_idx in folds:
     pre_native, cat_idx = build_preprocessor_native(num, cat)
     Xt = pre_native.fit_transform(X.iloc[tr_idx])
@@ -40,12 +41,15 @@ for tr_idx, va_idx in folds:
     blend = 0.5 * p_lr + 0.5 * p_cb
     oof[va_idx] = blend
     fold_roc.append(roc_auc_score(y[va_idx], blend))
+    fold_pr.append(average_precision_score(y[va_idx], blend))
 
 fold_roc = np.array(fold_roc)
+fold_pr = np.array(fold_pr)
 overall_roc = roc_auc_score(y, oof)
 overall_pr = average_precision_score(y, oof)
 print(f"Out-of-fold ROC-AUC: {overall_roc:.4f}  PR-AUC: {overall_pr:.4f}")
 print(f"Per-fold ROC-AUC: {np.round(fold_roc, 4)}  mean={fold_roc.mean():.4f} std={fold_roc.std():.4f}")
+print(f"Per-fold PR-AUC:  {np.round(fold_pr, 4)}  mean={fold_pr.mean():.4f} std={fold_pr.std():.4f}")
 
 df = df.copy()
 df["oof_score"] = oof

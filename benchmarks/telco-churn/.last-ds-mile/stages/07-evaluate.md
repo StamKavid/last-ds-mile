@@ -8,7 +8,12 @@ out-of-fold predictions of the shipped `Blend(LogReg+CatBoost-native)`.
 **Overall out-of-fold ROC-AUC: 0.8475** (pooled) / **0.8477 ± 0.0113** (fold mean),
 matching `/ds-model` exactly — and matching seed=42's row in the 5-seed reliability
 check to 4 decimal places, a cross-run consistency confirmation, not just an internal
-one. PR-AUC 0.6650, reported as the stricter secondary check.
+one.
+
+**PR-AUC: 0.6650** (pooled) / **0.6675 ± 0.0218** (fold mean), reported as the
+stricter secondary check per `uncertainty-quantification` — with its own fold spread,
+not left as a bare point estimate the way an earlier pass at this doc did. Matches
+`/ds-model`'s independently-computed PR-AUC exactly.
 
 ## Calibration check
 
@@ -18,13 +23,22 @@ one. PR-AUC 0.6650, reported as the stricter secondary check.
 though ranking (AUC) is solid.** The observed curve sits visibly below the perfect-
 calibration diagonal across most of the range — e.g. at decile 5, mean predicted
 score is 0.443 but actual churn rate is only 0.224. **The model systematically
-over-states churn probability** in the middle of its score range. This doesn't
-affect the frozen-threshold deployment decision (thresholding is a ranking
-operation, unaffected by miscalibration), but it would matter for any downstream use
-that treats the raw score as a true probability (e.g. expected-revenue-at-risk
-calculations) — that use case would need the score recalibrated (isotonic
-regression or Platt scaling) first, stated explicitly here rather than left as a
-silent trap for a future consumer of this score.
+over-states churn probability** in the middle of its score range. **Correction on
+review**: an earlier version of this note claimed thresholding is "a ranking
+operation, unaffected by miscalibration" — too strong. Thresholding at a fixed cutoff
+is not calibration-invariant in general: recalibrating the scores would shift which
+rows pass a given numeric cutoff, so the precise claim is narrower. What's actually
+true here: miscalibration doesn't affect ranking metrics (ROC-AUC/PR-AUC, both
+rank-order-only), and it doesn't invalidate the *empirically chosen* frozen threshold
+(0.3338), because that threshold was picked by scanning the precision/recall curve
+directly on these same raw scores — its reported precision/recall are self-consistent
+with the scores as they actually are, miscalibrated or not. It would matter for any
+downstream use that treats the raw score as a true probability (e.g. expected-
+revenue-at-risk calculations) or that re-derives a "probability cutoff" from first
+principles rather than reusing this empirically-chosen threshold — that use case
+would need the score recalibrated (isotonic regression or Platt scaling) first,
+stated explicitly here rather than left as a silent trap for a future consumer of
+this score.
 
 ## Slice performance — by Contract type
 
