@@ -7,6 +7,19 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.7.0] — add data-science-project entry-point skill
+
+### Added
+
+- **`data-science-project` entry-point skill** — the auto-triggering counterpart
+  to the `/ds` command. Fires when a user starts a tabular ML/DS task in plain
+  language ("help me build a churn model", "predict this column") without typing
+  `/ds`, and routes them to `/ds-frame` before any data or model is touched. Gates
+  on `.last-ds-mile/stages/`: it onboards a cold-start user, and defers to the
+  `/ds` router once the pipeline is already underway, so it never re-onboards
+  mid-pipeline. Prefix-less (no command, like the domain skills) and scoped tightly
+  to avoid over-triggering on non-DS work. Brings the skill count to 28.
+
 ## [0.6.0] — fix broken figure links, add /ds-brief for non-technical audiences
 
 ### Fixed
