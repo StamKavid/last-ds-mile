@@ -17,6 +17,7 @@ STAGE_SKILLS = [
     "ds-explain",
     "ds-report",
     "ds-handoff",
+    "ds-package",
 ]
 
 DOMAIN_SKILLS = [
@@ -149,6 +150,22 @@ def test_domain_skill_structure(skill):
     assert len(frontmatter["description"]) <= 1024
     for section in REQUIRED_SECTIONS:
         assert section in body, f"{skill} missing section {section}"
+
+
+def test_package_skill_specifics():
+    """/ds-package must prove training/serving parity and define an inference contract.
+
+    The parity gate is the deployment world's leakage check — it's the reason this
+    stage is more than a docker wrapper, so the skill must actually name it.
+    """
+    path = ROOT / "skills" / "ds-package" / "SKILL.md"
+    assert path.exists(), "missing skills/ds-package/SKILL.md"
+    text = path.read_text(encoding="utf-8")
+    assert "parity" in text.lower(), "ds-package must describe the training/serving parity gate"
+    assert "contract.json" in text, "ds-package must define the inference contract"
+    assert "Dockerfile" in text, "ds-package must produce a Dockerfile"
+    assert "ds-handoff" in text, "ds-package must gate on the /ds-handoff artifacts"
+    assert ".last-ds-mile/stages/11-package.md" in text, "ds-package must write its stage doc"
 
 
 def test_entry_point_skill_structure():
