@@ -23,8 +23,8 @@ a related path-form mismatch. It reads and writes nothing itself, makes no netwo
 calls, and its only job is picking an interpreter and handing off — read it
 alongside the 4 hook scripts if you want the complete picture of what actually runs.
 
-All four exit 0 unconditionally — **warn, don't block** is the default posture (see
-the project's design doc for the full rationale). Filesystem writes (`PreCompact` and
+All four exit 0 unconditionally, and all four are **warn, don't block** — none of
+them can stop a tool call; they only annotate. Filesystem writes (`PreCompact` and
 `Stop`) are wrapped in error handling so a filesystem surprise (permissions, a path
 collision) degrades to a silent no-op rather than crashing the hook. `SessionStart`'s
 read of `learnings.jsonl` is similarly guarded — an unreadable file (permissions, or
