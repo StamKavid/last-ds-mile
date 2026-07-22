@@ -20,13 +20,13 @@ Tracks [plan.md](plan.md). Check off as each lands; stop at each ◆ checkpoint 
 - [x] ◆ **Checkpoint 2** — auto mode: local-first + confirm-before-push encoded, flagged for review
 
 ## Phase 3 — Docs + release
-- [ ] 3.1 README — Commands table (+2 rows, 15→17, 12→14, Three→Five gates); counts 28→30; **Scope rewrite** (drop "ends at handoff")
-- [ ] 3.2 CHANGELOG `[0.8.0]` + bump `plugin.json` & `package.json` to `0.8.0`
-- [ ] 3.3 Full `pytest` green (known AutoGluon skips allowed)
+- [x] 3.1 README — Commands table (+2 rows, 15→17, 12→14, Three→Five gates); counts 28→30; **Scope rewrite** (drop "ends at handoff")
+- [x] 3.2 CHANGELOG `[0.8.0]` + bump `plugin.json` & `package.json` to `0.8.0`
+- [x] 3.3 Full `pytest` green
 - [ ] ◆ **Checkpoint 3** — present diff; decide commit-to-`main` vs. PR; nothing pushed without go
 
 ## Definition of done
-- [ ] `/ds-package` and `/ds-deploy` fully wired (skill + command + gate + router + tests)
-- [ ] No stale "pipeline ends at handoff" / "deployment not covered" language in README
-- [ ] `0.8.0` synced across both manifests; CHANGELOG updated
-- [ ] Full structure suite green; no runtime code shipped, no new dependency
+- [x] `/ds-package` and `/ds-deploy` fully wired (skill + command + gate + router + tests)
+- [x] No stale "pipeline ends at handoff" / "deployment not covered" language in README
+- [x] `0.8.0` synced across both manifests; CHANGELOG updated
+- [x] Full structure suite green; no runtime code shipped, no new dependency
