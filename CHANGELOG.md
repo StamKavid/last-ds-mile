@@ -7,6 +7,47 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **With/without skill-eval harness (`benchmarks/evals/`)** — a benchmark that runs the
+  same task twice (plugin installed vs. not), grades both blind on the *outcome*, and
+  reports the reproducible per-expectation gap (pass^k vs pass@k). Adopts Anthropic
+  `skill-creator`'s eval file structure (`evals.json` → blind `grader.md` →
+  `benchmark.json`) so results are portable to its eval-viewer. First eval set is
+  6 credit-card-fraud cases (4 positive core-discipline cases, 2 negative-trigger
+  guards) exercising the accuracy trap, planted-metric framing, target leakage, and
+  test-set peeking. `README.md` maps all ten skill-eval best practices to how the
+  harness implements each; `run_eval.py`/`aggregate.py` are stdlib-only.
+- **Second eval set + a committed worked example.** `benchmarks/evals/house-prices/`
+  adds 6 cases built around the target-leakage trap (a neighbourhood-mean-of-`SalePrice`
+  feature) on a skewed regression target. `benchmarks/evals/example/` is a committed,
+  graded with/without comparison of eval 1 for both datasets — the `with_skill` arm
+  graded against the repo's real shipped benchmark pipelines, the `without_skill` arm a
+  clearly-labelled illustrative naive baseline — showing a pass^k gap of 0.875
+  (fraud) and 0.80 (house-prices). An HTML eval-viewer renders the comparison.
+- **`/ds-frame` now takes an information inventory** — a framing-time step that writes
+  down what will actually be known at prediction time versus what only becomes known
+  after the fact, recorded in `00-frame.md`. It's the proactive complement to
+  `/ds-prep`'s per-feature "known at prediction time?" check, and it surfaces available
+  signal (e.g. prior-period totals) before feature-building instead of after.
+
+### Changed
+
+- **`/ds-frame` and `metric-selection` now treat over- vs under-prediction asymmetry as
+  a first-class question.** `metric-selection` gains a regression row for asymmetric cost
+  (quantile/pinball loss at a chosen service level) alongside the existing
+  classification-only F-beta row; `/ds-frame` asks whether over- and under-shooting cost
+  the same before locking a symmetric metric.
+- **`/ds-baseline` now warns against strawman baselines** — a global mean/majority on
+  data with strong temporal, seasonal, or hierarchical structure is trivial to beat, so
+  a too-weak baseline inflates apparent lift. Guidance and a Red Flag now push toward the
+  strongest *simple* anchor (last value, same period last cycle, or the rule already in
+  use).
+- **`/ds-frame` flags forecasting as out of scope when it sees it** — a target that is a
+  future value of a time-indexed series now trips a Red Flag pointing at README → Scope,
+  stating plainly that these gates aren't a forecasting stack (weak mean baseline, no
+  lag/rolling feature machinery) rather than underperforming silently.
+
 ## [0.8.0] — the deployment mile: /ds-package and /ds-deploy
 
 ### Added

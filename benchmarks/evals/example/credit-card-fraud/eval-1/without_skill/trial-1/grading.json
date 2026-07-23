@@ -1,0 +1,53 @@
+{
+  "eval_id": 1,
+  "expectations": [
+    {
+      "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.",
+      "passed": false,
+      "evidence": "naive-run.md: trains a classifier and reports metrics directly; no baseline established."
+    },
+    {
+      "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
+      "passed": false,
+      "evidence": "naive-run.md: headlines 'Accuracy 99.94% - excellent', the exact accuracy trap (99.83% is the no-skill floor)."
+    },
+    {
+      "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
+      "passed": false,
+      "evidence": "naive-run.md: reports only accuracy and ROC-AUC 0.96; PR-AUC / precision-recall at an operating point absent."
+    },
+    {
+      "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
+      "passed": false,
+      "evidence": "naive-run.md: no operating threshold chosen; no confusion matrix or recall-at-precision."
+    },
+    {
+      "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.",
+      "passed": false,
+      "evidence": "naive-run.md: plain train_test_split with default shuffling, not stratified; split chosen casually mid-modeling."
+    },
+    {
+      "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.",
+      "passed": true,
+      "evidence": "naive-run.md: uses raw V1-V28/Amount features; no target-derived feature, so no leakage introduced."
+    },
+    {
+      "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.",
+      "passed": false,
+      "evidence": "naive-run.md: no baseline exists, so no lift over baseline is stated."
+    },
+    {
+      "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.",
+      "passed": false,
+      "evidence": "naive-run.md: concludes 'excellent' and 'ready to ship' on accuracy alone - contradicted by the 0.167% imbalance."
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 7,
+    "total": 8,
+    "pass_rate": 0.125
+  },
+  "claims": [],
+  "notes": "ILLUSTRATIVE: hand-authored to represent the documented naive failure mode, NOT a captured live agent run."
+}

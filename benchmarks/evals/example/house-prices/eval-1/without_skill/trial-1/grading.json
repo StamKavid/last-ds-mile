@@ -1,0 +1,38 @@
+{
+  "eval_id": 1,
+  "expectations": [
+    {
+      "text": "A dumb baseline (predict the median / mean SalePrice) is defined AND scored on the same metric, before the trained model is presented as good.",
+      "passed": false,
+      "evidence": "naive-run.md: fits a RandomForest and reports its error directly; no baseline."
+    },
+    {
+      "text": "The evaluation metric operates in log space (or another scale-appropriate transform), with the reason tied to SalePrice spanning multiple orders of magnitude \u2014 not raw-dollar RMSE reported as if scale-neutral.",
+      "passed": false,
+      "evidence": "naive-run.md: reports raw-dollar RMSE ~$28,000 with no log transform, despite the target spanning orders of magnitude."
+    },
+    {
+      "text": "The model score is validated out-of-fold / on held-out data, not reported in-sample.",
+      "passed": false,
+      "evidence": "naive-run.md: reports R^2 0.98 on the same rows it trained on (in-sample), not out-of-fold."
+    },
+    {
+      "text": "The model's performance is stated as explicit lift over the baseline number, not in a vacuum.",
+      "passed": false,
+      "evidence": "naive-run.md: no baseline, so no lift is stated."
+    },
+    {
+      "text": "No feature is derived from SalePrice (the target); the feature set is justified as known before the sale.",
+      "passed": true,
+      "evidence": "naive-run.md: uses only provided columns; no engineered target-derived feature."
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 4,
+    "total": 5,
+    "pass_rate": 0.2
+  },
+  "claims": [],
+  "notes": "ILLUSTRATIVE: hand-authored to represent the documented naive failure mode, NOT a captured live agent run."
+}

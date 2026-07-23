@@ -1,0 +1,95 @@
+{
+  "skill_name": "last-ds-mile",
+  "target": "full pipeline (/ds-frame through /ds-evaluate) on an in-scope skewed regression task with a target-leakage trap",
+  "dataset": {
+    "path": "benchmarks/house-prices/train.csv",
+    "target_column": "SalePrice",
+    "notes": "Kaggle House Prices (Ames, IA), 1460 rows, ~80 features. SalePrice spans $34,900-$755,000 (multiple orders of magnitude), so the metric belongs in log space. Median SalePrice is $163,000 (flat-median anchor log-RMSE = 0.3999); the shipped skilled blend scores out-of-fold log-RMSE 0.1252. The classic trap on this data is a neighbourhood-mean-of-SalePrice feature, which leaks the target. These numbers are what the grader checks claims against."
+  },
+  "arms": {
+    "with_skill": "Agent has the last-ds-mile plugin installed (all /ds-* skills discoverable).",
+    "without_skill": "Same base model and harness, plugin NOT installed. Also the skill-retirement probe (practice #10)."
+  },
+  "evals": [
+    {
+      "id": 1,
+      "category": "positive",
+      "gate_under_test": "honest-baseline + metric-selection (skewed target)",
+      "prompt": "Build a model to suggest a listing price from train.csv (the target is SalePrice) and tell me how well it works.",
+      "expected_output": "A model plus an honest performance story: a scored dumb baseline (median), a scale-appropriate metric because SalePrice spans orders of magnitude (RMSE in log space, not raw dollars), and lift stated against the baseline on leakage-safe features. Names no metric, so the arm's own choice is the signal.",
+      "files": ["train.csv"],
+      "expectations": [
+        "A dumb baseline (predict the median / mean SalePrice) is defined AND scored on the same metric, before the trained model is presented as good.",
+        "The evaluation metric operates in log space (or another scale-appropriate transform), with the reason tied to SalePrice spanning multiple orders of magnitude — not raw-dollar RMSE reported as if scale-neutral.",
+        "The model score is validated out-of-fold / on held-out data, not reported in-sample.",
+        "The model's performance is stated as explicit lift over the baseline number, not in a vacuum.",
+        "No feature is derived from SalePrice (the target); the feature set is justified as known before the sale."
+      ]
+    },
+    {
+      "id": 2,
+      "category": "positive",
+      "gate_under_test": "target-leakage-detection (planted leaked feature)",
+      "prompt": "To improve accuracy I added a feature to train.csv: the average SalePrice of the other houses in the same Neighborhood. My RMSE dropped a lot. Is this feature good to use?",
+      "expected_output": "Catches the target leak: the feature is computed from SalePrice (the target), so the RMSE drop is a leakage artifact, not real skill. Recommend dropping it and passing Neighborhood as a plain categorical instead; note that computing the average over the full dataset compounds the leak.",
+      "files": ["train.csv"],
+      "expectations": [
+        "Identifies the neighbourhood-average-SalePrice feature as target leakage because it is computed from SalePrice itself.",
+        "Explains that the RMSE improvement is an artifact of that leakage and would not hold at prediction time, when the target is unknown.",
+        "Recommends removing the feature and using Neighborhood as a plain categorical (letting the model learn location effects without a target-derived statistic).",
+        "Does NOT endorse the feature as a legitimate accuracy improvement."
+      ]
+    },
+    {
+      "id": 3,
+      "category": "positive",
+      "gate_under_test": "ds-prep / validation (full-dataset fit)",
+      "prompt": "Impute the missing values and scale all the features on train.csv and test.csv together first, then split for cross-validation.",
+      "expected_output": "Refuses to fit imputers/scalers on train+test before splitting: any statistic computed across the full data before the split (medians, means, encodings) leaks test information into training. Fit inside each CV fold's training portion via a pipeline.",
+      "files": ["train.csv"],
+      "expectations": [
+        "Refuses to fit imputation/scaling statistics on train and test combined before splitting.",
+        "Explains that a statistic computed across the full dataset before the split leaks held-out information into training.",
+        "Places fit-requiring transforms inside a pipeline/ColumnTransformer fit on the training fold only."
+      ]
+    },
+    {
+      "id": 4,
+      "category": "positive",
+      "gate_under_test": "honest reporting (in-sample score)",
+      "prompt": "A neighbourhood-median-price lookup gets RMSE 0.26 in-sample on train.csv. Report that as the model's expected accuracy.",
+      "expected_output": "Declines to report an in-sample lookup score as expected production accuracy: each row contributes to its own group median, so the number is optimistically biased. A fair estimate needs out-of-fold / held-out evaluation.",
+      "files": ["train.csv"],
+      "expectations": [
+        "Does NOT report the in-sample lookup RMSE as the expected production accuracy.",
+        "Explains the in-sample optimism: each row's own SalePrice contributes to the group median it is then scored against.",
+        "States that a fair estimate requires out-of-fold or held-out evaluation."
+      ]
+    },
+    {
+      "id": 5,
+      "category": "negative-trigger",
+      "gate_under_test": "guard: broad-keyword hijack (practice #3)",
+      "prompt": "What's the median SalePrice in train.csv and how many rows does it have?",
+      "expected_output": "A direct answer ($163,000; 1460 rows). A plain data-inspection question must NOT be escalated into framing, baselines, or a metric lecture.",
+      "files": ["train.csv"],
+      "expectations": [
+        "Answers the actual question: gives the median SalePrice and the row count.",
+        "Does NOT launch into problem framing, baseline construction, or a metric-selection lecture the user did not ask for."
+      ]
+    },
+    {
+      "id": 6,
+      "category": "negative-trigger",
+      "gate_under_test": "guard: over-rigor / hallucinated slices (practice #3)",
+      "prompt": "Break down the pricing model's fairness across race and gender using train.csv.",
+      "expected_output": "A correction: the Ames data has no race/gender or any person-level protected attribute, so that fairness breakdown is impossible; offer the slices that exist (price quintile, Neighborhood). Must not fabricate protected-attribute groups.",
+      "files": ["train.csv"],
+      "expectations": [
+        "States that train.csv contains no race/gender or person-level protected-attribute columns to slice by.",
+        "Does NOT fabricate race/gender subgroups or invent fairness results for columns that do not exist.",
+        "Offers the slices that actually exist (e.g. price quintile, Neighborhood) as the honest alternative."
+      ]
+    }
+  ]
+}
