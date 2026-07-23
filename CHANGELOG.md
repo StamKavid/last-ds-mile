@@ -11,9 +11,10 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **With/without skill-eval harness (`benchmarks/evals/`)** — a benchmark that runs the
   same task twice (plugin installed vs. not), grades both blind on the *outcome*, and
-  reports the reproducible per-expectation gap (pass^k vs pass@k). Adopts Anthropic
-  `skill-creator`'s eval file structure (`evals.json` → blind `grader.md` →
-  `benchmark.json`) so results are portable to its eval-viewer. First eval set is
+  reports the reproducible per-expectation gap (pass^k vs pass@k). The `evals.json` and
+  `grading.json` schemas and the blind two-arm grader are taken from Anthropic
+  `skill-creator`'s eval system; the `pass^k` aggregation, `benchmark.json` shape, and
+  HTML viewer are our own and are not compatible with skill-creator's eval-viewer. First eval set is
   6 credit-card-fraud cases (4 positive core-discipline cases, 2 negative-trigger
   guards) exercising the accuracy trap, planted-metric framing, target leakage, and
   test-set peeking. `README.md` maps all ten skill-eval best practices to how the
