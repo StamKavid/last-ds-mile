@@ -9,10 +9,25 @@ answer the only question that justifies a skill's existence:
 
 This harness answers that. It runs each eval task twice — **with the plugin installed**
 and **without it** — grades both blind on the *outcome*, and reports the reproducible
-gap. It borrows its file structure from Anthropic's
+gap.
+
+### What's borrowed from skill-creator, and what's ours
+
+The eval-and-grading contract is taken directly from Anthropic's
 [`skill-creator`](https://github.com/anthropics/skills/tree/main/skills/skill-creator)
-eval system (`evals.json`, a grader agent emitting `grading.json`, aggregated into
-`benchmark.json`) so results are portable to that repo's eval-viewer.
+eval system, verified against its source:
+
+- **Faithful to skill-creator:** the `evals.json` schema
+  (`{skill_name, evals:[{id, prompt, expected_output, files, expectations}]}`), the
+  `grading.json` schema (`{expectations:[{text, passed, evidence}], summary}`), the blind
+  grader contract (outcome-not-path, PASS only on genuine completion, claim extraction),
+  and the two-arm `with_skill` / `without_skill` design where the baseline is "no skill."
+- **Ours, not skill-creator's:** the aggregation. skill-creator's `benchmark.json`
+  reports `pass_rate` mean ± stddev across N runs and is read by its React eval-viewer.
+  Our `aggregate.py` instead reports **`pass^k` / `pass@k` and a per-expectation `gap`**
+  (from best-practice #7 and #10, which are not skill-creator concepts), so our
+  `benchmark.json` has a **different shape and does NOT drop into skill-creator's
+  eval-viewer** — `eval-viewer.html` here is our own. See `schemas.md` for both.
 
 ## Layout
 

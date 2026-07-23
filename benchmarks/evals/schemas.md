@@ -1,7 +1,10 @@
 # Eval file schemas
 
-The harness adopts the shape of Anthropic's `skill-creator` eval system so results are
-portable to its eval-viewer. Four files matter.
+The **input and grading** files (`evals.json`, `grading.json`) follow Anthropic's
+`skill-creator` eval system exactly. The **aggregation** file (`benchmark.json`) is our
+own `pass^k`-based shape and is *not* the schema skill-creator's eval-viewer reads —
+skill-creator's `benchmark.json` reports `pass_rate` mean ± stddev under `runs[]` keyed
+by `configuration`; ours reports `pass^k`/`pass@k` per expectation. Four files matter.
 
 ## `evals.json` (input — one per dataset)
 
