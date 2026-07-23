@@ -247,7 +247,7 @@ last-ds-mile/
 ├── commands/                        # 15 slash commands
 ├── hooks/                           # Session lifecycle hooks (warn, never block)
 ├── lessons/                         # 6 real DS failure-and-fix write-ups
-├── benchmarks/                      # Full pipeline runs on 3 public datasets
+├── benchmarks/                      # Full pipeline runs on 3 datasets + evals/ (with/without skill A/B)
 ├── showcase/                        # Curated figures from the benchmark runs
 ├── tests/                           # Plugin structure + hook behavior tests
 ├── settings-baseline.json           # Opt-in permission baseline
@@ -305,6 +305,19 @@ Three real datasets, each taken through the full `/ds-frame`→`/ds-handoff` pip
 Two real problems were caught and fixed during these runs, not glossed over — see the two newest entries in Learnings above. Both are now permanent checks in the pipeline, not one-off patches.
 
 To reproduce any run: `cd benchmarks/<dataset> && python scripts/model.py` (candidate comparison) `&& python scripts/evaluate.py` (OOF evaluation + figures) `&& python scripts/explain.py` (interpretation) — see `requirements-lock.txt` in each folder for the exact pinned environment.
+
+### Does the plugin actually change the outcome?
+
+The runs above prove the discipline produces good numbers; they don't isolate what the *plugin* adds versus the same model working unaided. [`benchmarks/evals/`](benchmarks/evals/) answers that: it runs each task twice — once with the plugin installed, once without — grades both **blind on the outcome**, and reports the reproducible per-expectation gap (`pass^k`). The file structure is borrowed from Anthropic's [`skill-creator`](https://github.com/anthropics/skills/tree/main/skills/skill-creator) eval system (`evals.json` → a blind grader → `benchmark.json`), and the harness follows the ten skill-eval best practices — directive assertions, negative-trigger tests, outcome-over-path grading, run isolation, `pass^k` vs `pass@k`, cross-harness runs, eval graduation, and skill-retirement detection — each mapped in [`benchmarks/evals/README.md`](benchmarks/evals/README.md).
+
+A committed [worked example](benchmarks/evals/example/) grades the "build a model, tell me how well it works" ask on two datasets. The `with_skill` arm is graded against the real shipped pipelines above; the `without_skill` arm is a clearly-labelled *illustrative* naive baseline (not a captured live run). The discipline gap is stark:
+
+| Dataset | Trap it exposes | `with_skill` pass^k | `without_skill` pass^k | gap |
+|---|---|---|---|---|
+| Credit Card Fraud | imbalanced-metric (accuracy) trap | **1.0** (8/8) | 0.125 (1/8) | **+0.875** |
+| House Prices | target-leakage trap | **1.0** (5/5) | 0.20 (1/5) | **+0.80** |
+
+The one expectation the unaided arm passes in each case is "introduced no leaked feature" — it's too simple to leak, but also too simple to score a baseline, pick a scale-appropriate metric, or validate honestly. A `gap` near zero on a *passed* expectation is the retirement signal: the base model already does it, so that guidance can be trimmed.
 
 ---
 
