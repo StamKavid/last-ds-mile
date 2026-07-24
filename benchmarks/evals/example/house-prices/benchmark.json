@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "skill_name": "last-ds-mile",
+    "dataset": "house-prices",
+    "iteration": 1,
+    "generated_at": "2026-07-24T06:23:42.558816+00:00"
+  },
+  "per_expectation": [
+    {
+      "eval_id": 1,
+      "text": "A dumb baseline (predict the median / mean SalePrice) is defined AND scored on the same metric, before the trained model is presented as good.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 1,
+        "trials": 1
+      },
+      "without_skill": {
+        "pass_hat_k": 0.0,
+        "pass_at_k": 0.0,
+        "passes": 0,
+        "trials": 1
+      },
+      "gap": 1.0
+    },
+    {
+      "eval_id": 1,
+      "text": "No feature is derived from SalePrice (the target); the feature set is justified as known before the sale.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 1,
+        "trials": 1
+      },
+      "without_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 1,
+        "trials": 1
+      },
+      "gap": 0.0
+    },
+    {
+      "eval_id": 1,
+      "text": "The evaluation metric operates in log space (or another scale-appropriate transform), with the reason tied to SalePrice spanning multiple orders of magnitude \u2014 not raw-dollar RMSE reported as if scale-neutral.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 1,
+        "trials": 1
+      },
+      "without_skill": {
+        "pass_hat_k": 0.0,
+        "pass_at_k": 0.0,
+        "passes": 0,
+        "trials": 1
+      },
+      "gap": 1.0
+    },
+    {
+      "eval_id": 1,
+      "text": "The model score is validated out-of-fold / on held-out data, not reported in-sample.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 1,
+        "trials": 1
+      },
+      "without_skill": {
+        "pass_hat_k": 0.0,
+        "pass_at_k": 0.0,
+        "passes": 0,
+        "trials": 1
+      },
+      "gap": 1.0
+    },
+    {
+      "eval_id": 1,
+      "text": "The model's performance is stated as explicit lift over the baseline number, not in a vacuum.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 1,
+        "trials": 1
+      },
+      "without_skill": {
+        "pass_hat_k": 0.0,
+        "pass_at_k": 0.0,
+        "passes": 0,
+        "trials": 1
+      },
+      "gap": 1.0
+    }
+  ],
+  "per_case": [
+    {
+      "eval_id": 1,
+      "with_skill_pass_rate": 1.0,
+      "without_skill_pass_rate": 0.2
+    }
+  ],
+  "run_summary": {
+    "with_skill": 1.0,
+    "without_skill": 0.2,
+    "gap": 0.8
+  },
+  "notes": ""
+}

@@ -1,0 +1,38 @@
+{
+  "eval_id": 1,
+  "expectations": [
+    {
+      "text": "A dumb baseline (predict the median / mean SalePrice) is defined AND scored on the same metric, before the trained model is presented as good.",
+      "passed": true,
+      "evidence": "04-baseline.md: median-SalePrice baseline ($163,000) scored at log-RMSE 0.3999 before /ds-model."
+    },
+    {
+      "text": "The evaluation metric operates in log space (or another scale-appropriate transform), with the reason tied to SalePrice spanning multiple orders of magnitude \u2014 not raw-dollar RMSE reported as if scale-neutral.",
+      "passed": true,
+      "evidence": "00-frame/04: metric is RMSE of log(SalePrice), chosen because SalePrice spans $34,900-$755,000."
+    },
+    {
+      "text": "The model score is validated out-of-fold / on held-out data, not reported in-sample.",
+      "passed": true,
+      "evidence": "07-evaluate.md: out-of-fold RMSE 0.1252 via the stratified splitter; flags the in-sample neighbourhood-median 0.2637 as NOT the anchor."
+    },
+    {
+      "text": "The model's performance is stated as explicit lift over the baseline number, not in a vacuum.",
+      "passed": true,
+      "evidence": "04/07: 0.1252 stated as lift over the 0.3999 median anchor."
+    },
+    {
+      "text": "No feature is derived from SalePrice (the target); the feature set is justified as known before the sale.",
+      "passed": true,
+      "evidence": "03-prep.md: explicitly rejects a neighbourhood-mean-SalePrice feature as target leakage; SalePrice/logSalePrice dropped from features."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "claims": [],
+  "notes": "REAL run: graded against the shipped skilled pipeline in benchmarks/<dataset>/.last-ds-mile/stages/."
+}
