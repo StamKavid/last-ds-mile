@@ -22,12 +22,16 @@ eval system, verified against its source:
   `grading.json` schema (`{expectations:[{text, passed, evidence}], summary}`), the blind
   grader contract (outcome-not-path, PASS only on genuine completion, claim extraction),
   and the two-arm `with_skill` / `without_skill` design where the baseline is "no skill."
-- **Ours, not skill-creator's:** the aggregation. skill-creator's `benchmark.json`
-  reports `pass_rate` mean ± stddev across N runs and is read by its React eval-viewer.
-  Our `aggregate.py` instead reports **`pass^k` / `pass@k` and a per-expectation `gap`**
-  (from best-practice #7 and #10, which are not skill-creator concepts), so our
-  `benchmark.json` has a **different shape and does NOT drop into skill-creator's
-  eval-viewer** — `eval-viewer.html` here is our own. See `schemas.md` for both.
+- **Ours, not skill-creator's:** the primary aggregation. skill-creator's `benchmark.json`
+  reports `pass_rate` mean ± stddev across N runs; our default `benchmark.json` instead
+  reports **`pass^k` / `pass@k` and a per-expectation `gap`** (from best-practice #7 and
+  #10, which are not skill-creator concepts), rendered by our own `eval-viewer.html`.
+- **Both, so nothing is lost:** `aggregate.py` *also* writes
+  **`benchmark.skill-creator.json`** in skill-creator's exact schema (`runs[]` keyed by
+  `configuration`, nested `result.pass_rate`, `run_summary.<config>.pass_rate.{mean,stddev}`),
+  so the results **do** drop into skill-creator's React eval-viewer. Timing/token fields
+  are `null` there — this harness grades committed transcripts, not live executor metrics.
+  See `schemas.md` for both shapes.
 
 ## Layout
 

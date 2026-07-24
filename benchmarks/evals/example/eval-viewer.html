@@ -145,10 +145,11 @@
     <span class="dot" aria-hidden="true"></span>
     <div><b>What's real here.</b> <span>The <b>with_skill</b> arm is graded against the
       repo's actual shipped pipelines (<span class="mono">benchmarks/&lt;dataset&gt;/.last-ds-mile/</span>) —
-      real stages, real numbers. The <b>without_skill</b> arm is an <b>illustrative</b>
-      naive baseline representing the documented failure mode, not a captured live run.
-      So this is a real skilled run vs. a representative naive one — a live A/B comes from
-      running the harness.</span></div>
+      real stages, real numbers. The <b>without_skill</b> arm is a <b>reproducible
+      scripted</b> naive baseline (real numbers from <span class="mono">naive_run.py</span>),
+      standing in for un-disciplined agent behaviour — not a captured live agent run.
+      So this is a real skilled run vs. a real scripted naive one — a live agent A/B comes
+      from running the harness.</span></div>
   </div>
 
   <div id="panels"></div>

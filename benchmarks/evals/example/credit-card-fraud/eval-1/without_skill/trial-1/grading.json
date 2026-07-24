@@ -9,12 +9,12 @@
     {
       "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
       "passed": false,
-      "evidence": "naive-run.md: headlines 'Accuracy 99.94% - excellent', the exact accuracy trap (99.83% is the no-skill floor)."
+      "evidence": "naive_run.py output: headlines ~99.9% accuracy (real 0.9995) as 'excellent' - the accuracy trap, since the no-skill floor is 99.83%."
     },
     {
       "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
       "passed": false,
-      "evidence": "naive-run.md: reports only accuracy and ROC-AUC 0.96; PR-AUC / precision-recall at an operating point absent."
+      "evidence": "naive_run.py reports only accuracy and ROC-AUC 0.944; PR-AUC / precision-recall at an operating point absent."
     },
     {
       "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
@@ -49,5 +49,5 @@
     "pass_rate": 0.125
   },
   "claims": [],
-  "notes": "ILLUSTRATIVE: hand-authored to represent the documented naive failure mode, NOT a captured live agent run."
+  "notes": "REPRODUCIBLE naive baseline: the numbers are the real output of naive_run.py in this directory (sklearn 1.8.0). A scripted un-disciplined stand-in — not an observed LLM-without-skill agent run."
 }

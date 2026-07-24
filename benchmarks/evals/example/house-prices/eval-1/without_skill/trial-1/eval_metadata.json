@@ -4,7 +4,7 @@
   "trial": 1,
   "prompt": "Build a model to suggest a listing price from train.csv (the target is SalePrice) and tell me how well it works.",
   "dataset": "house-prices",
-  "note": "ILLUSTRATIVE: hand-authored to represent the documented naive failure mode, NOT a captured live agent run.",
+  "note": "REPRODUCIBLE naive baseline: the numbers are the real output of naive_run.py in this directory (sklearn 1.8.0). A scripted un-disciplined stand-in — not an observed LLM-without-skill agent run.",
   "created_at": "2026-07-23T21:01:08.074559+00:00",
   "harness": "example-fixture"
 }

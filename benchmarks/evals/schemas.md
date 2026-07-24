@@ -69,3 +69,17 @@ See `agents/grader.md`. Key fields: `eval_id`, `expectations[] {text, passed, ev
 but unreliable. `gap` = `with_skill.pass_hat_k − without_skill.pass_hat_k` is the
 skill's marginal, reproducible value; a gap near zero on a passing expectation is a
 retirement signal (practice #10).
+
+## `benchmark.skill-creator.json` (output — written by `aggregate.py`)
+
+The same runs, re-emitted in skill-creator's **exact** schema so they load into its
+React eval-viewer. The viewer reads these field names verbatim, so they are not
+negotiable: `runs[].configuration` is exactly `"with_skill"` / `"without_skill"`,
+`runs[].result.pass_rate` is nested (not top-level), and
+`run_summary.<config>.pass_rate` carries `{mean, stddev, min, max}` with a
+`run_summary.delta.pass_rate` string like `"+0.88"`. `time_seconds` / `tokens` are
+`null` — this harness grades committed transcripts, not live executor metrics.
+
+The two files are complementary: `benchmark.json` is our `pass^k` view (the one
+`eval-viewer.html` renders); `benchmark.skill-creator.json` is the portable, viewer-
+compatible export. Both are regenerated together on every `aggregate.py` run.

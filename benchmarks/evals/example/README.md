@@ -17,16 +17,19 @@ provenance, and the harness never pretends otherwise:
   `grading.json` cites a real stage file and a real number from it. This is exactly what
   best practice #4's "take examples of already existing benchmarks" means: the skilled
   arm is a benchmark that already exists.
-- **`without_skill` is ILLUSTRATIVE.** There is no captured live baseline agent run in
-  the repo, so `naive-run.md` is hand-authored to represent the *documented* naive
-  failure mode (the accuracy trap; raw-dollar RMSE + in-sample R² on a skewed target).
-  It is graded honestly against the same expectations, but it is a representative
-  fixture, not a measured capture — every metadata and `grading.json` note says so.
+- **`without_skill` is a REPRODUCIBLE SCRIPTED baseline.** There is no captured live
+  baseline *agent* run in the repo, so `naive_run.py` is a committed script representing
+  the documented naive failure mode (the accuracy trap; raw-dollar RMSE + in-sample R²
+  on a skewed target). Its numbers are **real and reproducible** — run `python
+  naive_run.py` and you get the `Accuracy: 0.9995` / `RMSE: $11,058` that `naive-run.md`
+  and the `grading.json` evidence cite. What remains a stand-in is the *agent behaviour*:
+  the script embodies "no baseline, reports accuracy as success," but it is a scripted
+  representation, not an observed LLM-without-the-plugin.
 
-So the gap shown below is **"a real skilled run vs. a representative naive run,"** not a
-measured live A/B. A real A/B comes from `run_eval.py` + your own executor runs; this
-example exists to make the format legible and to demonstrate the discipline delta the
-plugin is built to create.
+So the gap shown below is **"a real skilled run vs. a real scripted naive run,"** not a
+live agent A/B. A live agent A/B comes from `run_eval.py` + your own executor runs; this
+example makes the format legible and demonstrates — with reproducible numbers — the
+discipline delta the plugin is built to create.
 
 ## The result
 

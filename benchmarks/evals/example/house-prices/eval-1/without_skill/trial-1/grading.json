@@ -7,9 +7,9 @@
       "evidence": "naive-run.md: fits a RandomForest and reports its error directly; no baseline."
     },
     {
-      "text": "The evaluation metric operates in log space (or another scale-appropriate transform), with the reason tied to SalePrice spanning multiple orders of magnitude \u2014 not raw-dollar RMSE reported as if scale-neutral.",
+      "text": "The evaluation metric operates in log space (or another scale-appropriate transform), with the reason tied to SalePrice spanning multiple orders of magnitude — not raw-dollar RMSE reported as if scale-neutral.",
       "passed": false,
-      "evidence": "naive-run.md: reports raw-dollar RMSE ~$28,000 with no log transform, despite the target spanning orders of magnitude."
+      "evidence": "naive_run.py reports raw-dollar RMSE $11,058 with no log transform, despite the target spanning orders of magnitude."
     },
     {
       "text": "The model score is validated out-of-fold / on held-out data, not reported in-sample.",
@@ -34,5 +34,5 @@
     "pass_rate": 0.2
   },
   "claims": [],
-  "notes": "ILLUSTRATIVE: hand-authored to represent the documented naive failure mode, NOT a captured live agent run."
+  "notes": "REPRODUCIBLE naive baseline: the numbers are the real output of naive_run.py in this directory (sklearn 1.8.0). A scripted un-disciplined stand-in — not an observed LLM-without-skill agent run."
 }
