@@ -7,6 +7,76 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **With/without skill-eval harness (`benchmarks/evals/`)** — a benchmark that runs the
+  same task twice (plugin installed vs. not), grades both blind on the *outcome*, and
+  reports the reproducible per-expectation gap (pass^k vs pass@k). The `evals.json` and
+  `grading.json` schemas and the blind two-arm grader are taken from Anthropic
+  `skill-creator`'s eval system; the `pass^k` aggregation, `benchmark.json` shape, and
+  HTML viewer are our own and are not compatible with skill-creator's eval-viewer. First eval set is
+  6 credit-card-fraud cases (4 positive core-discipline cases, 2 negative-trigger
+  guards) exercising the accuracy trap, planted-metric framing, target leakage, and
+  test-set peeking. `README.md` maps all ten skill-eval best practices to how the
+  harness implements each; `run_eval.py`/`aggregate.py` are stdlib-only.
+- **Second eval set + a committed worked example.** `benchmarks/evals/house-prices/`
+  adds 6 cases built around the target-leakage trap (a neighbourhood-mean-of-`SalePrice`
+  feature) on a skewed regression target. `benchmarks/evals/example/` is a committed,
+  graded with/without comparison of eval 1 for both datasets — the `with_skill` arm
+  graded against the repo's real shipped benchmark pipelines, the `without_skill` arm a
+  committed **reproducible** `naive_run.py` (real numbers: fraud accuracy 0.9995 /
+  ROC-AUC 0.944, house-prices in-sample RMSE $11,058 / R² 0.98) — showing a pass^k gap
+  of 0.875 (fraud) and 0.80 (house-prices). An HTML eval-viewer renders the comparison.
+- **`aggregate.py` also emits `benchmark.skill-creator.json`** in skill-creator's exact
+  eval-viewer schema (`runs[]` keyed by `configuration`, nested `result.pass_rate`,
+  `run_summary.<config>.pass_rate.{mean,stddev}`), alongside our `pass^k` `benchmark.json`
+  — so results are portable to skill-creator's viewer without giving up the `pass^k` view.
+- **`/ds-frame` now takes an information inventory** — a framing-time step that writes
+  down what will actually be known at prediction time versus what only becomes known
+  after the fact, recorded in `00-frame.md`. It's the proactive complement to
+  `/ds-prep`'s per-feature "known at prediction time?" check, and it surfaces available
+  signal (e.g. prior-period totals) before feature-building instead of after.
+
+### Changed
+
+- **`/ds-frame` and `metric-selection` now treat over- vs under-prediction asymmetry as
+  a first-class question.** `metric-selection` gains a regression row for asymmetric cost
+  (quantile/pinball loss at a chosen service level) alongside the existing
+  classification-only F-beta row; `/ds-frame` asks whether over- and under-shooting cost
+  the same before locking a symmetric metric.
+- **`/ds-baseline` now warns against strawman baselines** — a global mean/majority on
+  data with strong temporal, seasonal, or hierarchical structure is trivial to beat, so
+  a too-weak baseline inflates apparent lift. Guidance and a Red Flag now push toward the
+  strongest *simple* anchor (last value, same period last cycle, or the rule already in
+  use).
+- **`/ds-frame` flags forecasting as out of scope when it sees it** — a target that is a
+  future value of a time-indexed series now trips a Red Flag pointing at README → Scope,
+  stating plainly that these gates aren't a forecasting stack (weak mean baseline, no
+  lag/rolling feature machinery) rather than underperforming silently.
+
+## [0.8.0] — the deployment mile: /ds-package and /ds-deploy
+
+### Added
+
+- **`/ds-package` (stage 11)** — wraps a handed-off model behind an inference
+  contract and a framework-agnostic predict wrapper, then proves **training/serving
+  parity** (the packaged model must reproduce its offline predictions) before it will
+  proceed. Emits a reproducible `Dockerfile` (image digest recorded, binary never
+  committed). Hard gate on the `/ds-handoff` artifacts. Writes `11-package.md`.
+- **`/ds-deploy` (stage 12)** — stands the parity-verified package up as a
+  **local-first** callable endpoint, and gates a full-traffic deploy on a monitoring
+  hook (predictions logged against the live baseline), a drift hook (reusing the
+  `distribution-shift` skill), and a rollback pointer. Any push to a remote/registry/
+  cloud target stops and asks — the plugin never pushes to production on its own.
+  Writes `12-deploy.md`.
+
+### Changed
+
+- The pipeline now runs `0 → 12`; the `/ds` router, `ds-method` gates/red-flags, and
+  the README Commands table and Scope section reflect the deployment mile. The only
+  part of the last mile still on the roadmap is automated retraining triggers.
+- Skill count 28 → 30; commands 15 → 17; hard gates 3 → 5.
+
 ## [0.7.0] — add data-science-project entry-point skill
 
 ### Added

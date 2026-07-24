@@ -49,6 +49,8 @@ unreproducible results.
 | Validation metric beats the training metric | Usually a data leak or a broken split (e.g. shuffled time series), not a lucky model. |
 | A single feature has near-perfect importance | It's often a proxy for the target or an ID column that leaked in. |
 | Model accuracy matches the majority-class rate to 2 decimal places | The model is predicting the majority class. Check class balance and the metric choice. |
+| Packaged/served predictions differ from the offline predictions on the same rows | Training/serving skew — a feature is computed differently at serve time than at train time. `/ds-package`'s parity gate exists to catch this before deployment. |
+| A model is serving with no online comparison against its baseline | Degradation is invisible — you can't tell if the deployed model still beats the dumb baseline it was justified against. `/ds-deploy` requires monitoring before full traffic. |
 
 ## Hard Gates
 
@@ -59,6 +61,13 @@ unreproducible results.
   not only an aggregate metric.
 - `/ds-handoff` requires the environment to be pinned (lockfile, or `requirements.txt`/
   `environment.yml` with exact versions) before packaging a model for handoff.
+- `/ds-package` requires the `/ds-handoff` artifacts (pinned environment, serialized
+  model, model card) and refuses to proceed unless the **training/serving parity check**
+  passes — the packaged model must reproduce the predictions it produced offline.
+- `/ds-deploy` requires the `/ds-package` artifacts (a parity-verified image and an
+  inference contract) and refuses a full-traffic deploy unless a **monitoring hook, a
+  drift hook, and a rollback pointer** all exist. Any push to a remote/registry/cloud
+  target stops and asks — the plugin never pushes to production on its own.
 
 Gates are enforced by **warning and stopping to ask**, not by silently refusing or
 working around the missing artifact — this plugin's safe-set default is warn, not

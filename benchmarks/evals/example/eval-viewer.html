@@ -1,0 +1,231 @@
+<title>Last DS Mile — skill-eval comparison</title>
+<style>
+  :root {
+    --ground: #f1f4f3; --surface: #ffffff; --surface-2: #f7f9f8;
+    --ink: #16201e; --muted: #566461; --faint: #8a9793;
+    --border: #dde3e1; --border-strong: #c8d1ce;
+    --accent: #0f766e; --accent-soft: #0f766e18;
+    --pass: #2f7a55; --pass-bg: #2f7a5514;
+    --fail: #a8482a; --fail-bg: #a8482a12;
+    --shadow: 0 1px 2px #16201e0a, 0 8px 24px #16201e0a;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0e1312; --surface: #161d1b; --surface-2: #1b2422;
+      --ink: #e8edeb; --muted: #98a6a2; --faint: #6a7773;
+      --border: #263230; --border-strong: #32403d;
+      --accent: #4fd1c5; --accent-soft: #4fd1c51e;
+      --pass: #63c58c; --pass-bg: #63c58c16;
+      --fail: #e0885f; --fail-bg: #e0885f14;
+      --shadow: 0 1px 2px #0006, 0 10px 30px #0004;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="light"] {
+    --ground: #f1f4f3; --surface: #ffffff; --surface-2: #f7f9f8;
+    --ink: #16201e; --muted: #566461; --faint: #8a9793;
+    --border: #dde3e1; --border-strong: #c8d1ce;
+    --accent: #0f766e; --accent-soft: #0f766e18;
+    --pass: #2f7a55; --pass-bg: #2f7a5514;
+    --fail: #a8482a; --fail-bg: #a8482a12;
+    --shadow: 0 1px 2px #16201e0a, 0 8px 24px #16201e0a; color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e1312; --surface: #161d1b; --surface-2: #1b2422;
+    --ink: #e8edeb; --muted: #98a6a2; --faint: #6a7773;
+    --border: #263230; --border-strong: #32403d;
+    --accent: #4fd1c5; --accent-soft: #4fd1c51e;
+    --pass: #63c58c; --pass-bg: #63c58c16;
+    --fail: #e0885f; --fail-bg: #e0885f14;
+    --shadow: 0 1px 2px #0006, 0 10px 30px #0004; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5; -webkit-font-smoothing: antialiased;
+  }
+  .mono {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 56px 24px 80px; }
+
+  .eyebrow {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 14px;
+  }
+  h1 { font-size: clamp(28px, 4.4vw, 40px); line-height: 1.08; margin: 0 0 12px;
+       font-weight: 640; letter-spacing: -.02em; text-wrap: balance; }
+  .lede { font-size: 17px; color: var(--muted); margin: 0; max-width: 62ch; }
+
+  /* summary tiles */
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 36px 0 8px; }
+  @media (max-width: 620px) { .tiles { grid-template-columns: 1fr; } }
+  .tile {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px 22px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .tile::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--accent); }
+  .tile .name { font-size: 13px; color: var(--muted); margin: 0 0 2px; }
+  .tile .case { font-size: 12.5px; color: var(--faint); margin: 0 0 16px; }
+  .gap-row { display: flex; align-items: baseline; gap: 10px; }
+  .gap-num { font-size: 46px; font-weight: 620; letter-spacing: -.03em; color: var(--accent); }
+  .gap-lbl { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .ab { display: flex; gap: 18px; margin-top: 14px; font-size: 13px; }
+  .ab b { font-weight: 600; }
+  .ab .w { color: var(--pass); }
+  .ab .o { color: var(--fail); }
+
+  /* provenance callout */
+  .note {
+    display: flex; gap: 13px; margin: 26px 0 8px; padding: 15px 17px;
+    background: var(--accent-soft); border: 1px solid var(--border);
+    border-radius: 12px; font-size: 13.5px; color: var(--ink);
+  }
+  .note .dot { flex: none; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); margin-top: 7px; }
+  .note b { font-weight: 620; }
+  .note span { color: var(--muted); }
+
+  section.panel { margin-top: 34px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; }
+  .phead { padding: 18px 22px; border-bottom: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; }
+  .phead h2 { margin: 0; font-size: 17px; font-weight: 620; letter-spacing: -.01em; }
+  .phead .tag { font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--accent); border: 1px solid var(--border-strong); border-radius: 999px; padding: 3px 9px; }
+  .phead .prompt { flex-basis: 100%; margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+  .phead .prompt::before { content: "“"; } .phead .prompt::after { content: "”"; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint);
+    font-weight: 500; padding: 12px 10px; border-bottom: 1px solid var(--border); }
+  th.c, td.c { text-align: center; width: 92px; }
+  td { padding: 13px 10px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  td.exp { color: var(--ink); }
+  td.exp small { display: block; color: var(--faint); font-size: 12px; margin-top: 2px; }
+  td:first-child, th:first-child { padding-left: 22px; }
+  td:last-child, th:last-child { padding-right: 22px; }
+
+  .chip { display: inline-block; min-width: 52px; padding: 3px 0; border-radius: 7px;
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; font-weight: 600;
+    letter-spacing: .06em; }
+  .chip.p { color: var(--pass); background: var(--pass-bg); border: 1px solid color-mix(in srgb, var(--pass) 30%, transparent); }
+  .chip.f { color: var(--fail); background: var(--fail-bg); border: 1px solid color-mix(in srgb, var(--fail) 30%, transparent); }
+  .g { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .g.up { color: var(--accent); } .g.zero { color: var(--faint); }
+  tr.agree td.exp { color: var(--muted); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 18px 26px; margin-top: 26px;
+    font-size: 12.5px; color: var(--muted); align-items: center; }
+  .legend .k { display: inline-flex; align-items: center; gap: 7px; }
+  footer { margin-top: 34px; padding-top: 20px; border-top: 1px solid var(--border);
+    font-size: 12.5px; color: var(--faint); }
+  footer code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 5px; padding: 1px 5px; color: var(--muted); }
+  footer a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Last DS Mile · skill eval</p>
+  <h1>Does the plugin change the outcome?</h1>
+  <p class="lede">The same task, same model — run once with the plugin installed and once
+    without — graded blind on the result. The number that matters is the per-expectation
+    <b>gap</b>: what the discipline adds that the base model doesn't do on its own.</p>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="note">
+    <span class="dot" aria-hidden="true"></span>
+    <div><b>What's real here.</b> <span>The <b>with_skill</b> arm is graded against the
+      repo's actual shipped pipelines (<span class="mono">benchmarks/&lt;dataset&gt;/.last-ds-mile/</span>) —
+      real stages, real numbers. The <b>without_skill</b> arm is a <b>reproducible
+      scripted</b> naive baseline (real numbers from <span class="mono">naive_run.py</span>),
+      standing in for un-disciplined agent behaviour — not a captured live agent run.
+      So this is a real skilled run vs. a real scripted naive one — a live agent A/B comes
+      from running the harness.</span></div>
+  </div>
+
+  <div id="panels"></div>
+
+  <div class="legend">
+    <span class="k"><span class="chip p">PASS</span> expectation met, with evidence</span>
+    <span class="k"><span class="chip f">FAIL</span> not met / superficial</span>
+    <span class="k"><span class="g up">+1.0</span> gap: skill-only win</span>
+    <span class="k"><span class="g zero">0.0</span> both arms agree (retirement signal)</span>
+  </div>
+
+  <footer>
+    pass^k over a single graded trial in this worked example; real runs use 3–5 trials.
+    Regenerate with <code>python scripts/aggregate.py &lt;dataset&gt; --root example/&lt;dataset&gt;</code>.
+    See <a href="https://github.com">example/README.md</a> for provenance.
+  </footer>
+</div>
+
+<script>
+  const DATA = [
+    { id: "credit-card-fraud", trap: "imbalanced-metric (accuracy) trap",
+      prompt: "Build a model to detect fraud and tell me how well it works.",
+      withk: 1.0, without: 0.125,
+      rows: [
+        ["Scores a dumb baseline before calling the model good", "majority-class PR-AUC = 0.00167", 1, 0],
+        ["Doesn't headline accuracy — flags 99.83% as the no-skill floor", "the accuracy trap", 1, 0],
+        ["Reports PR-AUC, not ROC-AUC alone", "0.845 vs 0.980 secondary", 1, 0],
+        ["States minority-class performance at an operating point", "recall 83.1% @ thr 0.4932", 1, 0],
+        ["Stratified split, fixed before modeling", "preserves 0.167% per fold", 1, 0],
+        ["No feature derived from the target label", "PCA features, no leak", 1, 1],
+        ["States lift over the baseline explicitly", "not a metric in a vacuum", 1, 0],
+        ["Final claim matches the evidence", "no accuracy = ready", 1, 0],
+      ]},
+    { id: "house-prices", trap: "target-leakage trap · skewed regression",
+      prompt: "Build a model to suggest a listing price and tell me how well it works.",
+      withk: 1.0, without: 0.20,
+      rows: [
+        ["Scores a dumb baseline before calling the model good", "median SalePrice, log-RMSE 0.3999", 1, 0],
+        ["Metric in log space — target spans orders of magnitude", "$34.9k–$755k, not raw-$ RMSE", 1, 0],
+        ["Validated out-of-fold, not in-sample", "OOF RMSE 0.1252", 1, 0],
+        ["States lift over the baseline explicitly", "0.1252 vs 0.3999", 1, 0],
+        ["No feature derived from the target", "rejects nbhd-mean-SalePrice", 1, 1],
+      ]},
+  ];
+
+  const chip = ok => `<span class="chip ${ok ? "p" : "f"}">${ok ? "PASS" : "FAIL"}</span>`;
+  const tiles = DATA.map(d => `
+    <div class="tile">
+      <p class="name mono">${d.id}</p>
+      <p class="case">${d.trap}</p>
+      <div class="gap-row"><span class="gap-num mono">+${(d.withk - d.without).toFixed(2)}</span><span class="gap-lbl">pass^k gap</span></div>
+      <div class="ab mono"><span class="w">with ▸ <b>${d.withk.toFixed(2)}</b></span><span class="o">without ▸ <b>${d.without.toFixed(3)}</b></span></div>
+    </div>`).join("");
+  document.getElementById("tiles").innerHTML = tiles;
+
+  document.getElementById("panels").innerHTML = DATA.map(d => {
+    const rows = d.rows.map(([e, sub, w, o]) => {
+      const gap = w - o;
+      const gcell = gap > 0 ? `<span class="g up">+${gap.toFixed(1)}</span>` : `<span class="g zero">0.0</span>`;
+      return `<tr class="${gap === 0 ? "agree" : ""}">
+        <td class="exp">${e}<small class="mono">${sub}</small></td>
+        <td class="c">${chip(w)}</td>
+        <td class="c">${chip(o)}</td>
+        <td class="c">${gcell}</td></tr>`;
+    }).join("");
+    const np = d.rows.filter(r => r[2]).length, no = d.rows.filter(r => r[3]).length, n = d.rows.length;
+    return `<section class="panel">
+      <div class="phead">
+        <h2 class="mono">${d.id}</h2>
+        <span class="tag">${np}/${n} · ${no}/${n}</span>
+        <p class="prompt">${d.prompt}</p>
+      </div>
+      <table>
+        <thead><tr><th>Expectation graded on the outcome</th><th class="c">with</th><th class="c">without</th><th class="c">gap</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </section>`;
+  }).join("");
+</script>

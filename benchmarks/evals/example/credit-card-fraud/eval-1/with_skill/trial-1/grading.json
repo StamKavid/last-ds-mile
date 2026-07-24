@@ -1,0 +1,53 @@
+{
+  "eval_id": 1,
+  "expectations": [
+    {
+      "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.",
+      "passed": true,
+      "evidence": "04-baseline.md: majority-class 'predict Class=0' baseline scored at PR-AUC = base rate 0.00167 (ROC-AUC 0.5), before /ds-model."
+    },
+    {
+      "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
+      "passed": true,
+      "evidence": "04-baseline.md: states majority-class accuracy would be 99.83% and is 'actively misleading'; accuracy is reported nowhere."
+    },
+    {
+      "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
+      "passed": true,
+      "evidence": "07-evaluate.md: headline metric PR-AUC 0.845; ROC-AUC 0.980 kept only as a secondary check."
+    },
+    {
+      "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
+      "passed": true,
+      "evidence": "07-evaluate.md: frozen operating threshold 0.4932, recall 83.1%, with 80 missed-fraud and 51 false-alarm cases enumerated."
+    },
+    {
+      "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.",
+      "passed": true,
+      "evidence": "05-validate.md: StratifiedKFold(5) verified to preserve the 0.167% fraud rate per fold; dedup before the split; chosen before /ds-model."
+    },
+    {
+      "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.",
+      "passed": true,
+      "evidence": "00-frame/03-prep: features are PCA components V1-V28 plus Amount/Time; no feature derived from the Class label."
+    },
+    {
+      "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.",
+      "passed": true,
+      "evidence": "04/07: PR-AUC 0.845 stated as a large lift over the 0.00167 no-skill baseline, not in a vacuum."
+    },
+    {
+      "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.",
+      "passed": true,
+      "evidence": "07-evaluate.md: no accuracy-equals-ready claim; top-decile over-confidence and small-dollar missed-fraud limitation disclosed."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  },
+  "claims": [],
+  "notes": "REAL run: graded against the shipped skilled pipeline in benchmarks/<dataset>/.last-ds-mile/stages/."
+}

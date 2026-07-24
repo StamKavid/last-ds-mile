@@ -40,6 +40,7 @@ is a decision table, not a philosophy essay.
 | Regression | Target spans multiple orders of magnitude (e.g. house prices) | RMSE/MAE on `log(target)` | Keeps large-value errors from dominating the loss in relative terms |
 | Regression | Outliers should not dominate the score | MAE (or Huber loss) over RMSE | RMSE squares errors, so a few large misses can swamp the average; MAE weighs every error linearly |
 | Regression | Need an intuitive "% off" number for stakeholders | MAPE (with care — undefined/unstable near zero targets) | Communicates error in relative, business-readable terms |
+| Regression | Cost of over- vs under-prediction is asymmetric (e.g. understaffing costs more than overstaffing) | Quantile (pinball) loss at a chosen service level, or an explicit asymmetric cost function | Symmetric RMSE/MAE assume a unit over-shoot and a unit under-shoot cost the same; a quantile target lets you deliberately bias predictions to the cheaper side and set the over/under rate on purpose, instead of bolting an arbitrary "buffer" onto a symmetric forecast |
 | Ranking / recommendation | Position of correct items matters, not just presence | NDCG, MAP@k | Rewards getting the right answer near the top, not just somewhere in the list |
 
 ## Common Rationalizations
