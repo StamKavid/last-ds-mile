@@ -3,7 +3,7 @@
   "name": "last-ds-mile",
   "description": "A guided data-science lifecycle for Claude Code, with leakage and honesty checks built into every stage.",
   "owner": {
-    "name": "Stamatis",
+    "name": "last-ai-mile",
     "url": "https://thelastaimile.substack.com"
   },
   "plugins": [
