@@ -7,6 +7,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.9.0] — with/without skill-eval harness + forecast-aware framing
+
 ### Added
 
 - **With/without skill-eval harness (`benchmarks/evals/`)** — a benchmark that runs the
@@ -53,6 +55,13 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   future value of a time-indexed series now trips a Red Flag pointing at README → Scope,
   stating plainly that these gates aren't a forecasting stack (weak mean baseline, no
   lag/rolling feature machinery) rather than underperforming silently.
+
+### Fixed
+
+- **Stale structure docs after the deployment mile.** The README Project Structure tree
+  listed only 27 skills (missing `ds-package`, `ds-deploy`, and the `data-science-project`
+  entry-point skill) while claiming 30, and both README and CONTRIBUTING still said "15
+  slash commands" (now 17).
 
 ## [0.8.0] — the deployment mile: /ds-package and /ds-deploy
 
