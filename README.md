@@ -217,6 +217,7 @@ Every skill follows a consistent anatomy:
 last-ds-mile/
 ├── skills/                          # 30 skills total
 │   ├── ds-method/                   #   Shared discipline layer (meta)
+│   ├── data-science-project/        #   Entry point (auto-routes a cold start)
 │   ├── ds-frame/                    #   Frame
 │   ├── ds-data/                     #   Understand
 │   ├── ds-explore/                  #   Understand
@@ -230,6 +231,8 @@ last-ds-mile/
 │   ├── ds-report/                   #   Ship       ⚠ Hard gate
 │   ├── ds-brief/                    #   Ship       (non-technical translation)
 │   ├── ds-handoff/                  #   Ship       ⚠ Hard gate
+│   ├── ds-package/                  #   Deploy     ⚠ Hard gate
+│   ├── ds-deploy/                   #   Deploy     ⚠ Hard gate
 │   ├── target-leakage-detection/    #   Domain (auto-trigger)
 │   ├── validation-strategy/         #   Domain (auto-trigger)
 │   ├── distribution-shift/          #   Domain (auto-trigger)
@@ -244,7 +247,7 @@ last-ds-mile/
 │   ├── data-viz-standards/          #   Domain (auto-trigger)
 │   └── capturing-learnings/         #   Capture project-local lessons
 ├── agents/                          # 3 specialist subagents
-├── commands/                        # 15 slash commands
+├── commands/                        # 17 slash commands
 ├── hooks/                           # Session lifecycle hooks (warn, never block)
 ├── lessons/                         # 6 real DS failure-and-fix write-ups
 ├── benchmarks/                      # Full pipeline runs on 3 datasets + evals/ (with/without skill A/B)
