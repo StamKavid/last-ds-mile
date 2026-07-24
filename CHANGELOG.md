@@ -24,8 +24,13 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   feature) on a skewed regression target. `benchmarks/evals/example/` is a committed,
   graded with/without comparison of eval 1 for both datasets — the `with_skill` arm
   graded against the repo's real shipped benchmark pipelines, the `without_skill` arm a
-  clearly-labelled illustrative naive baseline — showing a pass^k gap of 0.875
-  (fraud) and 0.80 (house-prices). An HTML eval-viewer renders the comparison.
+  committed **reproducible** `naive_run.py` (real numbers: fraud accuracy 0.9995 /
+  ROC-AUC 0.944, house-prices in-sample RMSE $11,058 / R² 0.98) — showing a pass^k gap
+  of 0.875 (fraud) and 0.80 (house-prices). An HTML eval-viewer renders the comparison.
+- **`aggregate.py` also emits `benchmark.skill-creator.json`** in skill-creator's exact
+  eval-viewer schema (`runs[]` keyed by `configuration`, nested `result.pass_rate`,
+  `run_summary.<config>.pass_rate.{mean,stddev}`), alongside our `pass^k` `benchmark.json`
+  — so results are portable to skill-creator's viewer without giving up the `pass^k` view.
 - **`/ds-frame` now takes an information inventory** — a framing-time step that writes
   down what will actually be known at prediction time versus what only becomes known
   after the fact, recorded in `00-frame.md`. It's the proactive complement to
