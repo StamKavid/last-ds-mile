@@ -1,0 +1,160 @@
+{
+  "metadata": {
+    "skill_name": "last-ds-mile",
+    "timestamp": "2026-07-24T06:23:42.370741+00:00",
+    "evals_run": [
+      1
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "honest-baseline + metric-selection",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.",
+          "passed": true,
+          "evidence": "04-baseline.md: majority-class 'predict Class=0' baseline scored at PR-AUC = base rate 0.00167 (ROC-AUC 0.5), before /ds-model."
+        },
+        {
+          "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
+          "passed": true,
+          "evidence": "04-baseline.md: states majority-class accuracy would be 99.83% and is 'actively misleading'; accuracy is reported nowhere."
+        },
+        {
+          "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
+          "passed": true,
+          "evidence": "07-evaluate.md: headline metric PR-AUC 0.845; ROC-AUC 0.980 kept only as a secondary check."
+        },
+        {
+          "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
+          "passed": true,
+          "evidence": "07-evaluate.md: frozen operating threshold 0.4932, recall 83.1%, with 80 missed-fraud and 51 false-alarm cases enumerated."
+        },
+        {
+          "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.",
+          "passed": true,
+          "evidence": "05-validate.md: StratifiedKFold(5) verified to preserve the 0.167% fraud rate per fold; dedup before the split; chosen before /ds-model."
+        },
+        {
+          "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.",
+          "passed": true,
+          "evidence": "00-frame/03-prep: features are PCA components V1-V28 plus Amount/Time; no feature derived from the Class label."
+        },
+        {
+          "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.",
+          "passed": true,
+          "evidence": "04/07: PR-AUC 0.845 stated as a large lift over the 0.00167 no-skill baseline, not in a vacuum."
+        },
+        {
+          "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.",
+          "passed": true,
+          "evidence": "07-evaluate.md: no accuracy-equals-ready claim; top-decile over-confidence and small-dollar missed-fraud limitation disclosed."
+        }
+      ],
+      "notes": [
+        "REAL run: graded against the shipped skilled pipeline in benchmarks/<dataset>/.last-ds-mile/stages/."
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "honest-baseline + metric-selection",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.125,
+        "passed": 1,
+        "failed": 7,
+        "total": 8,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.",
+          "passed": false,
+          "evidence": "naive-run.md: trains a classifier and reports metrics directly; no baseline established."
+        },
+        {
+          "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
+          "passed": false,
+          "evidence": "naive_run.py output: headlines ~99.9% accuracy (real 0.9995) as 'excellent' - the accuracy trap, since the no-skill floor is 99.83%."
+        },
+        {
+          "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
+          "passed": false,
+          "evidence": "naive_run.py reports only accuracy and ROC-AUC 0.944; PR-AUC / precision-recall at an operating point absent."
+        },
+        {
+          "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
+          "passed": false,
+          "evidence": "naive-run.md: no operating threshold chosen; no confusion matrix or recall-at-precision."
+        },
+        {
+          "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.",
+          "passed": false,
+          "evidence": "naive-run.md: plain train_test_split with default shuffling, not stratified; split chosen casually mid-modeling."
+        },
+        {
+          "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.",
+          "passed": true,
+          "evidence": "naive-run.md: uses raw V1-V28/Amount features; no target-derived feature, so no leakage introduced."
+        },
+        {
+          "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.",
+          "passed": false,
+          "evidence": "naive-run.md: no baseline exists, so no lift over baseline is stated."
+        },
+        {
+          "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.",
+          "passed": false,
+          "evidence": "naive-run.md: concludes 'excellent' and 'ready to ship' on accuracy alone - contradicted by the 0.167% imbalance."
+        }
+      ],
+      "notes": [
+        "REPRODUCIBLE naive baseline: the numbers are the real output of naive_run.py in this directory (sklearn 1.8.0). A scripted un-disciplined stand-in \u2014 not an observed LLM-without-skill agent run."
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": null,
+      "tokens": null
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.125,
+        "stddev": 0.0,
+        "min": 0.125,
+        "max": 0.125
+      },
+      "time_seconds": null,
+      "tokens": null
+    },
+    "delta": {
+      "pass_rate": "+0.88"
+    }
+  },
+  "notes": []
+}

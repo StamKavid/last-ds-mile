@@ -17,6 +17,8 @@ STAGE_SKILLS = [
     "ds-explain",
     "ds-report",
     "ds-handoff",
+    "ds-package",
+    "ds-deploy",
 ]
 
 DOMAIN_SKILLS = [
@@ -149,6 +151,58 @@ def test_domain_skill_structure(skill):
     assert len(frontmatter["description"]) <= 1024
     for section in REQUIRED_SECTIONS:
         assert section in body, f"{skill} missing section {section}"
+
+
+def test_package_skill_specifics():
+    """/ds-package must prove training/serving parity and define an inference contract.
+
+    The parity gate is the deployment world's leakage check — it's the reason this
+    stage is more than a docker wrapper, so the skill must actually name it.
+    """
+    path = ROOT / "skills" / "ds-package" / "SKILL.md"
+    assert path.exists(), "missing skills/ds-package/SKILL.md"
+    text = path.read_text(encoding="utf-8")
+    assert "parity" in text.lower(), "ds-package must describe the training/serving parity gate"
+    assert "contract.json" in text, "ds-package must define the inference contract"
+    assert "Dockerfile" in text, "ds-package must produce a Dockerfile"
+    assert "ds-handoff" in text, "ds-package must gate on the /ds-handoff artifacts"
+    assert ".last-ds-mile/stages/11-package.md" in text, "ds-package must write its stage doc"
+
+
+def test_deploy_skill_specifics():
+    """/ds-deploy must gate on monitoring + drift + rollback and confirm before pushing.
+
+    The operational gate is what keeps a live model honest; the confirm boundary keeps
+    the plugin from ever pushing to prod on its own. Drift reuses distribution-shift.
+    """
+    path = ROOT / "skills" / "ds-deploy" / "SKILL.md"
+    assert path.exists(), "missing skills/ds-deploy/SKILL.md"
+    text = path.read_text(encoding="utf-8")
+    lower = text.lower()
+    assert "monitor" in lower, "ds-deploy must require a monitoring hook"
+    assert "distribution-shift" in text, "ds-deploy must reuse the distribution-shift skill for drift"
+    assert "rollback" in lower, "ds-deploy must require a rollback pointer"
+    assert "ds-package" in text, "ds-deploy must gate on the /ds-package artifacts"
+    assert "confirm" in lower, "ds-deploy must confirm before any outward push"
+    assert ".last-ds-mile/stages/12-deploy.md" in text, "ds-deploy must write its stage doc"
+
+
+def test_entry_point_skill_structure():
+    """The front-door skill auto-routes cold-start users into the pipeline.
+
+    It has no command (like the domain skills) and must point at both /ds-frame
+    and the /ds router so it can onboard or defer correctly.
+    """
+    path = ROOT / "skills" / "data-science-project" / "SKILL.md"
+    assert path.exists(), "missing skills/data-science-project/SKILL.md"
+    frontmatter, body = parse_frontmatter(path)
+    assert frontmatter["name"] == "data-science-project"
+    assert len(frontmatter["description"]) <= 1024
+    for section in REQUIRED_SECTIONS:
+        assert section in body, f"data-science-project missing section {section}"
+    assert "/ds-frame" in body, "entry-point skill must route to /ds-frame"
+    assert "/ds" in body, "entry-point skill must reference the /ds router"
+    assert ".last-ds-mile/stages/" in body, "entry-point skill must gate on pipeline state"
 
 
 def test_hooks_json_valid():

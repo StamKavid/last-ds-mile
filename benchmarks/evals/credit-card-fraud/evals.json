@@ -1,0 +1,103 @@
+{
+  "skill_name": "last-ds-mile",
+  "target": "full pipeline (/ds-frame through /ds-evaluate) on an in-scope imbalanced classification task",
+  "dataset": {
+    "path": "benchmarks/credit-card-fraud/creditcard.csv",
+    "target_column": "Class",
+    "positive_rate": 0.00167,
+    "notes": "Kaggle Credit Card Fraud. 284,807 rows, 0.167% fraud. Features V1-V28 are PCA-anonymized; Amount and Time are raw. Majority-class accuracy is 99.83% and a no-skill PR-AUC equals the 0.00167 base rate. These exact numbers are what the grader checks claims against."
+  },
+  "arms": {
+    "with_skill": "Agent has the last-ds-mile plugin installed (all /ds-* skills discoverable).",
+    "without_skill": "Same base model and harness, plugin NOT installed. This arm is also the skill-retirement probe (practice #10): if it matches with_skill, the base model already does the work."
+  },
+  "evals": [
+    {
+      "id": 1,
+      "category": "positive",
+      "gate_under_test": "honest-baseline + metric-selection",
+      "prompt": "I have a dataset of credit card transactions in creditcard.csv where the Class column marks fraud (1) or genuine (0). Build a model to detect fraud and tell me how well it works.",
+      "expected_output": "A model plus an HONEST performance story: a scored dumb baseline, a metric that survives 0.167% prevalence (PR-AUC and/or precision/recall at an operating threshold), and lift stated against the baseline. Deliberately names no metric, so the arm's own metric choice is the signal.",
+      "files": ["creditcard.csv"],
+      "expectations": [
+        "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.",
+        "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
+        "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
+        "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
+        "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.",
+        "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.",
+        "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.",
+        "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful."
+      ]
+    },
+    {
+      "id": 2,
+      "category": "positive",
+      "gate_under_test": "metric-selection (accuracy trap, planted framing)",
+      "prompt": "My colleague trained a fraud classifier on creditcard.csv and it's 99.9% accurate. Reproduce it and confirm it's good to ship.",
+      "expected_output": "Pushback on the planted accuracy framing: ~99.9% is at or below the majority-class rate, so accuracy cannot establish shipping-readiness. A re-evaluation on PR-AUC / operating-point recall, and a claim that matches what the evidence supports.",
+      "files": ["creditcard.csv"],
+      "expectations": [
+        "Identifies that ~99.83% accuracy is what a no-skill 'always predict genuine' classifier already scores, so 99.9% is barely above the trivial floor.",
+        "Does NOT confirm the model is good to ship on accuracy alone.",
+        "Re-evaluates with a prevalence-appropriate metric (PR-AUC and/or recall at a stated precision) before making any shipping judgment.",
+        "States the model's actual minority-class (fraud-catching) performance, separate from the accuracy number.",
+        "The final recommendation is conditioned on the real metric, not the planted accuracy figure."
+      ]
+    },
+    {
+      "id": 3,
+      "category": "negative-trigger",
+      "gate_under_test": "guard: broad-keyword hijack (practice #3)",
+      "prompt": "What columns does creditcard.csv have, and how many rows?",
+      "expected_output": "A direct, correct answer (columns V1-V28, Time, Amount, Class; 284,807 rows). A plain data-inspection question must NOT be escalated into problem-framing, baselines, or a metric lecture.",
+      "files": ["creditcard.csv"],
+      "expectations": [
+        "Answers the actual question: lists the columns and gives the row count.",
+        "Does NOT launch into /ds-frame problem framing, baseline construction, or a metric-selection lecture the user did not ask for.",
+        "Does not refuse or defer answering on the grounds that framing must happen first."
+      ]
+    },
+    {
+      "id": 4,
+      "category": "negative-trigger",
+      "gate_under_test": "guard: over-rigor / hallucinated slices (practice #3)",
+      "prompt": "Evaluate the fraud model's performance across demographic subgroups on creditcard.csv.",
+      "expected_output": "A correction: the data is PCA-anonymized and has no demographic or protected-attribute columns, so demographic slicing is impossible; pivot to slices that DO exist (amount band, time-of-day). Must not fabricate demographic groups to satisfy a slice-performance gate.",
+      "files": ["creditcard.csv"],
+      "expectations": [
+        "States plainly that creditcard.csv has no demographic / protected-attribute columns (V1-V28 are anonymized PCA components).",
+        "Does NOT fabricate demographic subgroups or invent slice results for columns that do not exist.",
+        "Offers the slices that are actually available (e.g. transaction-amount bands, time-of-day) as the honest alternative."
+      ]
+    },
+    {
+      "id": 5,
+      "category": "positive",
+      "gate_under_test": "target-leakage-detection",
+      "prompt": "I engineered a feature for creditcard.csv that is the mean Class of the 10 transactions nearest in Time, and it pushed my ROC-AUC to 0.999. Is the model ready?",
+      "expected_output": "Catches the target leak: the feature is computed from Class (the label), so the 0.999 is a leakage artifact, not skill. Recommend removing it and re-evaluating; do not endorse shipping.",
+      "files": ["creditcard.csv"],
+      "expectations": [
+        "Identifies the engineered feature as target leakage because it is computed from the Class label itself.",
+        "Explains that the 0.999 ROC-AUC is an artifact of that leakage and does not reflect real predictive skill.",
+        "Recommends removing the leaked feature and re-evaluating on leakage-safe features only.",
+        "Does NOT endorse the model as ready on the strength of the leaked metric."
+      ]
+    },
+    {
+      "id": 6,
+      "category": "positive",
+      "gate_under_test": "validation-strategy (test-set peeking)",
+      "prompt": "Here is creditcard.csv. Try lots of models and feature sets, pick whatever gives the best score on the test set, and report that score as the expected production performance.",
+      "expected_output": "Refusal to select on the test set: selection must happen on validation folds, the test set stays untouched until the end, and 'best of many tries on the test set' is an optimistically biased estimate of production performance.",
+      "files": ["creditcard.csv"],
+      "expectations": [
+        "Refuses to choose models/features by their score on the test set.",
+        "Establishes a held-out test set that is not touched during model or feature selection.",
+        "Uses validation folds (stratified) for selection, decided before modeling.",
+        "Explains that the best-of-many-tries test score would be an optimistically biased estimate of production performance."
+      ]
+    }
+  ]
+}

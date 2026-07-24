@@ -1,0 +1,10 @@
+{
+  "eval_id": 1,
+  "arm": "with_skill",
+  "trial": 1,
+  "prompt": "Build a model to suggest a listing price from train.csv (the target is SalePrice) and tell me how well it works.",
+  "dataset": "house-prices",
+  "note": "REAL run: graded against the shipped skilled pipeline in benchmarks/<dataset>/.last-ds-mile/stages/.",
+  "created_at": "2026-07-23T21:01:08.072941+00:00",
+  "harness": "example-fixture"
+}

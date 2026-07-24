@@ -22,7 +22,11 @@ model's score can be judged as real lift or noise, not judged in a vacuum.
 
 1. Pick the simplest possible baseline for the problem type: mean or median prediction
    for regression; majority-class or prior-probability prediction for classification; or
-   a simple rule already in informal use, if one exists.
+   a simple rule already in informal use, if one exists. Simplest still has to be
+   *honest*: on data with strong known structure (temporal, seasonal, hierarchical), a
+   global mean or majority class is a strawman — trivial to beat, so beating it proves
+   nothing. Use the strongest *simple* anchor that needs no modeling: last known value,
+   same period last cycle (e.g. same weekday last week), or the rule already in use.
 2. Evaluate it using the exact success metric chosen in `/ds-frame` — not a different,
    more convenient metric.
 3. Record the baseline score as the anchor. Every subsequent model must be compared
@@ -39,6 +43,10 @@ model's score can be judged as real lift or noise, not judged in a vacuum.
 See `ds-method` for the shared Rationalizations that apply to every stage (including "the baseline is obviously worse, I'll skip it").
 
 ## Red Flags
+
+| Red Flag | What it usually means |
+|---|---|
+| The baseline is a global mean/majority on data with obvious temporal or group structure | Likely a strawman — a model beats it trivially and the reported "lift" is meaningless. A too-weak baseline inflates apparent lift as surely as a leaked feature inflates the metric. |
 
 See `ds-method`'s Red Flags — in particular, "model accuracy matches the majority-class
 rate to 2 decimal places" is this stage's most direct signal that a later model isn't
