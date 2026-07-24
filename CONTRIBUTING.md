@@ -10,11 +10,11 @@ scientist wouldn't take, so changes are held to that standard.
 
 | Path | What lives there |
 |---|---|
-| `commands/` | The 15 slash commands (`/ds-frame`, `/ds-model`, …) — thin routers that activate skills |
+| `commands/` | The 17 slash commands (`/ds-frame`, `/ds-model`, …) — thin routers that activate skills |
 | `skills/` | The actual discipline: one `SKILL.md` per skill, pipeline-stage skills (`ds-*`) and domain skills (leakage, imbalance, causal-vs-predictive, …) |
 | `agents/` | Subagents (`leakage-auditor`, `ds-reviewer`, `data-profiler`) |
 | `hooks/` | Four stdlib-only Python hooks (session start, untrusted-input scan, pre-compact, learnings persistence) — see [AUDIT.md](AUDIT.md) |
-| `benchmarks/` | Full pipeline runs on real datasets (house-prices, telco-churn, credit-card-fraud) used to validate skill changes end-to-end |
+| `benchmarks/` | Full pipeline runs on real datasets (house-prices, telco-churn, credit-card-fraud) used to validate skill changes end-to-end; `benchmarks/evals/` holds the with/without-skill eval harness |
 | `tests/` | Plugin-structure and hook-behavior tests (pytest) |
 | `lessons/` | Shipped corpus of project-local lessons that auto-resurface |
 
