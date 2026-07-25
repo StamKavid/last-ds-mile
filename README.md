@@ -15,7 +15,7 @@ A product of [The Last AI Mile](https://thelastaimile.substack.com).
 ```
 FRAME         UNDERSTAND    PREPARE       MODEL         EVALUATE      SHIP
 ┌──────┐      ┌──────┐      ┌──────┐      ┌──────┐      ┌──────┐      ┌──────┐
-│Frame │ ───▶ │ Data │ ───▶ │ Prep │ ───▶ │Model │ ───▶ │ Eval │ ───▶ │Report│
+│Frame │ ───▶│ Data │ ───▶ │ Prep │ ───▶│Model │ ───▶ │ Eval │ ───▶│Report│
 │Target│      │  EDA │      │ Base │      │ Gate │      │Slice │      │Deploy│
 └──────┘      └──────┘      └──────┘      └──────┘      └──────┘      └──────┘
  /ds-frame     /ds-data      /ds-prep      /ds-model     /ds-evaluate  /ds-report
