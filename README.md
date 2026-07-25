@@ -12,9 +12,18 @@ A product of [The Last AI Mile](https://thelastaimile.substack.com).
 
 ---
 
-<p align="center">
-  <img src="assets/last-ds-mile-1.png" alt="Last DS Mile pipeline" width="900">
-</p>
+```
+FRAME         UNDERSTAND    PREPARE       MODEL         EVALUATE      SHIP
+┌──────┐      ┌──────┐      ┌──────┐      ┌──────┐      ┌──────┐      ┌──────┐
+│Frame │ ───▶ │ Data │ ───▶ │ Prep │ ───▶ │Model │ ───▶ │ Eval │ ───▶ │Report│
+│Target│      │  EDA │      │ Base │      │ Gate │      │Slice │      │Deploy│
+└──────┘      └──────┘      └──────┘      └──────┘      └──────┘      └──────┘
+ /ds-frame     /ds-data      /ds-prep      /ds-model     /ds-evaluate  /ds-report
+
+  ⚠ hard gates   /ds-model · /ds-report · /ds-handoff · /ds-package · /ds-deploy
+  ↺ loop back    /ds-iterate (inside Evaluate) diagnoses and routes back to
+                 Prepare, Validate, or Model — not a straight line to Ship
+```
 
 ---
 
@@ -205,7 +214,7 @@ Every skill follows a consistent anatomy:
 **Key design choices:**
 
 - **Process, not reference.** Skills are workflows agents follow, not documentation they read. Each has steps, checkpoints, and exit criteria.
-- **Hard gates, not suggestions.** Three stages check for prior-stage evidence — a baseline, a validation plan, a pinned environment — and stop to tell the agent (and you) exactly what's missing rather than proceeding around it. Enforcement is by warning and stopping to ask, matching this plugin's warn-never-block safety posture (see `ds-method` and [Safety](#safety)), not by a mechanism that can silently block you.
+- **Hard gates, not suggestions.** Five stages check for prior-stage evidence — a baseline, a validation plan, a pinned environment, a training/serving parity check, a monitoring + rollback plan — and stop to tell the agent (and you) exactly what's missing rather than proceeding around it. Enforcement is by warning and stopping to ask, matching this plugin's warn-never-block safety posture (see `ds-method` and [Safety](#safety)), not by a mechanism that can silently block you.
 - **Anti-rationalization built in.** Every skill includes a table of excuses agents (and humans) use to skip steps — "the metric looks fine", "I'll validate later" — with documented counter-arguments.
 - **Verification is non-negotiable.** Every skill ends with evidence requirements. "Seems reasonable" is never sufficient — there must be slice results, a baseline comparison, a locked environment file.
 
