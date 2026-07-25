@@ -145,6 +145,8 @@ The commands above are entry points. Behind them are 30 skills total — 15 pipe
 | [ds-report](skills/ds-report/SKILL.md) | Build the findings report with uncertainty, subgroup performance, the metric lift translated into `/ds-frame`'s cost terms, and limitations — requires slice results, not just aggregate metrics ⚠ | After full evaluation |
 | [ds-brief](skills/ds-brief/SKILL.md) | Translate `/ds-report` into a one-page, jargon-free brief — no metric names, dollar/percentage/count framing only | Explaining results to executives or any non-technical audience |
 | [ds-handoff](skills/ds-handoff/SKILL.md) | Pin the environment, write the reproduction guide, package artifacts, and verify results replicate before handing off ⚠ | Finishing a project or transferring ownership |
+| [ds-package](skills/ds-package/SKILL.md) | Package a handed-off model into a servable unit — inference contract, framework-agnostic predict wrapper, reproducible Dockerfile — and prove it reproduces its offline predictions ⚠ | A model is ready to become a running service |
+| [ds-deploy](skills/ds-deploy/SKILL.md) | Stand a packaged model up as a callable endpoint with input/prediction logging against the live baseline, drift detection, and a rollback pointer; local-container-first ⚠ | A parity-verified package is ready to serve |
 
 ---
 
