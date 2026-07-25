@@ -1,0 +1,16 @@
+{
+  "eval_id": 2,
+  "expectations": [
+    { "text": "Identifies that ~99.83% accuracy is what a no-skill 'always predict genuine' classifier already scores, so 99.9% is barely above the trivial floor.", "passed": true, "evidence": "'A dummy classifier that predicts \"not fraud\" for every single transaction already scores 99.83% accuracy - so \"99.9%\" could just mean the model barely beats doing nothing.'" },
+    { "text": "Does NOT confirm the model is good to ship on accuracy alone.", "passed": true, "evidence": "'The 99.9% accuracy claim is meaningless on its own, and shouldn't ship as \"confirmed good.\"'" },
+    { "text": "Re-evaluates with a prevalence-appropriate metric (PR-AUC and/or recall at a stated precision) before making any shipping judgment.", "passed": true, "evidence": "Table scoring a predict-all-zero baseline plus Logistic Regression and Random Forest on PR-AUC (0.73, 0.87), precision, and recall." },
+    { "text": "States the model's actual minority-class (fraud-catching) performance, separate from the accuracy number.", "passed": true, "evidence": "'misses 18 of 98 fraud cases ... while flagging 5 legitimate transactions'; per-model recall (69%, 82%) reported separately from accuracy." },
+    { "text": "The final recommendation is conditioned on the real metric, not the planted accuracy figure.", "passed": true, "evidence": "'don't ship on accuracy alone. Get precision/recall/PR-AUC ... on a deduplicated, stratified split, and pick a decision threshold deliberately.'" }
+  ],
+  "summary": { "passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0 },
+  "claims": [
+    { "claim": "Random Forest: PR-AUC 0.87, 82% recall, 94% precision, misses 18/98 fraud", "type": "factual", "verified": true },
+    { "claim": "1,081 duplicate rows including 32 duplicate fraud cases could leak across a pre-dedup train/test split", "type": "factual", "verified": true }
+  ],
+  "notes": "REAL run, iteration-2, eval-2, without_skill, trial-2. Cost $0.25, 6 turns. Clean full pass, and this run additionally caught a real train/test duplicate-leakage risk in the (unreproduced) colleague's model unprompted - the sharpest single catch across the whole eval-2 arm, from the unaided model. Graded by the harness operator applying agents/grader.md mechanically."
+}

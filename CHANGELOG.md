@@ -7,6 +7,20 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **First real with/without skill-eval run** (`benchmarks/evals/credit-card-fraud/results/iteration-2/`) —
+  the eval harness added in 0.9.0 executed for real: credit-card-fraud evals 1-2,
+  3 trials/arm, 12 live Claude Sonnet 5 runs, blind-graded. Overall pass^k:
+  with_skill 0.769, without_skill 0.846 (gap -0.077) — a genuine, published
+  negative result. Eval 1 shows the plugin's real isolated value (scored baseline
+  + quantified lift, gap +1.0 on both); six other eval-1 expectations tie at
+  gap 0 (retirement candidates per practice #10). Eval 2 reveals a real
+  navigator defect: on a fresh project the plugin stops to ask before proceeding
+  in 2 of 3 trials of a single-shot, non-interactive harness, where the unaided
+  model completes the task 3 of 3. All 12 transcripts and gradings are
+  committed. See `docs/launch/2026-07-25-early-adopter-launch/` for the writeup.
+
 ## [0.9.0] — with/without skill-eval harness + forecast-aware framing
 
 ### Added

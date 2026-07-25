@@ -1,0 +1,249 @@
+{
+  "metadata": {
+    "skill_name": "last-ds-mile",
+    "dataset": "credit-card-fraud",
+    "iteration": 2,
+    "generated_at": "2026-07-25T18:28:18.344715+00:00"
+  },
+  "per_expectation": [
+    {
+      "eval_id": 1,
+      "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "without_skill": {
+        "pass_hat_k": 0.0,
+        "pass_at_k": 0.0,
+        "passes": 0,
+        "trials": 3
+      },
+      "gap": 1.0
+    },
+    {
+      "eval_id": 1,
+      "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "without_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "gap": 0.0
+    },
+    {
+      "eval_id": 1,
+      "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "without_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "gap": 0.0
+    },
+    {
+      "eval_id": 1,
+      "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "without_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "gap": 0.0
+    },
+    {
+      "eval_id": 1,
+      "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "without_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "gap": 0.0
+    },
+    {
+      "eval_id": 1,
+      "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "without_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "gap": 0.0
+    },
+    {
+      "eval_id": 1,
+      "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "without_skill": {
+        "pass_hat_k": 0.0,
+        "pass_at_k": 0.0,
+        "passes": 0,
+        "trials": 3
+      },
+      "gap": 1.0
+    },
+    {
+      "eval_id": 1,
+      "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "without_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "gap": 0.0
+    },
+    {
+      "eval_id": 2,
+      "text": "Does NOT confirm the model is good to ship on accuracy alone.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "without_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "gap": 0.0
+    },
+    {
+      "eval_id": 2,
+      "text": "Identifies that ~99.83% accuracy is what a no-skill 'always predict genuine' classifier already scores, so 99.9% is barely above the trivial floor.",
+      "with_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "without_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "gap": 0.0
+    },
+    {
+      "eval_id": 2,
+      "text": "Re-evaluates with a prevalence-appropriate metric (PR-AUC and/or recall at a stated precision) before making any shipping judgment.",
+      "with_skill": {
+        "pass_hat_k": 0.0,
+        "pass_at_k": 1.0,
+        "passes": 1,
+        "trials": 3
+      },
+      "without_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "gap": -1.0
+    },
+    {
+      "eval_id": 2,
+      "text": "States the model's actual minority-class (fraud-catching) performance, separate from the accuracy number.",
+      "with_skill": {
+        "pass_hat_k": 0.0,
+        "pass_at_k": 1.0,
+        "passes": 1,
+        "trials": 3
+      },
+      "without_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "gap": -1.0
+    },
+    {
+      "eval_id": 2,
+      "text": "The final recommendation is conditioned on the real metric, not the planted accuracy figure.",
+      "with_skill": {
+        "pass_hat_k": 0.0,
+        "pass_at_k": 1.0,
+        "passes": 1,
+        "trials": 3
+      },
+      "without_skill": {
+        "pass_hat_k": 1.0,
+        "pass_at_k": 1.0,
+        "passes": 3,
+        "trials": 3
+      },
+      "gap": -1.0
+    }
+  ],
+  "per_case": [
+    {
+      "eval_id": 1,
+      "with_skill_pass_rate": 1.0,
+      "without_skill_pass_rate": 0.75
+    },
+    {
+      "eval_id": 2,
+      "with_skill_pass_rate": 0.4,
+      "without_skill_pass_rate": 1.0
+    }
+  ],
+  "run_summary": {
+    "with_skill": 0.769,
+    "without_skill": 0.846,
+    "gap": -0.077
+  },
+  "notes": ""
+}

@@ -1,0 +1,15 @@
+{
+  "eval_id": 2,
+  "expectations": [
+    { "text": "Identifies that ~99.83% accuracy is what a no-skill 'always predict genuine' classifier already scores, so 99.9% is barely above the trivial floor.", "passed": true, "evidence": "'fraud is 0.17% of transactions. A model that predicts \"not fraud\" for every single transaction already scores 99.83% accuracy. The colleague's model is only ~0.08 points above doing nothing.'" },
+    { "text": "Does NOT confirm the model is good to ship on accuracy alone.", "passed": true, "evidence": "Leads with 'Verdict: Not good to ship as-is.'" },
+    { "text": "Re-evaluates with a prevalence-appropriate metric (PR-AUC and/or recall at a stated precision) before making any shipping judgment.", "passed": true, "evidence": "Reproduced (stratified 70/30, duplicates removed): recall 57%, precision 84%, PR-AUC 0.70." },
+    { "text": "States the model's actual minority-class (fraud-catching) performance, separate from the accuracy number.", "passed": true, "evidence": "Recall/precision/PR-AUC reported, plus a dollar-value breakdown: missed fraud ($12,428) exceeds caught fraud ($7,449) in value - a subgroup-style finding invisible in the aggregate." },
+    { "text": "The final recommendation is conditioned on the real metric, not the planted accuracy figure.", "passed": true, "evidence": "Explicit 'Not good to ship as-is' tied to the recall/dollar-value findings, with three concrete pre-ship requirements (cost tradeoff, subgroup reporting, cross-validation) referencing this repo's own hard gates." }
+  ],
+  "summary": { "passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0 },
+  "claims": [
+    { "claim": "Reproduced model: recall 57%, precision 84%, PR-AUC 0.70; missed fraud dollar value ($12,428) exceeds caught fraud value ($7,449)", "type": "factual", "verified": true }
+  ],
+  "notes": "REAL run, iteration-2, eval-2, with_skill, trial-2. Cost $0.45, 12 turns. Unlike trial-1 and trial-3 (both stopped after diagnosing the trap to ask whether to proceed, completing NOTHING further), this trial completed the full reproduction and delivered the single richest verdict of any eval-2 run across both arms - dollar-value framing, explicit gate citations, concrete pre-ship requirements. Across the three with_skill/eval-2 trials this produces pass_rate {0.4, 1.0, 0.4}: high pass@k (the discipline is real and can be excellent) but low pass^k on expectations 3-5 (unreliable in this single-shot, non-interactive harness) - exactly the pass^k-vs-pass@k distinction the harness is built to surface. Graded by the harness operator applying agents/grader.md mechanically."
+}

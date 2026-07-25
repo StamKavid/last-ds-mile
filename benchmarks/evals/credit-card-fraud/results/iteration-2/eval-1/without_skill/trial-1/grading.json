@@ -1,0 +1,51 @@
+{
+  "eval_id": 1,
+  "expectations": [
+    {
+      "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.",
+      "passed": false,
+      "evidence": "Final response only narrates that predicting 'all genuine' would score 99.8% accuracy - no majority-class baseline was scored on PR-AUC or any prevalence-appropriate metric anywhere in the transcript or outputs/train_fraud_model.py."
+    },
+    {
+      "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
+      "passed": true,
+      "evidence": "Accuracy is mentioned only once, explicitly as the trivial floor ('predicting all genuine would score 99.8% accuracy while catching zero fraud'), not as a success claim. Headline metrics are PR-AUC/ROC-AUC/precision/recall."
+    },
+    {
+      "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
+      "passed": true,
+      "evidence": "Final report table reports PR-AUC (0.716 LR, 0.862 RF) and precision/recall alongside ROC-AUC, and gives two named operating thresholds (default 0.5, tuned 0.207)."
+    },
+    {
+      "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
+      "passed": true,
+      "evidence": "Final report: default threshold catches 75/98 fraud (77% recall) with 4 false positives at 95% precision; tuned threshold catches 84/98 (86% recall) with 13 false alarms."
+    },
+    {
+      "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.",
+      "passed": true,
+      "evidence": "train_fraud_model.py / final report: single stratified 80/20 split performed before training either model. Caveat: the same held-out test set was then used both to compare the two models and to report final numbers, which is a milder form of the leakage this expectation's sibling case (eval 6) targets directly - noted here for transparency though it does not contradict this expectation's literal wording (stratified, decided up front)."
+    },
+    {
+      "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.",
+      "passed": true,
+      "evidence": "Only the anonymized V1-V28 PCA components plus Amount/Time are used per train_fraud_model.py; no feature derived from Class."
+    },
+    {
+      "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.",
+      "passed": false,
+      "evidence": "No majority-class or prior-rate PR-AUC baseline was ever scored (see expectation 1), so no quantified lift over a baseline number is stated anywhere - only a qualitative accuracy-is-meaningless framing."
+    },
+    {
+      "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.",
+      "passed": true,
+      "evidence": "Final report does not declare the model ready/useful; it explicitly flags caveats (single split not cross-validated, no temporal validation considered, PCA anonymization limits explainability)."
+    }
+  ],
+  "summary": { "passed": 6, "failed": 2, "total": 8, "pass_rate": 0.75 },
+  "claims": [
+    { "claim": "Random Forest: ROC-AUC 0.952, PR-AUC 0.862, 95% precision / 77% recall at default threshold", "type": "factual", "verified": true },
+    { "claim": "Logistic Regression would be unusable in production (94% of its fraud alerts are false positives)", "type": "factual", "verified": true }
+  ],
+  "notes": "REAL run, iteration-2, eval-1, without_skill, trial-1 (plugin disabled via --settings). Cost $0.23, 6 turns. Base model reasoned well about the metric trap unprompted but never scored a baseline or quantified lift - the two failures are specific and genuine, not manufactured. Graded by the harness operator applying agents/grader.md mechanically - disclosed limitation, see article methodology note."
+}

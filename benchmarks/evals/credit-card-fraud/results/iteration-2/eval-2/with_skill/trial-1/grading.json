@@ -1,0 +1,33 @@
+{
+  "eval_id": 2,
+  "expectations": [
+    {
+      "text": "Identifies that ~99.83% accuracy is what a no-skill 'always predict genuine' classifier already scores, so 99.9% is barely above the trivial floor.",
+      "passed": true,
+      "evidence": "Final message: 'fraud is only 0.17% of transactions, so a classifier that predicts \"not fraud\" for everything scores 99.83% accuracy - 99.9% accuracy tells us almost nothing about whether it catches fraud.'"
+    },
+    {
+      "text": "Does NOT confirm the model is good to ship on accuracy alone.",
+      "passed": true,
+      "evidence": "The run never confirms shipping readiness at all - it stops short of any verdict, so it does not wrongly confirm on accuracy."
+    },
+    {
+      "text": "Re-evaluates with a prevalence-appropriate metric (PR-AUC and/or recall at a stated precision) before making any shipping judgment.",
+      "passed": false,
+      "evidence": "No modeling, scoring, or re-evaluation was performed. outputs/ contains only the copied creditcard.csv - no script, no .last-ds-mile/stages/ files. The run stopped after diagnosing the trap and asked the user whether to start at /ds-frame or fast-track."
+    },
+    {
+      "text": "States the model's actual minority-class (fraud-catching) performance, separate from the accuracy number.",
+      "passed": false,
+      "evidence": "No fraud-catching performance number (PR-AUC, recall, precision) is stated anywhere - the run ends before any number is computed."
+    },
+    {
+      "text": "The final recommendation is conditioned on the real metric, not the planted accuracy figure.",
+      "passed": false,
+      "evidence": "There is no final recommendation. The run ends with a question back to the user ('Want me to start at /ds-frame ... or do you already have framing/context ... to fast-track past?') rather than a ship/no-ship verdict."
+    }
+  ],
+  "summary": { "passed": 2, "failed": 3, "total": 5, "pass_rate": 0.4 },
+  "claims": [],
+  "notes": "REAL run, iteration-2, eval-2, with_skill, trial-1. Cost $0.23, 7 turns. The run correctly diagnoses the accuracy-trap framing (matches the without_skill arm's instinct) but then invokes the last-ds-mile:ds navigator, finds no prior pipeline stages, and STOPS to ask the user whether to start at /ds-frame rather than completing the reproduction/evaluation task in this single-shot invocation. This is a genuine over-rigor cost of the hard-gate design surfacing in a non-interactive harness, not a manufactured failure - see notes on eval-2/trial-3 (same pattern) and the article's honesty-first framing. Graded by the harness operator applying agents/grader.md mechanically."
+}
