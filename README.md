@@ -27,6 +27,20 @@ FRAME         UNDERSTAND    PREPARE       MODEL         EVALUATE      SHIP
 
 ---
 
+## Why Last DS Mile?
+
+Data science projects don't fail in the modeling cell. They fail in the last mile: target leakage that inflates a metric, a validation scheme that trains on the future, evaluation that reports one aggregate number while hiding where the model fails, and notebooks that can't be rerun six months later.
+
+AI coding agents make this worse by default — they optimize for a result that looks right quickly, skipping the steps that reveal whether the result *is* right. Last DS Mile gives agents structured workflows with checkpoints that match how experienced data scientists actually work: baselines before complexity, honest splits before training, slices before reporting.
+
+Four principles run through every stage:
+
+- **Leakage first.** Target leakage, temporal leakage, and validation leakage are actively hunted — not left to chance. The `leakage-auditor` subagent is available for adversarial review before any model ships.
+- **Baselines are required, not optional.** A model that doesn't beat the simplest thing that could work has proven nothing. `/ds-baseline` is a hard prerequisite for `/ds-model`.
+- **Aggregate scores are not enough.** Slice performance (including protected/sensitive attributes where relevant), calibration, and error analysis are required before any model ships. `/ds-evaluate` results are a hard prerequisite for `/ds-report`.
+- **A point estimate is not a finding.** Every reported metric carries its fold spread, and a lift over baseline is only real if it exceeds that spread — see `uncertainty-quantification`. One pass through evaluation is also rarely the end: `/ds-iterate` diagnoses what's actually wrong and routes back to the stage that fixes it before the pipeline is allowed to call itself done.
+
+
 ## Commands
 
 17 slash commands — one navigator, 14 pipeline stages (including the `/ds-iterate` loop-back step), plus `/ds-learn` to capture project-local lessons and `/ds-brief` to translate `/ds-report` for a non-technical audience. Each activates the right skills automatically. Five stages are hard gates that stop and verify discipline before proceeding.
@@ -267,23 +281,6 @@ last-ds-mile/
 ├── settings-baseline.json           # Opt-in permission baseline
 └── AUDIT.md                         # What every hook reads, writes, and calls
 ```
-
----
-
-## Why Last DS Mile?
-
-Data science projects don't fail in the modeling cell. They fail in the last mile: target leakage that inflates a metric, a validation scheme that trains on the future, evaluation that reports one aggregate number while hiding where the model fails, and notebooks that can't be rerun six months later.
-
-AI coding agents make this worse by default — they optimize for a result that looks right quickly, skipping the steps that reveal whether the result *is* right. Last DS Mile gives agents structured workflows with checkpoints that match how experienced data scientists actually work: baselines before complexity, honest splits before training, slices before reporting.
-
-Four principles run through every stage:
-
-- **Leakage first.** Target leakage, temporal leakage, and validation leakage are actively hunted — not left to chance. The `leakage-auditor` subagent is available for adversarial review before any model ships.
-- **Baselines are required, not optional.** A model that doesn't beat the simplest thing that could work has proven nothing. `/ds-baseline` is a hard prerequisite for `/ds-model`.
-- **Aggregate scores are not enough.** Slice performance (including protected/sensitive attributes where relevant), calibration, and error analysis are required before any model ships. `/ds-evaluate` results are a hard prerequisite for `/ds-report`.
-- **A point estimate is not a finding.** Every reported metric carries its fold spread, and a lift over baseline is only real if it exceeds that spread — see `uncertainty-quantification`. One pass through evaluation is also rarely the end: `/ds-iterate` diagnoses what's actually wrong and routes back to the stage that fixes it before the pipeline is allowed to call itself done.
-
----
 
 ## Learnings
 
