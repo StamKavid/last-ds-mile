@@ -2,7 +2,7 @@
 
 Derived from [SPEC-v1-architecture.md](../SPEC-v1-architecture.md). Status: **awaiting human review.**
 
-Branch: `feat/v1-architecture`, cut from `fix/skill-eval-regression` (its discipline/safety
+Branch: `feat/v1-architecture` (**in progress** — Phases 0-4 and 6 landed, Phase 5 pending). Cut from `fix/skill-eval-regression` (its discipline/safety
 gate split is load-bearing and gets carried forward, not redone).
 
 **Phase order is the risk control.** Phases 1–2 build free regression checks *before* any
@@ -10,6 +10,24 @@ skill is rewritten, so every later phase has a deterministic gate. Behavioral ev
 (expensive) run only at ◆ checkpoints, never per-edit.
 
 Legend: ◆ = human checkpoint, stop and review · ⚑ = spends tokens
+
+---
+
+## Status — what actually landed
+
+| Phase | State | Result |
+|---|---|---|
+| 0 — land pending fix | ✅ | 3 commits; CHANGELOG marked unvalidated; branch cut |
+| 1 — Tier 1 lint | ✅ | 15 real violations found, all fixed in Phase 3; zero xfails |
+| 2 — Tier 2 routing | ✅ | Baseline 47.8% rank-1, 33 failures; **falsified the merge plan** |
+| ◆ Checkpoint 2 | ✅ | Approved: descriptions first, one merge, no renames |
+| 3 — restructure | ✅ | 47.8% → 91.3% rank-1, 0 failures, 30 → 29 skills |
+| 4 — harness | ✅ | Isolated, blinded, budgeted, pressure cases, macro headline |
+| 6 — ship prep | ✅ | CI wired, CHANGELOG, PR to `dev` |
+| 5 — iteration-3 | ⏸ | **Deferred to the user.** Costs ~$40–60. Commands below. |
+
+Phase 6 ran before Phase 5 by agreement: the free work is landed and reviewable,
+and the behavioral run is triggered separately.
 
 ---
 
@@ -139,7 +157,26 @@ Harness only. Still no eval runs.
 
 ---
 
-## Phase 5 — Iteration-3 ⚑**spends tokens (~$40–60)**
+## Phase 5 — Iteration-3 ⚑**spends tokens (~$40–60)** — NOT RUN
+
+Everything below is ready to execute. Start with the smoke subset — it costs ~$8–12 and
+tests the exact risk Phase 3 created (the descriptions and `/ds` now push hard toward
+"proceed"; evals 3, 4 and 6 are the cases where stopping is correct).
+
+```bash
+# Smoke first: negative-trigger + stop-is-correct cases, with_skill only
+python benchmarks/evals/scripts/run_eval.py credit-card-fraud/evals.json     --evals 3 4 6 --trials 2 --arm with_skill --iteration 3
+
+# Full run, both arms, all cases including the new pressure ones
+python benchmarks/evals/scripts/run_eval.py credit-card-fraud/evals.json     --trials 5 --iteration 3
+
+# Grade blind, then map back
+python benchmarks/evals/scripts/grade_manifest.py build   --results-root <root>
+python benchmarks/evals/scripts/grade_manifest.py unblind --results-root <root>
+
+# Aggregate
+python benchmarks/evals/scripts/aggregate.py credit-card-fraud --iteration 3
+```
 
 - [ ] 5.1 Scaffold: **6 cases × 5 trials × 2 arms × 2 datasets** (credit-card-fraud,
       house-prices) = 120 runs. If budget is tight, cut to 3 trials on house-prices, never

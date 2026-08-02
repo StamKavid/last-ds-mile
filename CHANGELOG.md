@@ -7,11 +7,69 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-> **Validation status.** The front-door fix below was written in response to iteration-2
-> and has **not** been confirmed by a behavioral run. Iteration-3 is specified in
-> [SPEC-v1-architecture.md](SPEC-v1-architecture.md) §7 and has not been executed. Treat
-> every claim in this section as a hypothesis with a named cause, not a demonstrated
-> outcome.
+> **Validation status.** Two free, deterministic gates (structural lint and lexical
+> routing) now pass, and their numbers are reproducible from a clean checkout. The
+> **behavioral** evidence is still missing: iteration-3 is specified in
+> [SPEC-v1-architecture.md](SPEC-v1-architecture.md) §7 and has not been run. Everything
+> below about *agent behaviour* remains a hypothesis with a named cause. Everything about
+> *routing and shape* is measured.
+
+### Added
+
+- **A three-tier eval harness.** Tier 1 (`tests/test_skill_lint.py`) enforces SKILL.md
+  shape: description length, a mandatory trigger clause, ≥2 distinct trigger vocabularies,
+  required sections, kebab naming, cross-reference resolution, one-level-deep links.
+  Tier 2 (`benchmarks/evals/scripts/route_check.py`) is a stdlib TF-IDF routing check —
+  does a realistic phrasing actually reach the skill that owns it, and do any two
+  descriptions collide. Tier 3 is the existing behavioral harness, now isolated and
+  blinded. Tiers 1 and 2 run in CI and cost nothing.
+- **Trigger case files for every skill** (`benchmarks/evals/cases/*.json`) — 92 positive
+  and 60 negative prompts, each negative naming the skill that *should* own it so the
+  assertion is a real pairwise routing test.
+- **Blind grading, mechanically** (`grade_manifest.py`). Runs are copied under shuffled
+  opaque ids with no arm in the path; identity is restored only after grading.
+- **Pressure cases** — time pressure and sunk cost on credit-card-fraud, authority
+  pressure on house-prices. Discipline that only holds when nobody argues against it
+  isn't discipline.
+- **Per-case `max_turns` / `max_cost_usd` budgets** and an explicit completion
+  expectation on every positive case, so a run that stalls without a verdict fails one
+  named check rather than three content checks by accident.
+
+### Changed
+
+- **Every skill and command description rewritten for routing.** Third-person verb, then
+  two or more `Use when` clauses each carrying a different slice of plain user vocabulary.
+  The measured effect: rank-1 routing **47.8% → 91.3%**, top-k **70.7% → 100%**, routing
+  failures **33 → 0**. Before the rewrite, `metric-selection` ranked #44 of 47 for *"is
+  accuracy the right thing to report"* and `imbalanced-data` ranked #41 for *"only 0.2% of
+  my rows are positive"* — the pack's two core claims on its own flagship dataset were
+  effectively unreachable. Full before/after in
+  [`benchmarks/evals/routing-baseline.md`](benchmarks/evals/routing-baseline.md).
+- **`/ds` shows the map and stops, always.** The previous text asked the model to infer
+  *why* it had been invoked, which a command cannot know. That conditional is how a task
+  routed into a status display and ended without a verdict in two of three iteration-2
+  eval-2 trials.
+- **Behavioral eval workspaces scaffold outside the repository**, and `run_eval.py`
+  refuses to scaffold inside it. Iteration-2 scaffolded into `benchmarks/evals/…/results/`,
+  under this repo's own `CLAUDE.md`, which states the hard-gate doctrine the
+  `without_skill` arm is supposed to lack — so that arm cannot be certified clean.
+  `eval_metadata.json` now records the resolved environment.
+- **The benchmark headline is a macro average over cases**, one vote each. The
+  per-expectation micro average is reported beside it; it weights a case by how many
+  expectations it happens to carry, which let a single 5-expectation case swing 38% of
+  iteration-2's two-case verdict.
+- **`benchmarks/evals/README.md` methodology claims corrected.** The blind-grader claim is
+  now true (it is enforced, not requested); the trials claim says 3 where 3 were run; the
+  cross-harness claim says scaffolded-not-exercised, because every committed run is Claude
+  Code and this pack ships no Gemini or Codex command variants.
+
+### Removed
+
+- **`validation-strategy`**, merged into `ds-validate` — its splitter reference table and
+  nested-CV section move across intact. It was the one merge the collision matrix
+  justified (0.546 cosine), and once `ds-validate` carried the vocabulary it ranked
+  **#47 of 47** for its own prompts. 30 skills → 29. No skill was renamed, so every
+  `/ds-*` command and external link still resolves.
 
 ### Fixed
 
