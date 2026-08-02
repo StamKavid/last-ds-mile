@@ -23,7 +23,6 @@ STAGE_SKILLS = [
 
 DOMAIN_SKILLS = [
     "target-leakage-detection",
-    "validation-strategy",
     "distribution-shift",
     "uncertainty-quantification",
     "model-ensembling",
@@ -54,7 +53,7 @@ SKILL_LESSON_CITATIONS = [
     ("metric-selection", "the-99-percent-fraud-model"),
     ("notebook-hygiene", "the-notebook-nobody-could-rerun"),
     ("ds-handoff", "the-notebook-nobody-could-rerun"),
-    ("validation-strategy", "the-leaderboard-that-lied"),
+    ("ds-validate", "the-leaderboard-that-lied"),
     ("ds-validate", "the-leaderboard-that-lied"),
     ("imbalanced-data", "the-imbalance-knob-that-broke-silently"),
     ("ds-model", "the-imbalance-knob-that-broke-silently"),

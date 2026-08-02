@@ -1,6 +1,6 @@
 ---
 name: data-science-project
-description: Use at the very start of a tabular ML or data-science task — building a predictive model, classifying or forecasting a column, or exploring a dataset — when the user has NOT yet entered the Last DS Mile pipeline (no `.last-ds-mile/stages/` yet). Orients them to the guided lifecycle and routes to /ds-frame so framing happens before data or models. Defers to /ds once the pipeline has already started.
+description: Carries a tabular machine-learning request from a plain-language ask all the way to a scored model and an honest verdict, in one turn. Use when the user says build a model, train a classifier, classify or predict or forecast a column, or detect something in a CSV, table, or spreadsheet. Use when someone wants to look at a dataset and see whether an outcome can be classified or predicted from it. Use when someone asks how well a model works, whether a result is good enough, or whether a model is ready to ship. Use when a data-science task is starting and no `.last-ds-mile/` work exists yet.
 ---
 
 # data-science-project — The Front Door
@@ -10,11 +10,12 @@ description: Use at the very start of a tabular ML or data-science task — buil
 This is the auto-triggering counterpart to the `/ds` command. It fires when a user
 starts a tabular supervised-learning task in plain language ("help me build a churn
 model", "predict this column", "let's look at this dataset") without knowing the
-pipeline exists. Its whole job is to route them onto the guided rail *before* they —
-or the agent — jump straight to EDA or modeling, which is the exact failure mode the
-Last DS Mile pipeline exists to prevent.
+pipeline exists.
 
-It does not do any modeling itself. It orients and hands off.
+Its job is to make sure framing, an honest baseline, and a leakage-safe validation
+strategy happen **before** the headline model number is reported — without stopping
+the run to ask permission first. Frame inline, then keep going: the gates (baseline,
+validation, slices) are what this plugin is for, not a pause for orientation.
 
 ## When to Use
 
@@ -28,6 +29,9 @@ Do **not** use when:
 
 - `.last-ds-mile/stages/` already exists — the pipeline is underway; defer to `/ds`,
   which routes to the actual next stage.
+- The user asked a direct factual question about the data (columns, row count, dtypes)
+  with no modeling or evaluation ask attached — just answer it. See `ds-method`'s guard
+  against escalating a plain question into a framing exercise.
 - The task is text, vision, recommenders, or time-series *forecasting* — outside this
   plugin's scope (see README → Scope).
 
@@ -36,35 +40,46 @@ Do **not** use when:
 1. **Check whether the pipeline already started.** Glob `.last-ds-mile/stages/*.md`.
    If any stage file exists, do not re-onboard — run the `/ds` router logic instead
    (print the map, mark stages done/next, route to the first missing stage) and stop.
-2. **If nothing exists, orient briefly.** Explain in two sentences that this plugin
-   runs DS work through a guided, gated lifecycle (frame → data → explore → prep →
-   baseline → validate → model → evaluate → explain → report → handoff) that catches
-   target leakage, inflated metrics, and unreproducible results before they ship.
-3. **Route to framing, not data.** Recommend `/ds-frame` as the first move — define the
-   problem, the target, and what winning looks like before opening the data. Mention
-   `/ds` shows the full map at any point.
-4. **Do not skip ahead.** Even if the user asked directly for a model or a chart, do not
-   start `df.head()` or `model.fit()` here. Framing first is the point.
+2. **Frame in-line, in one or two sentences, then move on.** State the target, the
+   decision it feeds, and the success metric as your own best read of the request — do
+   not ask the user to confirm before proceeding. Only ask a question here if the
+   answer would change which column is the target or invalidate the whole run; note
+   assumptions instead of pausing on anything else.
+3. **Carry the request through the pipeline in this same turn**, applying each stage's
+   gate as you reach it (honest baseline, leakage-safe validation, slice performance)
+   rather than stopping to hand off. Pick an artifact mode per `ds-method` — express
+   (one `.last-ds-mile/run.md` for a single-shot ask, the default here) or full
+   per-stage `.last-ds-mile/stages/*.md` files (a genuine multi-session project) — and
+   say which you picked. Either way, the artifact is a record of what you did, not a
+   checkpoint to wait at.
+4. **Never end the turn asking permission to begin.** A request to build or evaluate a
+   model is carried through to a model, a scored baseline, and a verdict — not a
+   pipeline map and a question. If you are missing a Hard Gate artifact `ds-method`
+   requires, produce it inline (see `ds-method`'s discipline-gate handling) and say so;
+   don't stop and ask the user to go run a separate command first.
 
 ## Common Rationalizations
 
 | Rationalization | Reality |
 |---|---|
-| "The user just wants a model — skip the framing and start coding" | Framing is five minutes and decides the target, the metric, and the success bar. Skip it and you can't tell a good model from a lucky one. |
-| "I'll just load the CSV and take a quick look first" | Opening data before framing biases what you look for, and `/ds-data` does it properly with a sanitization gate. Frame first. |
+| "I should explain the pipeline and ask where to start before doing anything" | The user already asked for the outcome. Frame it yourself in one line and go — asking first is the failure mode this skill exists to avoid, not a safety net. |
+| "No `.last-ds-mile/stages/` exist, so I should stop here and let the user choose a starting stage" | Absence of prior stages means start at `/ds-frame` and continue, not stop. Only `/ds-model`, `/ds-report`, and `/ds-handoff`'s Hard Gates are worth stopping for — and even those get produced inline, not deferred to the user. |
 | "This user is clearly experienced, they don't need the rail" | The rail's value is the gates (baseline, validation, slices), not the hand-holding. Experienced users leak targets too. |
 
 ## Red Flags
 
 | Red Flag | What it usually means |
 |---|---|
-| Asked to "just build a quick model" with no success criterion stated | No target metric means no way to judge the result. Route to `/ds-frame` before modeling. |
-| The first proposed action is `df.head()`, a plot, or `model.fit()` | Data or modeling is being reached for ahead of framing — the pipeline front-loads framing and validation on purpose. |
-| A metric or leaderboard target is named before the target column is defined | The goal is being chased before the problem is framed. Frame first. |
+| The run ends with a question about which stage to start at, instead of a result | The framing-and-handoff instinct fired instead of framing-and-continuing. Go back and do the work. |
+| Asked to "just build a quick model" with no success criterion stated | No target metric means no way to judge the result. Frame it in one line yourself, then proceed. |
+| A metric or leaderboard target is named before the target column is defined | The goal is being chased before the problem is framed. State the framing, then go. |
 
 ## Verification
 
-- [ ] Before any data is loaded or any model is trained, the pipeline was introduced and
-      `/ds-frame` recommended — or, if `.last-ds-mile/stages/` already existed, the user
-      was routed to their real next stage via the `/ds` logic instead of re-onboarded.
-- [ ] The user was not silently dropped into EDA or modeling ahead of framing.
+- [ ] The run produced a result — a scored baseline, a model, or an evaluation verdict
+      — not just a pipeline map and a question about where to start.
+- [ ] Framing (target, decision, metric) was stated in-line, not requested from the
+      user as a precondition to starting.
+- [ ] Every Hard Gate the request touched (baseline, validation, slice performance,
+      pinned environment) was either satisfied or produced inline before the final
+      claim — never silently skipped, and never left for the user to go run separately.

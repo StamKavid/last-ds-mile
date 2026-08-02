@@ -1,0 +1,42 @@
+{
+  "skill_name": "ds-validate",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "how should I split this data into train and test",
+        "top_k": 3
+      },
+      {
+        "prompt": "set up cross validation for this project",
+        "top_k": 3
+      },
+      {
+        "prompt": "my data has repeated customers, will a random split leak",
+        "top_k": 3
+      },
+      {
+        "prompt": "should I use GroupKFold or TimeSeriesSplit here",
+        "top_k": 3
+      },
+      {
+        "prompt": "how do I tune hyperparameters without leaking the test set",
+        "top_k": 3
+      },
+      {
+        "prompt": "explain nested cross validation to me",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "summarize the findings for a non technical audience",
+        "owner": "ds-brief"
+      },
+      {
+        "prompt": "score a majority class baseline first",
+        "owner": "ds-baseline"
+      }
+    ]
+  },
+  "notes": "Absorbed validation-strategy at Checkpoint 2 (0.546 cosine, and it ranked #47/47 for its own prompts once ds-validate carried the vocabulary). Its positives are folded in here."
+}

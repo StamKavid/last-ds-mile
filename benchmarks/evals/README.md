@@ -75,18 +75,32 @@ against.
 ## Running it
 
 ```bash
-# 1. Scaffold isolated workspaces for both arms, 5 trials each.
-python benchmarks/evals/scripts/run_eval.py credit-card-fraud/evals.json --trials 5
+# 1. Scaffold isolated workspaces for both arms, 5 trials each. Workspaces land in
+#    the system temp dir — outside this repo, so neither arm inherits its CLAUDE.md.
+python benchmarks/evals/scripts/run_eval.py credit-card-fraud/evals.json --trials 5 --iteration 3
 
 # 2. For each workspace, run the executor agent on prompt.md, saving its transcript
 #    and any outputs into that workspace. The two arms differ ONLY by whether the
 #    last-ds-mile plugin is installed — same model, same harness, same prompt.
 
-# 3. Grade each run blind against agents/grader.md → grading.json in each workspace.
+# 3. Blind the runs: shuffled opaque ids, no arm anywhere in the path.
+python benchmarks/evals/scripts/grade_manifest.py build --results-root <root>
+
+#    Grade each directory under <root>/_blind/ against agents/grader.md → grading.json,
+#    then map the gradings back to their true workspaces:
+python benchmarks/evals/scripts/grade_manifest.py unblind --results-root <root>
 
 # 4. Aggregate into pass^k and the arm gap.
-python benchmarks/evals/scripts/aggregate.py credit-card-fraud --iteration 1
+python benchmarks/evals/scripts/aggregate.py credit-card-fraud --iteration 3
 ```
+
+### Blind grading is mechanical, not honour-system
+
+Iteration-2 was graded with the arm in every workspace path, and its grading notes name
+the arm outright. `grade_manifest.py` removes the ability to see it: transcripts and
+artifacts are copied under shuffled opaque run ids, the key stays out of the grader's
+reach, and identity is stamped back on only after `grading.json` is written. Runs graded
+this way carry `"_graded_blind": true`.
 
 `run_eval.py` scaffolds and instructs; it does **not** invoke the agent, because that
 step is harness-specific (Claude Code vs. Copilot vs. Gemini) and often interactive.
@@ -102,9 +116,9 @@ This harness ships the *tasks and the grading*, never invented results — a pop
 | 3 | **Include negative tests** | 2 of 6 cases are `negative-trigger`: eval 3 (a plain "what columns?" question must NOT trigger framing) and eval 4 (must NOT fabricate demographic slices that don't exist in anonymized data). These stop the plugin from hijacking or over-rigor-ing every request. |
 | 4 | **Start small, extend from failures** | Six real prompts, not an exhaustive matrix. Each is a failure mode seen in the wild (the accuracy trap, planted-metric framing, target leakage, test-set peeking). New user-reported bugs become new eval cases — that is the intended growth path, not upfront completeness. |
 | 5 | **Grade outcomes, not paths** | `agents/grader.md` grades properties of the result (was a baseline scored? was the leak caught?), explicitly *not* which skill ran, in what order, or which files were read. A run that reaches the honest result by an unexpected route passes. |
-| 6 | **Isolate each run** | `run_eval.py` gives every `{eval, arm, trial}` its own workspace with its own `outputs/`. No context bleeds between runs. (The read-only dataset is referenced by path, not copied — isolation is about mutable state, not the shared input.) |
-| 7 | **3–5 trials per case; pass^k vs pass@k** | `--trials 5` by default. `aggregate.py` reports **pass^k** (passed in *all* trials — consistency) alongside **pass@k** (passed in *any* — peak luck). A high pass@k with a low pass^k means the behavior is real but unreliable, which is a finding, not a pass. |
-| 8 | **Test across harnesses** | `--harness` labels each run's metadata, and results are kept per iteration so Claude Code, Copilot, and Gemini runs stay separable. The grader is deliberately blind to the arm so cross-harness comparison isn't biased. The bike-sharing feedback that motivated this was GPT-via-Copilot — a different harness surfaced different behavior, which is exactly why this axis matters. |
+| 6 | **Isolate each run** | `run_eval.py` gives every `{eval, arm, trial}` its own workspace with its own `outputs/`, scaffolded **outside this repository** and with the dataset copied in. It refuses to scaffold inside the repo at all. Iteration-2 did scaffold inside, so both arms sat under this repo's `CLAUDE.md` — which states the hard-gate doctrine the `without_skill` arm is supposed to lack. That run's baseline arm cannot be certified clean, and its metadata does not record enough to settle it either way. `eval_metadata.json` now captures the resolved environment (installed plugins, model, git commit, and how the plugin was disabled). |
+| 7 | **3–5 trials per case; pass^k vs pass@k** | `--trials 5` by default. `aggregate.py` reports **pass^k** (passed in *all* trials — consistency) alongside **pass@k** (passed in *any* — peak luck). A high pass@k with a low pass^k means the behavior is real but unreliable, which is a finding, not a pass. The headline is the **macro** average over cases; the per-expectation micro average is reported beside it. Iteration-2 ran 3 trials, not 5 — the committed numbers there are a 12-run sample and should be read as such. |
+| 8 | **Test across harnesses** | `--harness` labels each run's metadata, and results are kept per iteration so Claude Code, Copilot, and Gemini runs stay separable. **This axis is scaffolded, not exercised** — every committed run so far is Claude Code, and this pack ships no Gemini or Codex command variants. The bike-sharing feedback that motivated the design was GPT-via-Copilot; reproducing it here is open work, not a claim. |
 | 9 | **Graduate your evals** | These start as *capability* evals (does the plugin add the discipline at all?). Once an expectation reaches pass^k = 1.0 for `with_skill` across iterations, it graduates into a *regression* guard — re-run it after any skill edit to catch backsliding. The `iteration-N/` structure keeps the history. |
 | 10 | **Detect skill retirement** | The `without_skill` arm *is* the retirement probe. Per expectation, `gap = with_skill.pass^k − without_skill.pass^k`. A gap near zero on an expectation both arms pass means the base model already does that work unprompted — that guidance has been absorbed and is a candidate to trim from the skill to save context. |
 

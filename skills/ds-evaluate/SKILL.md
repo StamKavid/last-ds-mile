@@ -1,6 +1,6 @@
 ---
 name: ds-evaluate
-description: Evaluates the chosen model on metrics aligned to the /ds-frame decision, including calibration and slice/subgroup performance, not just one aggregate leaderboard number. Use after modeling, before writing conclusions or a report.
+description: Measures how a model really performs — the metric at a stated operating point, a confusion matrix, calibration, and performance broken out by slice rather than one aggregate number. Use when someone asks how well a model does on held-out data, wants precision and recall at a threshold, or wants a confusion matrix. Use when checking whether a model performs worse for particular groups, segments, or subgroups.
 ---
 
 # ds-evaluate — Evaluation & Error Analysis

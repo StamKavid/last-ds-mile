@@ -1,23 +1,39 @@
 #!/usr/bin/env python3
-"""Scaffold isolated workspaces for one with/without benchmark.
+"""Scaffold isolated workspaces for one with/without behavioral benchmark.
 
 This script does NOT invoke an agent — agent invocation is harness-specific and
 usually interactive. It materializes, for every {eval_id, arm, trial}, a clean
-workspace (practice #6: isolate each run) containing a copy of the dataset, the
-prompt, and an eval_metadata.json, then prints the exact command to run in each
+workspace containing the prompt, the dataset, and an eval_metadata.json recording
+the environment the run will see, then prints the exact command to run in each
 one. You run the agent in each workspace, drop its transcript + outputs there,
 then grade with agents/grader.md and aggregate with aggregate.py.
 
+ISOLATION (SPEC-v1-architecture.md §4.3). Workspaces default to a temp directory
+OUTSIDE this repository. Iteration-2 scaffolded into
+`benchmarks/evals/<dataset>/results/`, which sits under this repo's own
+CLAUDE.md — a file that states the pipeline's hard-gate doctrine verbatim. Both
+arms inherited it, so the `without_skill` arm was not a clean baseline, and the
+transcripts do not record enough to prove otherwise either way. Graded results are
+copied back into the repo afterwards; the dataset never is.
+
 stdlib-only, no third-party deps. Usage:
 
-    python run_eval.py credit-card-fraud/evals.json --trials 5 --harness claude-code
+    python run_eval.py credit-card-fraud/evals.json --trials 5 --iteration 3
     python run_eval.py credit-card-fraud/evals.json --arm without_skill --trials 5
+    python run_eval.py credit-card-fraud/evals.json --evals 3 4 6 --trials 2 \
+        --arm with_skill                       # the cheap negative-trigger smoke subset
+    python run_eval.py credit-card-fraud/evals.json --workspace-root /some/scratch
 """
 import argparse
 import datetime as dt
 import json
+import os
 import pathlib
+import platform
+import shutil
+import subprocess
 import sys
+import tempfile
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
 EVALS_DIR = pathlib.Path(__file__).resolve().parents[1]
@@ -28,60 +44,159 @@ def load_evals(evals_path: pathlib.Path) -> dict:
         return json.load(fh)
 
 
-def workspace_for(results_root, eval_id, arm, trial):
-    return results_root / f"eval-{eval_id}" / arm / f"trial-{trial}"
+def capture_environment(arm: str) -> dict:
+    """Record what the run will actually see, so a contaminated arm is detectable.
+
+    Iteration-2's metadata recorded only `arm: with_skill`, with nothing about how
+    the plugin was enabled or disabled and nothing about ambient context. When the
+    numbers came out wrong there was no way to rule the environment in or out.
+    """
+    env = {
+        "arm": arm,
+        "platform": platform.platform(),
+        "python": sys.version.split()[0],
+        "model_env": os.environ.get("ANTHROPIC_MODEL") or os.environ.get("CLAUDE_MODEL"),
+        "settings_env": os.environ.get("CLAUDE_SETTINGS"),
+        "installed_plugins": None,
+        "installed_plugins_source": None,
+        "git_commit": None,
+        "plugin_disabled_how": None if arm == "with_skill" else "RECORD THIS MANUALLY",
+    }
+    try:
+        env["git_commit"] = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=REPO_ROOT,
+            capture_output=True, text=True, timeout=10,
+        ).stdout.strip() or None
+    except Exception:
+        pass
+
+    manifest = pathlib.Path.home() / ".claude" / "plugins" / "installed_plugins.json"
+    if manifest.exists():
+        try:
+            with manifest.open(encoding="utf-8") as fh:
+                env["installed_plugins"] = sorted(json.load(fh).get("plugins", {}))
+            env["installed_plugins_source"] = str(manifest)
+        except Exception:
+            pass
+    return env
 
 
-def scaffold(evals_path, trials, arms, harness, iteration):
+def workspace_for(root, eval_id, arm, trial):
+    return root / f"eval-{eval_id}" / arm / f"trial-{trial}"
+
+
+def _is_inside(candidate: pathlib.Path, parent: pathlib.Path) -> bool:
+    try:
+        candidate.resolve().relative_to(parent.resolve())
+        return True
+    except ValueError:
+        return False
+
+
+def scaffold(evals_path, trials, arms, harness, iteration, workspace_root,
+             only_evals, copy_dataset):
     spec = load_evals(evals_path)
     dataset_path = REPO_ROOT / spec["dataset"]["path"]
     if not dataset_path.exists():
         sys.exit(f"dataset not found: {dataset_path}")
 
-    results_root = evals_path.parent / "results" / f"iteration-{iteration}"
+    dataset_name = evals_path.parent.name
+    if workspace_root is None:
+        workspace_root = pathlib.Path(tempfile.gettempdir()) / "last-ds-mile-evals"
+    root = pathlib.Path(workspace_root).resolve() / dataset_name / f"iteration-{iteration}"
+
+    if _is_inside(root, REPO_ROOT):
+        sys.exit(
+            f"REFUSING to scaffold inside the repository ({root}).\n\n"
+            "Both arms would inherit this repo's CLAUDE.md, which states the "
+            "hard-gate doctrine the without_skill arm is supposed to lack. That is "
+            "the iteration-2 contamination path.\n\n"
+            "Pass --workspace-root somewhere outside the repo, or omit it to use "
+            "the system temp directory."
+        )
+
+    selected = [e for e in spec["evals"] if not only_evals or e["id"] in only_evals]
+    if not selected:
+        sys.exit(f"no evals matched {sorted(only_evals)}")
+
     made = []
-    for ev in spec["evals"]:
+    for ev in selected:
         for arm in arms:
             for trial in range(1, trials + 1):
-                ws = workspace_for(results_root, ev["id"], arm, trial)
+                ws = workspace_for(root, ev["id"], arm, trial)
                 (ws / "outputs").mkdir(parents=True, exist_ok=True)
-                # The dataset is read-only shared input, referenced by path — not copied
-                # (a 150MB CSV x dozens of runs is pointless). Isolation (practice #6) is
-                # about the mutable workspace: each run writes only into its own outputs/.
-                # A run that MODIFIES the data must copy it into outputs/ itself first.
                 (ws / "prompt.md").write_text(ev["prompt"] + "\n", encoding="utf-8")
+
+                if copy_dataset:
+                    target = ws / "outputs" / dataset_path.name
+                    if not target.exists():
+                        shutil.copy2(dataset_path, target)
+                    resolved_dataset = target
+                else:
+                    resolved_dataset = dataset_path
+
                 meta = {
                     "eval_id": ev["id"],
                     "arm": arm,
                     "trial": trial,
                     "prompt": ev["prompt"],
-                    "dataset_path": str(dataset_path),
+                    "dataset_path": str(resolved_dataset),
                     "created_at": dt.datetime.now(dt.timezone.utc).isoformat(),
                     "harness": harness,
+                    "iteration": iteration,
+                    "workspace_is_outside_repo": True,
+                    "max_turns": ev.get("max_turns"),
+                    "max_cost_usd": ev.get("max_cost_usd"),
+                    "environment": capture_environment(arm),
                 }
                 (ws / "eval_metadata.json").write_text(
                     json.dumps(meta, indent=2), encoding="utf-8"
                 )
                 made.append((ev["id"], arm, trial, ws))
 
-    print(f"Scaffolded {len(made)} workspaces under {results_root}\n")
-    print("For each workspace: run the executor agent with cwd = the outputs/ dir,")
-    print("feeding it prompt.md. Save the transcript to transcript.md in the workspace.")
-    print(f"\n  with_skill arm : {spec['arms']['with_skill']}")
+    _print_instructions(made, root, spec, arms, selected, trials)
+    return root
+
+
+def _print_instructions(made, root, spec, arms, selected, trials):
+    print(f"Scaffolded {len(made)} workspaces under\n  {root}\n")
+    print(f"  {len(selected)} eval(s) x {len(arms)} arm(s) x {trials} trial(s)\n")
+    print("Workspaces are OUTSIDE the repository on purpose — neither arm should")
+    print("inherit this repo's CLAUDE.md. See SPEC-v1-architecture.md §4.3.\n")
+    print(f"  with_skill arm : {spec['arms']['with_skill']}")
     print(f"  without_skill  : {spec['arms']['without_skill']}\n")
-    print("Then grade each run against agents/grader.md, writing grading.json next to")
-    print("its transcript, and run aggregate.py to compute pass^k and the arm gap.")
+    print("For each workspace, run the executor with cwd = its outputs/ dir, feeding")
+    print("it prompt.md, and save the JSONL transcript beside it:\n")
+    print('  claude -p "$(cat ../prompt.md)" \\')
+    print("    --output-format stream-json --verbose \\")
+    print("    --permission-mode acceptEdits \\")
+    print("    > ../transcript.jsonl\n")
+    print("The without_skill arm must run with the plugin disabled. Verify that in the")
+    print("transcript and fill in environment.plugin_disabled_how in eval_metadata.json —")
+    print("an unrecorded arm toggle is why iteration-2's baseline can't be trusted.\n")
+    print("Then grade blind (scripts/grade_manifest.py builds the shuffled, arm-stripped")
+    print("manifest), write grading.json next to each transcript, and aggregate:\n")
+    print("  python benchmarks/evals/scripts/aggregate.py <dataset> --iteration N \\")
+    print(f"      --results-root {root}\n")
 
 
 def main():
-    ap = argparse.ArgumentParser(description=__doc__)
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("evals_json", help="path to an evals.json (relative to benchmarks/evals/ ok)")
-    ap.add_argument("--trials", type=int, default=5, help="trials per case per arm (practice #7)")
+    ap.add_argument("--trials", type=int, default=5, help="trials per case per arm (default 5)")
     ap.add_argument("--arm", choices=["with_skill", "without_skill"], action="append",
                     help="limit to one arm; repeatable. Default: both.")
+    ap.add_argument("--evals", type=int, nargs="+", metavar="ID",
+                    help="limit to these eval ids (e.g. --evals 3 4 6)")
     ap.add_argument("--harness", default="claude-code",
                     help="label recorded in metadata (practice #8: eval per target harness)")
-    ap.add_argument("--iteration", type=int, default=1)
+    ap.add_argument("--iteration", type=int, default=3)
+    ap.add_argument("--workspace-root", default=None,
+                    help="where to scaffold. Default: system temp. Must be outside the repo.")
+    ap.add_argument("--no-copy-dataset", action="store_true",
+                    help="reference the dataset by path instead of copying it into each "
+                         "workspace (faster, but a run that mutates the data taints the rest)")
     args = ap.parse_args()
 
     evals_path = pathlib.Path(args.evals_json)
@@ -91,7 +206,8 @@ def main():
         sys.exit(f"evals.json not found: {args.evals_json}")
 
     arms = args.arm or ["with_skill", "without_skill"]
-    scaffold(evals_path, args.trials, arms, args.harness, args.iteration)
+    scaffold(evals_path, args.trials, arms, args.harness, args.iteration,
+             args.workspace_root, set(args.evals or []), not args.no_copy_dataset)
 
 
 if __name__ == "__main__":

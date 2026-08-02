@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-prep",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "encode these categorical variables and scale the numerics",
+        "top_k": 3
+      },
+      {
+        "prompt": "clean this data and engineer some features for the model",
+        "top_k": 3
+      },
+      {
+        "prompt": "how should I handle the missing values before training",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "what decision is this model actually going to feed",
+        "owner": "ds-frame"
+      },
+      {
+        "prompt": "stand the model up as a local endpoint with monitoring",
+        "owner": "ds-deploy"
+      }
+    ]
+  }
+}

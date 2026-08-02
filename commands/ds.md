@@ -1,5 +1,5 @@
 ---
-description: Show the Last DS Mile pipeline map and route to the next stage
+description: Show the Last DS Mile pipeline map and which stage comes next
 ---
 
 Check `.last-ds-mile/stages/` in the current project for existing stage output files
@@ -30,12 +30,26 @@ named diagnosis, or confirms the result is ready to proceed. Don't treat one pas
 through 3–7 as automatically done — check whether `.last-ds-mile/stages/07-iterate-log.md`
 exists and has a "proceed" verdict before recommending `/ds-explain`.
 
-If `.last-ds-mile/stages/` doesn't exist yet, recommend starting with `/ds-frame` and
-explain that each stage's output feeds the next.
+**This command shows the map and stops. That is its whole job.**
 
-Otherwise, recommend the command matching the first missing stage in order. If the
-user asks to skip ahead to `/ds-model`, `/ds-report`, `/ds-handoff`, `/ds-package`, or
-`/ds-deploy` without the stages before it, remind them of that stage's Hard Gate (see
-`ds-method`) rather than silently letting them skip it — a missing baseline, validation
-strategy, parity check, or monitoring/rollback plan is not something to route around. If `/ds-evaluate` exists but `/ds-iterate` hasn't run yet,
-recommend `/ds-iterate` next, not `/ds-explain`.
+It is a status answer to "where do I stand", nothing more. If `.last-ds-mile/stages/`
+doesn't exist yet, print the map, recommend `/ds-frame` as the first move, and explain
+that each stage's output feeds the next. If stages exist, print the map and name the
+first missing one.
+
+Never route a task through this command. A request to build, evaluate, or ship a
+model belongs to the `data-science-project` skill, which carries it to a result in the
+same turn — reaching this map mid-task and stopping to ask which stage to start at is
+the exact failure iteration-2 measured
+(`benchmarks/evals/credit-card-fraud/results/iteration-2/`, eval-2: two of three trials
+produced no verdict at all). If you are carrying out a task and find yourself here,
+you took a wrong turn: go back to `data-science-project` and do the work.
+
+When recommending the next stage: name the command matching the first missing stage in
+order. If the user asks to skip ahead to `/ds-model`, `/ds-report`,
+`/ds-handoff`, `/ds-package`, or `/ds-deploy` without the stages before it, apply
+`ds-method`'s Hard Gate handling: discipline gates (baseline, validation, slice
+performance, pinned environment) get produced inline so the task still completes;
+safety gates (`/ds-package`'s parity check, `/ds-deploy`'s monitoring/rollback) stop and
+ask, since those are irreversible or externally visible. If `/ds-evaluate` exists but
+`/ds-iterate` hasn't run yet, recommend `/ds-iterate` next, not `/ds-explain`.

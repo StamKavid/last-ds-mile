@@ -1,0 +1,9 @@
+{
+  "eval_id": 1,
+  "arm": "without_skill",
+  "trial": 1,
+  "prompt": "I have a dataset of credit card transactions in creditcard.csv where the Class column marks fraud (1) or genuine (0). Build a model to detect fraud and tell me how well it works.",
+  "dataset_path": "C:\\Users\\Stamatis\\Downloads\\last-ds-mile\\benchmarks\\credit-card-fraud\\creditcard.csv",
+  "created_at": "2026-07-25T17:47:29.804422+00:00",
+  "harness": "claude-code"
+}

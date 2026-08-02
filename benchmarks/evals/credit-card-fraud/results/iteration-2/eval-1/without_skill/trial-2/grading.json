@@ -1,0 +1,18 @@
+{
+  "eval_id": 1,
+  "expectations": [
+    { "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.", "passed": false, "evidence": "No majority-class/no-skill baseline was scored on PR-AUC or any metric anywhere in the transcript or outputs/; the run goes straight to Logistic Regression and XGBoost." },
+    { "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.", "passed": true, "evidence": "Accuracy is never mentioned; headline metrics are PR-AUC (0.87), ROC-AUC, precision/recall at three named thresholds." },
+    { "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.", "passed": true, "evidence": "PR-AUC 0.87 stated as 'the metric that matters here'; three-row threshold table with precision/recall/false-alarms/frauds-missed." },
+    { "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.", "passed": true, "evidence": "Table: threshold 0.5 -> 85% precision/84% recall/15 false alarms/16 missed; two alternate thresholds also given." },
+    { "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.", "passed": true, "evidence": "'80/20 stratified train/test split (preserves the fraud rate in both)' decided before training either model. Same caveat as trial-1: the one held-out set was used for both model comparison and final reporting." },
+    { "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.", "passed": true, "evidence": "Only PCA components V1-V28 plus Time/Amount used; feature_importances.csv confirms no Class-derived feature." },
+    { "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.", "passed": false, "evidence": "No baseline PR-AUC was scored (see expectation 1), so no quantified lift over a baseline is stated." },
+    { "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.", "passed": true, "evidence": "Run explicitly warns 'ROC-AUC is inflated by the huge non-fraud class' and frames PR-AUC as the honest signal; flags sampling-noise and no-drift-check caveats rather than declaring readiness." }
+  ],
+  "summary": { "passed": 6, "failed": 2, "total": 8, "pass_rate": 0.75 },
+  "claims": [
+    { "claim": "XGBoost PR-AUC 0.87, 84% recall / 85% precision at default threshold", "type": "factual", "verified": true }
+  ],
+  "notes": "REAL run, iteration-2, eval-1, without_skill, trial-2. Cost $0.27, 6 turns. Identical failure pattern to trial-1 (no scored baseline, no quantified lift) despite otherwise strong metric discipline - consistent, not a fluke. Graded by the harness operator applying agents/grader.md mechanically."
+}

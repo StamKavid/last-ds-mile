@@ -1,6 +1,6 @@
 ---
 name: ds-model
-description: Selects and tunes models against the validation strategy from /ds-validate, always compared to the /ds-baseline anchor. Hard gate — refuses to proceed without both a prior baseline and a documented validation strategy. Use when asked to train, tune, or compare models.
+description: Trains, tunes, and compares candidate models against the chosen validation scheme and the baseline number. Use when someone asks to train models, tune hyperparameters, or compare algorithms such as logistic regression, random forest, XGBoost, or LightGBM. Use when picking which of several trained candidates to carry forward.
 ---
 
 # ds-model — Modeling
@@ -21,9 +21,12 @@ the spot.
 ## Core Process
 
 1. **Gate check:** confirm `.last-ds-mile/stages/04-baseline.md` and
-   `.last-ds-mile/stages/05-validate.md` both exist. If either is missing, stop and tell
-   the user to run `/ds-baseline` or `/ds-validate` first — do not proceed by inventing
-   an ad hoc split or skipping the comparison.
+   `.last-ds-mile/stages/05-validate.md` both exist. If either is missing, run that
+   stage's work yourself now — score the honest baseline, decide the validation
+   strategy — say plainly that you did, then continue to modeling. Never proceed by
+   inventing an ad hoc split or skipping the comparison, and never stop the task to ask
+   the user to go run `/ds-baseline` or `/ds-validate` separately (see `ds-method`'s
+   discipline-gate handling).
 2. Train candidate models using the exact validation strategy from `/ds-validate` — the
    same split/CV code, not a rewritten version.
 3. Track each experiment's configuration and score, reported as mean ± standard
@@ -78,7 +81,8 @@ See `lessons/the-imbalance-knob-that-broke-silently.md` for a real example.
 ## Verification
 
 - [ ] Gate check passed: both `.last-ds-mile/stages/04-baseline.md` and
-      `.last-ds-mile/stages/05-validate.md` exist and were read before modeling began.
+      `.last-ds-mile/stages/05-validate.md` exist before modeling began — produced
+      inline in this run if they weren't already there.
 - [ ] The same validation code from `/ds-validate` was reused, not rewritten.
 - [ ] Every candidate model's score includes its fold spread, not a bare mean.
 - [ ] Every candidate model is compared to the baseline score explicitly, stating

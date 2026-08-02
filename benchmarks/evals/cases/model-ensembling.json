@@ -1,0 +1,29 @@
+{
+  "skill_name": "model-ensembling",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "combine my best few models into one",
+        "top_k": 3
+      },
+      {
+        "prompt": "should I stack these or just average the predictions",
+        "top_k": 3
+      },
+      {
+        "prompt": "single model score has plateaued, what's the next lever",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "check the data for target leakage",
+        "owner": "target-leakage-detection"
+      },
+      {
+        "prompt": "write the handoff documentation",
+        "owner": "ds-handoff"
+      }
+    ]
+  }
+}

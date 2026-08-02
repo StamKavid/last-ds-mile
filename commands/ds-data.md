@@ -1,6 +1,5 @@
 ---
-description: Load and profile a dataset before modeling
-argument-hint: [path to dataset or table name]
+description: Profile a dataset — columns, rows, dtypes, missingness, provenance
 ---
 
 Invoke the `ds-data` skill now via the Skill tool to load and profile this dataset.

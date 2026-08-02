@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-package",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "turn this model into a servable artifact with a predict wrapper",
+        "top_k": 3
+      },
+      {
+        "prompt": "build a docker image for this model and prove it gives the same answers",
+        "top_k": 3
+      },
+      {
+        "prompt": "define the inference contract for this model",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "look at the residuals and find where it fails",
+        "owner": "error-analysis"
+      },
+      {
+        "prompt": "what target should I be predicting",
+        "owner": "ds-frame"
+      }
+    ]
+  }
+}

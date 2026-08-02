@@ -1,6 +1,6 @@
 ---
 name: distribution-shift
-description: Checks whether the training distribution actually resembles the deployment (or Kaggle test-set) distribution — via adversarial validation and per-feature drift checks — rather than assuming a good CV score transfers. Use during /ds-validate before choosing a split, and again in /ds-evaluate when a model that scored well in CV underperforms on held-out or production data.
+description: Checks whether training data still resembles the data a model will actually see, via adversarial validation and per-feature drift comparison. Use when a cross-validation score was strong but real or held-out performance fell apart. Use when someone asks whether training data still looks like production. Use when choosing a split, and again when a good score fails to transfer.
 ---
 
 # distribution-shift

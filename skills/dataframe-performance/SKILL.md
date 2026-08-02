@@ -1,6 +1,6 @@
 ---
 name: dataframe-performance
-description: Decides when pandas is fine and when to reach for Polars, plus core vectorization/dtype/memory techniques either way. Use when a pandas operation is slow, when a dataset is large enough that load/profile/transform time is becoming a bottleneck, or when asked about Polars, vectorization, or memory usage.
+description: Decides when pandas is fine and when to reach for Polars, plus vectorisation, dtype, and memory technique either way. Use when an operation such as a groupby, join, or apply is slow, or a script takes far longer than it should. Use when a dataset no longer fits in memory. Use when someone asks about Polars, vectorisation, or memory usage.
 ---
 
 # dataframe-performance
@@ -16,7 +16,7 @@ either.
 - A pandas operation (load, groupby, join, apply) is noticeably slow, or a dataset no
   longer fits comfortably in memory/time budget.
 - Deciding at project start whether to reach for Polars instead of pandas.
-- NOT for: choosing a validation strategy or model (see `validation-strategy`,
+- NOT for: choosing a validation strategy or model (see `ds-validate`,
   `metric-selection`) — this skill is purely about dataframe engine and performance,
   not modeling decisions.
 

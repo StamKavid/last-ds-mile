@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-iterate",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "the model isn't good enough, what should I try next",
+        "top_k": 3
+      },
+      {
+        "prompt": "should I go back and fix the features or try a different model",
+        "top_k": 3
+      },
+      {
+        "prompt": "diagnose why this result is weak and route me to the fix",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "profile this brand new dataset",
+        "owner": "ds-data"
+      },
+      {
+        "prompt": "write the stakeholder facing recommendation",
+        "owner": "ds-report"
+      }
+    ]
+  }
+}
