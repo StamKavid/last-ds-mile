@@ -183,12 +183,27 @@ def summarize(data):
             case_row[f"{arm}_pass_rate"] = round(c / tot, 3) if tot else None
         per_case.append(case_row)
 
+    # Macro average over cases — the headline. The micro average below weights a
+    # case by how many expectations it happens to carry, which let iteration-2's
+    # eval-2 (5 expectations) swing 38% of a two-case verdict. Cases are the unit
+    # of interest, so each gets one vote.
     run_summary = {}
     for arm in ("with_skill", "without_skill"):
-        c, tot = arm_totals[arm]
-        run_summary[arm] = round(c / tot, 3) if tot else None
+        rates = [c[f"{arm}_pass_rate"] for c in per_case if c[f"{arm}_pass_rate"] is not None]
+        run_summary[arm] = round(sum(rates) / len(rates), 3) if rates else None
     if run_summary["with_skill"] is not None and run_summary["without_skill"] is not None:
         run_summary["gap"] = round(run_summary["with_skill"] - run_summary["without_skill"], 3)
+    run_summary["aggregation"] = "macro over cases (each eval weighted equally)"
+
+    micro = {}
+    for arm in ("with_skill", "without_skill"):
+        c, tot = arm_totals[arm]
+        micro[arm] = round(c / tot, 3) if tot else None
+    if micro["with_skill"] is not None and micro["without_skill"] is not None:
+        micro["gap"] = round(micro["with_skill"] - micro["without_skill"], 3)
+    micro["aggregation"] = "micro over expectations (retained for comparability with iteration-2)"
+    run_summary["micro"] = micro
+
     return per_expectation, per_case, run_summary
 
 
@@ -200,11 +215,22 @@ def markdown(per_case, run_summary, cost_per_eval, cost_overall):
         lines.append(f"| {c['eval_id']} | {c['with_skill_pass_rate']} | {c['without_skill_pass_rate']} |")
     lines.append("")
     ws, wo = run_summary.get("with_skill"), run_summary.get("without_skill")
-    lines.append(f"**Overall pass^k — with_skill {ws} vs without_skill {wo} (gap {run_summary.get('gap')}).**")
+    lines.append(f"**Macro pass^k — with_skill {ws} vs without_skill {wo} "
+                 f"(gap {run_summary.get('gap')}).**")
+    micro = run_summary.get("micro") or {}
+    if micro.get("with_skill") is not None:
+        lines.append("")
+        lines.append(f"_Micro (per-expectation, iteration-2's method, kept for comparability): "
+                     f"{micro.get('with_skill')} vs {micro.get('without_skill')}, "
+                     f"gap {micro.get('gap')}._")
     lines.append("")
     lines.append("pass^k = fraction of expectations that passed in *all* trials of that arm. "
                  "A large gap is the plugin's reproducible marginal value; a gap near zero on "
                  "passing expectations means the base model already does it (retire, practice #10).")
+    lines.append("")
+    lines.append("The headline is the **macro** average — one vote per case. The micro average "
+                 "weights a case by how many expectations it happens to carry, which let a "
+                 "single 5-expectation case swing 38% of iteration-2's two-case verdict.")
 
     if cost_overall:
         lines.append("")
