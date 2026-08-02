@@ -1,6 +1,6 @@
 ---
 name: ds-data
-description: Loads and profiles a new dataset before any modeling — schema, provenance, integrity checks, and a data dictionary. Use when a new dataset, file, or table is introduced to a DS project, or before EDA/modeling begins on data that hasn't been profiled yet.
+description: Profiles a dataset before any modelling — schema, columns, row count, dtypes, missing values, duplicates, integrity checks, provenance, and a data dictionary. Use when someone asks what columns a file or table has, how many rows it contains, or what is inside a dataset they were just handed. Use when someone asks to profile a table or check its schema and integrity. Use when a new CSV, file, table, or spreadsheet enters a project and nothing has profiled it yet.
 ---
 
 # ds-data — Data Understanding

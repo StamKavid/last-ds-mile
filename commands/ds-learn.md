@@ -1,6 +1,5 @@
 ---
-description: Capture a project-local lesson — what broke and what fixed it
-argument-hint: "[what broke and what fixed it, or leave blank to be asked]"
+description: Capture a failure-and-fix pair as a project lesson
 ---
 
 Invoke the `capturing-learnings` skill now via the Skill tool to determine

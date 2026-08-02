@@ -1,6 +1,6 @@
 ---
 name: uncertainty-quantification
-description: Reports every metric with its variance across folds/seeds instead of a bare point estimate, and states whether a model-vs-baseline or model-vs-model gap is larger than that variance. Use during /ds-model or /ds-evaluate when comparing scores, or whenever two numbers are being called "different" or "consistent" without a spread to back that up.
+description: Reports every score with its spread across folds or seeds, and says whether a gap between two numbers is bigger than that spread. Use when someone asks whether an improvement is real or just noise, or how confident to be that one model beats another. Use when two results are being called different or the same without a spread behind the claim.
 ---
 
 # uncertainty-quantification
@@ -18,7 +18,7 @@ over-claiming sin the rest of it exists to catch.
 - Comparing a candidate model's score to the baseline, to another candidate, or to a
   score from a different validation scheme (e.g. CV vs. a temporal holdout) — the "is
   this real lift or noise" question.
-- NOT for: choosing the split strategy itself (see `validation-strategy`) — this skill
+- NOT for: choosing the split strategy itself (see `ds-validate`) — this skill
   quantifies the noise *in* whatever split was chosen, it doesn't choose the split.
 
 ## Core Process

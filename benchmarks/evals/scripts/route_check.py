@@ -179,8 +179,8 @@ def load_cases() -> list[dict]:
 # ─── Checks ──────────────────────────────────────────────────────────────────
 
 
-def check_triggers(cases, tfs, idf, descriptions):
-    positives = rank1 = topk = 0
+def check_triggers(cases, tfs, idf, descriptions, aliases):
+    positives = rank1 = strict_rank1 = topk = 0
     failures: list[str] = []
     per_skill: dict[str, dict] = {}
 
@@ -199,6 +199,10 @@ def check_triggers(cases, tfs, idf, descriptions):
             names = [n for n, _ in scored]
             position = names.index(skill) + 1
             if position == 1:
+                strict_rank1 += 1
+            # A skill beaten only by the command that exists to invoke it has
+            # still routed correctly -- same destination, different door.
+            if names[0] == skill or names[0] in aliases.get(skill, ()):
                 rank1 += 1
                 rec["rank1"] += 1
             if position <= k:
@@ -228,31 +232,56 @@ def check_triggers(cases, tfs, idf, descriptions):
     return {
         "positives": positives,
         "rank1": rank1,
+        "strict_rank1": strict_rank1,
         "topk": topk,
         "rank1_rate": round(100 * rank1 / positives, 1) if positives else 0.0,
+        "strict_rank1_rate": round(100 * strict_rank1 / positives, 1) if positives else 0.0,
         "topk_rate": round(100 * topk / positives, 1) if positives else 0.0,
         "failures": failures,
         "per_skill": per_skill,
     }
 
 
-def _is_alias_pair(a: str, b: str) -> bool:
-    """A command and the skill it exists to invoke are supposed to look alike.
+SKILL_REF_IN_COMMAND = re.compile(
+    r"[Ii]nvoke the `?([a-z][a-z0-9-]+)`? skill|`([a-z][a-z0-9-]+)` skill"
+)
 
-    `cmd:ds-model` and `ds-model` describing the same job is the wiring working,
-    not a catalog defect. Excluded from the pass/fail classification but still
-    scored and printed, so drift between a command and its skill stays visible.
+
+def build_alias_map() -> dict[str, set[str]]:
+    """skill -> the `cmd:` entries that exist to invoke it.
+
+    Read from each command's body ("Invoke the `ds-frame` skill now ..."), with a
+    same-name fallback. A command and the skill it dispatches to are the same
+    destination as far as a user is concerned, so one outranking the other is the
+    wiring working, not a routing defect.
     """
-    return a == f"cmd:{b}" or b == f"cmd:{a}"
+    aliases: dict[str, set[str]] = {}
+    for command_md in sorted(COMMANDS_DIR.glob("*.md")):
+        body = command_md.read_text(encoding="utf-8")
+        targets = set()
+        for a, b in SKILL_REF_IN_COMMAND.findall(body):
+            target = a or b
+            if (SKILLS_DIR / target).is_dir():
+                targets.add(target)
+        if not targets and (SKILLS_DIR / command_md.stem).is_dir():
+            targets.add(command_md.stem)
+        for target in targets:
+            aliases.setdefault(target, set()).add(f"cmd:{command_md.stem}")
+    return aliases
 
 
-def check_collisions(tfs, idf):
+def _is_alias_pair(a: str, b: str, aliases: dict[str, set[str]]) -> bool:
+    return b in aliases.get(a, ()) or a in aliases.get(b, ())
+
+
+def check_collisions(tfs, idf, aliases):
     names = sorted(tfs)
     vectors = {n: vectorize(tfs[n], idf) for n in names}
     pairs = []
     for i, a in enumerate(names):
         for b in names[i + 1:]:
-            pairs.append((round(cosine(vectors[a], vectors[b]), 3), a, b, _is_alias_pair(a, b)))
+            pairs.append((round(cosine(vectors[a], vectors[b]), 3), a, b,
+                          _is_alias_pair(a, b, aliases)))
     pairs.sort(key=lambda p: -p[0])
     real = [p for p in pairs if not p[3]]
     return {
@@ -280,9 +309,10 @@ def main() -> int:
         return 1
 
     tfs, idf = build_corpus(descriptions)
+    aliases = build_alias_map()
     cases = load_cases()
-    collisions = check_collisions(tfs, idf)
-    triggers = check_triggers(cases, tfs, idf, descriptions) if cases else None
+    collisions = check_collisions(tfs, idf, aliases)
+    triggers = check_triggers(cases, tfs, idf, descriptions, aliases) if cases else None
 
     if args.json:
         print(json.dumps({
@@ -316,7 +346,10 @@ def main() -> int:
         if triggers:
             print("── Trigger routing ─────────────────────────────────────────────")
             print(f"  rank-1 rate : {triggers['rank1_rate']}%  "
-                  f"({triggers['rank1']}/{triggers['positives']} positives rank their skill first)")
+                  f"({triggers['rank1']}/{triggers['positives']} positives rank their skill, "
+                  f"or its own command, first)")
+            print(f"  strict      : {triggers['strict_rank1_rate']}%  "
+                  f"(skill itself first, commands not credited)")
             print(f"  top-k rate  : {triggers['topk_rate']}%  "
                   f"({triggers['topk']}/{triggers['positives']} within top_k)\n")
             for failure in triggers["failures"]:

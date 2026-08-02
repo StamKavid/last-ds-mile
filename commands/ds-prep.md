@@ -1,5 +1,5 @@
 ---
-description: Clean data and engineer leakage-safe features
+description: Clean data and engineer features without leaking the target
 ---
 
 Invoke the `ds-prep` skill now via the Skill tool to clean the data and build features.

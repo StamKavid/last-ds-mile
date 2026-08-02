@@ -1,6 +1,6 @@
 ---
 name: data-science-project
-description: Use at the very start of a tabular ML or data-science task — building a predictive model, classifying or forecasting a column, or exploring a dataset — when the user has NOT yet entered the Last DS Mile pipeline (no `.last-ds-mile/stages/` yet). Frames the problem in-line and carries the request through the guided lifecycle in the same turn. Defers to /ds once the pipeline has already started.
+description: Carries a tabular machine-learning request from a plain-language ask all the way to a scored model and an honest verdict, in one turn. Use when the user says build a model, train a classifier, classify or predict or forecast a column, or detect something in a CSV, table, or spreadsheet. Use when someone wants to look at a dataset and see whether an outcome can be classified or predicted from it. Use when someone asks how well a model works, whether a result is good enough, or whether a model is ready to ship. Use when a data-science task is starting and no `.last-ds-mile/` work exists yet.
 ---
 
 # data-science-project — The Front Door

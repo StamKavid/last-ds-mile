@@ -1,6 +1,6 @@
 ---
 name: ds-model
-description: Selects and tunes models against the validation strategy from /ds-validate, always compared to the /ds-baseline anchor. Hard gate — refuses to proceed without both a prior baseline and a documented validation strategy. Use when asked to train, tune, or compare models.
+description: Trains, tunes, and compares candidate models against the chosen validation scheme and the baseline number. Use when someone asks to train models, tune hyperparameters, or compare algorithms such as logistic regression, random forest, XGBoost, or LightGBM. Use when picking which of several trained candidates to carry forward.
 ---
 
 # ds-model — Modeling

@@ -1,6 +1,6 @@
 ---
 name: error-analysis
-description: Systematically slices residuals and errors to find where a model fails, rather than reporting one aggregate score. Use during or after /ds-evaluate, when a model's overall metric looks acceptable but stakeholder trust requires knowing where it underperforms, or when asked to debug why a model is "wrong" on specific cases.
+description: Slices residuals and errors to find where a model fails, instead of reporting one aggregate score. Use when someone asks where a model gets things wrong, or wants the worst-performing segments named. Use when an overall metric looks acceptable but the result is not yet trusted. Use when debugging why specific cases come out wrong.
 ---
 
 # error-analysis

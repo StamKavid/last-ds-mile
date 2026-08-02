@@ -1,5 +1,5 @@
 ---
-description: Deploy the packaged model locally with monitoring, drift, and rollback
+description: Serve a packaged model with monitoring, drift detection, and rollback
 ---
 
 Invoke the `ds-deploy` skill now via the Skill tool to stand the parity-verified

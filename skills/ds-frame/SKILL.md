@@ -1,6 +1,6 @@
 ---
 name: ds-frame
-description: Frames a vague data science ask into a crisp problem statement — unit of analysis, target definition, the decision the output feeds, and a success metric tied to that decision. Use when starting a new DS project, when asked to "build a model for X" without a defined target or metric, or when a request has no clear success criterion yet.
+description: Turns a vague data request into a precise problem — unit of analysis, target definition, the decision it feeds, and what success means. Use when someone wants to predict something but has not said exactly what, or asks what the target variable should be. Use when a model is requested with no success criterion, no metric, and no stated decision behind it. Use before touching data on a new project.
 ---
 
 # ds-frame — Problem Framing

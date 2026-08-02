@@ -171,7 +171,6 @@ These don't correspond to slash commands. They auto-trigger when a situation cal
 | Skill | Fires when |
 |-------|-----------|
 | [target-leakage-detection](skills/target-leakage-detection/SKILL.md) | A metric looks too good on the first try, or a single feature dominates importance |
-| [validation-strategy](skills/validation-strategy/SKILL.md) | Setting up cross-validation, or deciding whether hyperparameter tuning needs nested CV |
 | [distribution-shift](skills/distribution-shift/SKILL.md) | A fixed test set or deployment population may not match training data, or CV looked fine but a holdout/production score didn't |
 | [uncertainty-quantification](skills/uncertainty-quantification/SKILL.md) | Reporting or comparing CV scores — every metric needs a spread, not a bare point estimate |
 | [model-ensembling](skills/model-ensembling/SKILL.md) | Two or more structurally different candidates exist and a single model's score has plateaued |
@@ -259,7 +258,6 @@ last-ds-mile/
 │   ├── ds-package/                  #   Deploy     ⚠ Hard gate
 │   ├── ds-deploy/                   #   Deploy     ⚠ Hard gate
 │   ├── target-leakage-detection/    #   Domain (auto-trigger)
-│   ├── validation-strategy/         #   Domain (auto-trigger)
 │   ├── distribution-shift/          #   Domain (auto-trigger)
 │   ├── uncertainty-quantification/  #   Domain (auto-trigger)
 │   ├── model-ensembling/            #   Domain (auto-trigger)

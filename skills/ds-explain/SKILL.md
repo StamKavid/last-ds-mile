@@ -1,6 +1,6 @@
 ---
 name: ds-explain
-description: Interprets the model — permutation feature importance, SHAP values, and (for an ensemble) a cross-check against its best single base learner — to sanity-check that it learned sensible drivers rather than an artifact. Use after evaluation, before reporting results to stakeholders.
+description: Interprets a trained model with permutation importance and SHAP to check it learned something sensible rather than an artifact. Use when someone asks which features a trained model is actually using or relying on, what drives its predictions, or why it decided something. Use when feature importance or SHAP values are wanted for an already-fitted model. Use after evaluation and before results are shown to anyone.
 ---
 
 # ds-explain — Interpretation

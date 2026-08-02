@@ -1,6 +1,6 @@
 ---
 name: data-viz-standards
-description: Chooses the right chart type/library for the audience (Altair for EDA, great_tables/Plotly for stakeholder reports, matplotlib for committed static PNGs) and keeps charts honest — no distorted axes, no misleading aggregation. Use when building EDA plots or report figures, or when a chart choice seems arbitrary or misleading.
+description: Chooses the right chart and library for the audience and keeps it honest — no truncated axes, no misleading aggregation. Use when someone asks which chart or plot type to use, or whether to reach for matplotlib, Plotly, or Altair. Use when a figure looks misleading or a chart choice seems arbitrary.
 ---
 
 # data-viz-standards
