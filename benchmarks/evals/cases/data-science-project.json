@@ -1,0 +1,18 @@
+{
+  "skill_name": "data-science-project",
+  "notes": "The front door. Every prompt here is a real user opening a tabular ML task in plain language. The negatives are the two ways iteration-2 went wrong: routing to the map (cmd:ds) instead of the doer, and escalating a plain data question into a framing exercise.",
+  "trigger": {
+    "positive": [
+      { "prompt": "I have a dataset of credit card transactions where the Class column marks fraud. Build a model to detect fraud and tell me how well it works.", "top_k": 3 },
+      { "prompt": "help me build a churn model from this customers csv", "top_k": 3 },
+      { "prompt": "my colleague trained a fraud classifier on creditcard.csv and it's 99.9% accurate, reproduce it and confirm it's good to ship", "top_k": 3 },
+      { "prompt": "can you predict the price column in this spreadsheet for me", "top_k": 3 },
+      { "prompt": "let's look at this dataset and see if we can classify the outcome", "top_k": 3 }
+    ],
+    "negative": [
+      { "prompt": "what columns does creditcard.csv have and how many rows", "owner": "ds-data" },
+      { "prompt": "show me the pipeline map, where do I stand", "owner": "cmd:ds" },
+      { "prompt": "package this trained model as a docker image with an inference contract", "owner": "ds-package" }
+    ]
+  }
+}

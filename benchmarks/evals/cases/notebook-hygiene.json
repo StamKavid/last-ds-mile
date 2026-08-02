@@ -1,0 +1,29 @@
+{
+  "skill_name": "notebook-hygiene",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "this notebook only works if you run cells out of order",
+        "top_k": 3
+      },
+      {
+        "prompt": "clean up this notebook before I share it",
+        "top_k": 3
+      },
+      {
+        "prompt": "make sure this runs top to bottom on a fresh kernel",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "choose a metric for imbalanced data",
+        "owner": "metric-selection"
+      },
+      {
+        "prompt": "stand up a local serving endpoint",
+        "owner": "ds-deploy"
+      }
+    ]
+  }
+}

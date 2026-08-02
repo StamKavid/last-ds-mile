@@ -1,0 +1,29 @@
+{
+  "skill_name": "imbalanced-data",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "only 0.2% of my rows are positive, what do I do",
+        "top_k": 3
+      },
+      {
+        "prompt": "should I use SMOTE or class weights",
+        "top_k": 3
+      },
+      {
+        "prompt": "the model never predicts the rare class",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "write an ADR for this architecture choice",
+        "owner": "capturing-learnings"
+      },
+      {
+        "prompt": "make the pandas code faster",
+        "owner": "dataframe-performance"
+      }
+    ]
+  }
+}

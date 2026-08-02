@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-deploy",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "stand this model up as a local endpoint",
+        "top_k": 3
+      },
+      {
+        "prompt": "I need monitoring and a rollback plan before this goes live",
+        "top_k": 3
+      },
+      {
+        "prompt": "how do I detect drift once this thing is serving traffic",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "run univariate EDA on the raw columns",
+        "owner": "ds-explore"
+      },
+      {
+        "prompt": "state the uncertainty around this metric gap",
+        "owner": "uncertainty-quantification"
+      }
+    ]
+  }
+}

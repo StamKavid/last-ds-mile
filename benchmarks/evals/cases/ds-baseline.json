@@ -1,0 +1,15 @@
+{
+  "skill_name": "ds-baseline",
+  "notes": "One of only two expectations the unaided base model failed in iteration-2 eval-1 (scored dumb baseline; lift stated against it). This is the pack's measured differentiator, so its routing has to be right.",
+  "trigger": {
+    "positive": [
+      { "prompt": "what should I compare this model against to know if it's any good", "top_k": 3 },
+      { "prompt": "is 0.86 PR-AUC actually good or is that what guessing gets you", "top_k": 3 },
+      { "prompt": "set up a dumb baseline before I train anything", "top_k": 3 }
+    ],
+    "negative": [
+      { "prompt": "tune the hyperparameters of my gradient boosting model", "owner": "ds-model" },
+      { "prompt": "write up these results for the exec team", "owner": "ds-report" }
+    ]
+  }
+}

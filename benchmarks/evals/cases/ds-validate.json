@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-validate",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "how should I split this data into train and test",
+        "top_k": 3
+      },
+      {
+        "prompt": "set up cross validation for this project",
+        "top_k": 3
+      },
+      {
+        "prompt": "my data has repeated customers, will a random split leak",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "summarize the findings for a non technical audience",
+        "owner": "ds-brief"
+      },
+      {
+        "prompt": "score a majority class baseline first",
+        "owner": "ds-baseline"
+      }
+    ]
+  }
+}

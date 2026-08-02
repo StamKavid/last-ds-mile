@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-frame",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "I want to predict something useful from this data but I'm not sure what exactly",
+        "top_k": 3
+      },
+      {
+        "prompt": "what should the target variable even be for a churn project",
+        "top_k": 3
+      },
+      {
+        "prompt": "before we start modelling, what does success look like here",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "impute the missing values in these columns",
+        "owner": "ds-prep"
+      },
+      {
+        "prompt": "run permutation importance on the fitted model",
+        "owner": "ds-explain"
+      }
+    ]
+  }
+}
