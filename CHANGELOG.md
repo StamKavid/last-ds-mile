@@ -7,6 +7,60 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+> **Validation status.** The front-door fix below was written in response to iteration-2
+> and has **not** been confirmed by a behavioral run. Iteration-3 is specified in
+> [SPEC-v1-architecture.md](SPEC-v1-architecture.md) §7 and has not been executed. Treat
+> every claim in this section as a hypothesis with a named cause, not a demonstrated
+> outcome.
+
+### Fixed
+
+- **The front door no longer stalls a task to ask permission to start.** Iteration-2 of
+  the with/without skill-eval (`benchmarks/evals/credit-card-fraud/results/iteration-2/`)
+  showed `with_skill` losing to the unaided base model overall (pass^k gap −0.077),
+  traced to `data-science-project` and `/ds` printing the pipeline map and stopping to
+  ask which stage to start at, instead of framing inline and continuing. `ds-method`'s
+  Hard Gates are now split into **discipline gates** (missing baseline, validation
+  strategy, slice performance, or pinned environment — produced inline and the run
+  continues) and **safety gates** (parity check, a remote/registry/cloud push — still
+  stop and ask, unchanged). `data-science-project`, `commands/ds.md`, `ds-frame`,
+  `ds-model`, `ds-report`, `ds-brief`, and `ds-package` updated to match. The gate
+  *requirements* are unchanged; only the remedy for a missing discipline-gate artifact
+  changed, from "stop and tell the user to go run a separate command" to "produce it now
+  and say so."
+
+### Added
+
+- **`aggregate.py` reports cost and latency per arm, not just pass^k.** Pulls
+  `total_cost_usd`, `duration_ms`, and `num_turns` from each trial's own harness
+  `result` record and adds a `cost` section to `benchmark.json` plus a cost/latency
+  table to `summary.md`, with an explicit budget check (`with_skill` mean cost should
+  stay within 2x `without_skill`). The same iteration-2 run that exposed the front-door
+  stall also showed `with_skill` costing 6.6x more on eval-1 (63 turns / $2.21 mean vs.
+  8 turns / $0.34) — a gap pass^k alone couldn't see. Also backfills the previously-null
+  `time_seconds`/`tokens` fields in `benchmark.skill-creator.json`.
+- **`ds-method`'s stage ladder and express artifact mode** — before running a stage's
+  full process, check whether its artifact already exists, whether the request even
+  needs it, or whether a couple of lines in the run's notes cover it; and for a
+  single-shot request, write one `.last-ds-mile/run.md` instead of a dozen
+  `stages/*.md` files. Full per-stage artifacts remain the default once a project has
+  started using them, for resumability across sessions.
+- **`ds-data`, `target-leakage-detection`, and `ds-report` now delegate to the
+  plugin's own agents** (`data-profiler`, `leakage-auditor`, `ds-reviewer`) instead of
+  running the same sweeps inline — the agents existed but were unused, and running
+  mechanical, judgment-free passes as subagents keeps their intermediate output out of
+  the main thread's resident context.
+- **The plugin's three agents now set `effort` explicitly**, matched to how much
+  judgment each actually requires: `data-profiler` (mechanical structural sweep) at
+  `low`, `ds-reviewer` (checklist pass against known criteria) at `medium`,
+  `leakage-auditor` (adversarial reasoning — the plugin's actual differentiator) at
+  `high`. `leakage-auditor` also now tags every finding **Confirmed** / **Likely** /
+  **Worth checking** and reports all of them without self-filtering — coverage first,
+  filtering left to the calling skill — rather than a bare finding/no-finding report.
+  A small anchored ordinal tier, not a numeric confidence score: fine-grained numeric
+  self-rating is unreliable for probabilistic models, and a coarser, qualitatively
+  anchored scale is the more reliable middle ground between that and a flat binary.
+
 ## [0.9.0] — with/without skill-eval harness + forecast-aware framing
 
 ### Added
