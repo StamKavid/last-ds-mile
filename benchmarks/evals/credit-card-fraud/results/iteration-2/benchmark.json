@@ -3,7 +3,7 @@
     "skill_name": "last-ds-mile",
     "dataset": "credit-card-fraud",
     "iteration": 2,
-    "generated_at": "2026-07-25T18:28:18.344715+00:00"
+    "generated_at": "2026-07-26T12:55:21.570204+00:00"
   },
   "per_expectation": [
     {
@@ -244,6 +244,149 @@
     "with_skill": 0.769,
     "without_skill": 0.846,
     "gap": -0.077
+  },
+  "cost": {
+    "per_eval": [
+      {
+        "eval_id": 1,
+        "with_skill": {
+          "cost_usd": {
+            "mean": 2.2089,
+            "stddev": 0.5369,
+            "min": 1.5066,
+            "max": 2.81
+          },
+          "duration_s": {
+            "mean": 869.8957,
+            "stddev": 282.7111,
+            "min": 557.29,
+            "max": 1242.061
+          },
+          "turns": {
+            "mean": 63.3333,
+            "stddev": 18.3545,
+            "min": 44,
+            "max": 88
+          },
+          "trials": 3
+        },
+        "without_skill": {
+          "cost_usd": {
+            "mean": 0.3362,
+            "stddev": 0.1193,
+            "min": 0.2334,
+            "max": 0.5035
+          },
+          "duration_s": {
+            "mean": 174.175,
+            "stddev": 74.08,
+            "min": 87.704,
+            "max": 268.634
+          },
+          "turns": {
+            "mean": 8.3333,
+            "stddev": 3.2998,
+            "min": 6,
+            "max": 13
+          },
+          "trials": 3
+        }
+      },
+      {
+        "eval_id": 2,
+        "with_skill": {
+          "cost_usd": {
+            "mean": 0.2866,
+            "stddev": 0.1139,
+            "min": 0.1846,
+            "max": 0.4455
+          },
+          "duration_s": {
+            "mean": 76.887,
+            "stddev": 64.4579,
+            "min": 21.017,
+            "max": 167.201
+          },
+          "turns": {
+            "mean": 8.0,
+            "stddev": 2.9439,
+            "min": 5,
+            "max": 12
+          },
+          "trials": 3
+        },
+        "without_skill": {
+          "cost_usd": {
+            "mean": 0.251,
+            "stddev": 0.0283,
+            "min": 0.2166,
+            "max": 0.286
+          },
+          "duration_s": {
+            "mean": 152.369,
+            "stddev": 23.0971,
+            "min": 134.083,
+            "max": 184.952
+          },
+          "turns": {
+            "mean": 6.3333,
+            "stddev": 1.2472,
+            "min": 5,
+            "max": 8
+          },
+          "trials": 3
+        }
+      }
+    ],
+    "overall": {
+      "with_skill": {
+        "cost_usd": {
+          "mean": 1.2478,
+          "stddev": 1.0365,
+          "min": 0.1846,
+          "max": 2.81
+        },
+        "duration_s": {
+          "mean": 473.3913,
+          "stddev": 446.3809,
+          "min": 21.017,
+          "max": 1242.061
+        },
+        "turns": {
+          "mean": 35.6667,
+          "stddev": 30.6304,
+          "min": 5,
+          "max": 88
+        }
+      },
+      "without_skill": {
+        "cost_usd": {
+          "mean": 0.2936,
+          "stddev": 0.0966,
+          "min": 0.2166,
+          "max": 0.5035
+        },
+        "duration_s": {
+          "mean": 163.272,
+          "stddev": 55.9423,
+          "min": 87.704,
+          "max": 268.634
+        },
+        "turns": {
+          "mean": 7.3333,
+          "stddev": 2.6874,
+          "min": 5,
+          "max": 13
+        }
+      },
+      "budget_check": {
+        "limit_multiplier": 2.0,
+        "with_skill_mean_usd": 1.2478,
+        "without_skill_mean_usd": 0.2936,
+        "ratio": 4.25,
+        "within_budget": false
+      }
+    }
   },
   "notes": ""
 }

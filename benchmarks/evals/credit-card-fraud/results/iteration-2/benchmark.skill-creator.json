@@ -1,7 +1,7 @@
 {
   "metadata": {
     "skill_name": "last-ds-mile",
-    "timestamp": "2026-07-25T18:28:18.356931+00:00",
+    "timestamp": "2026-07-26T12:55:21.589662+00:00",
     "evals_run": [
       1,
       2
@@ -19,8 +19,8 @@
         "passed": 8,
         "failed": 0,
         "total": 8,
-        "time_seconds": null,
-        "tokens": null,
+        "time_seconds": 810.3,
+        "tokens": 4555354,
         "tool_calls": null,
         "errors": null
       },
@@ -80,8 +80,8 @@
         "passed": 8,
         "failed": 0,
         "total": 8,
-        "time_seconds": null,
-        "tokens": null,
+        "time_seconds": 557.3,
+        "tokens": 2356861,
         "tool_calls": null,
         "errors": null
       },
@@ -141,8 +141,8 @@
         "passed": 8,
         "failed": 0,
         "total": 8,
-        "time_seconds": null,
-        "tokens": null,
+        "time_seconds": 1242.1,
+        "tokens": 3609038,
         "tool_calls": null,
         "errors": null
       },
@@ -202,8 +202,8 @@
         "passed": 6,
         "failed": 2,
         "total": 8,
-        "time_seconds": null,
-        "tokens": null,
+        "time_seconds": 87.7,
+        "tokens": 196673,
         "tool_calls": null,
         "errors": null
       },
@@ -263,8 +263,8 @@
         "passed": 6,
         "failed": 2,
         "total": 8,
-        "time_seconds": null,
-        "tokens": null,
+        "time_seconds": 166.2,
+        "tokens": 201353,
         "tool_calls": null,
         "errors": null
       },
@@ -324,8 +324,8 @@
         "passed": 6,
         "failed": 2,
         "total": 8,
-        "time_seconds": null,
-        "tokens": null,
+        "time_seconds": 268.6,
+        "tokens": 511328,
         "tool_calls": null,
         "errors": null
       },
@@ -385,8 +385,8 @@
         "passed": 2,
         "failed": 3,
         "total": 5,
-        "time_seconds": null,
-        "tokens": null,
+        "time_seconds": 42.4,
+        "tokens": 204376,
         "tool_calls": null,
         "errors": null
       },
@@ -431,8 +431,8 @@
         "passed": 5,
         "failed": 0,
         "total": 5,
-        "time_seconds": null,
-        "tokens": null,
+        "time_seconds": 167.2,
+        "tokens": 425754,
         "tool_calls": null,
         "errors": null
       },
@@ -477,8 +477,8 @@
         "passed": 2,
         "failed": 3,
         "total": 5,
-        "time_seconds": null,
-        "tokens": null,
+        "time_seconds": 21.0,
+        "tokens": 123467,
         "tool_calls": null,
         "errors": null
       },
@@ -523,8 +523,8 @@
         "passed": 5,
         "failed": 0,
         "total": 5,
-        "time_seconds": null,
-        "tokens": null,
+        "time_seconds": 134.1,
+        "tokens": 158575,
         "tool_calls": null,
         "errors": null
       },
@@ -569,8 +569,8 @@
         "passed": 5,
         "failed": 0,
         "total": 5,
-        "time_seconds": null,
-        "tokens": null,
+        "time_seconds": 138.1,
+        "tokens": 196892,
         "tool_calls": null,
         "errors": null
       },
@@ -615,8 +615,8 @@
         "passed": 5,
         "failed": 0,
         "total": 5,
-        "time_seconds": null,
-        "tokens": null,
+        "time_seconds": 185.0,
+        "tokens": 272282,
         "tool_calls": null,
         "errors": null
       },
@@ -660,8 +660,18 @@
         "min": 0.4,
         "max": 1.0
       },
-      "time_seconds": null,
-      "tokens": null
+      "time_seconds": {
+        "mean": 473.3913,
+        "stddev": 446.3809,
+        "min": 21.017,
+        "max": 1242.061
+      },
+      "tokens": {
+        "mean": 1879141.6667,
+        "stddev": 1750354.1938,
+        "min": 123467,
+        "max": 4555354
+      }
     },
     "without_skill": {
       "pass_rate": {
@@ -670,8 +680,18 @@
         "min": 0.75,
         "max": 1.0
       },
-      "time_seconds": null,
-      "tokens": null
+      "time_seconds": {
+        "mean": 163.272,
+        "stddev": 55.9423,
+        "min": 87.704,
+        "max": 268.634
+      },
+      "tokens": {
+        "mean": 256183.8333,
+        "stddev": 118987.858,
+        "min": 158575,
+        "max": 511328
+      }
     },
     "delta": {
       "pass_rate": "-0.07"
