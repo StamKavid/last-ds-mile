@@ -1,6 +1,6 @@
 ---
 name: model-ensembling
-description: Blends, stacks, or averages multiple trained candidates using leakage-safe out-of-fold predictions, and reports the ensemble's lift over its own best single component relative to the fold spread. Use during /ds-model once at least two structurally different candidates have been trained, or when a single model's score has plateaued and the next lever isn't a better model but a combination of the ones already trained.
+description: Blends, stacks, or averages several trained models using leakage-safe out-of-fold predictions, and reports the lift over the best single component relative to fold spread. Use when someone asks to combine models, average predictions, or stack them. Use when a single model's score has plateaued and the next lever is a combination rather than a better model.
 ---
 
 # model-ensembling

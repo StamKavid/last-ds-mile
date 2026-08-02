@@ -1,6 +1,6 @@
 ---
 name: ds-report
-description: Turns evaluation and explanation results into a stakeholder-facing narrative — recommendation, assumptions, and limitations. Hard gate — refuses to proceed without slice/subgroup performance from /ds-evaluate. Use when asked to write up, present, or summarize DS results for a non-technical audience.
+description: Turns evaluation and interpretation into a stakeholder-facing narrative — recommendation, assumptions, and limitations stated plainly. Use when someone asks to write up, summarise, or present results. Use when preparing findings for a product team, a manager, or any audience that will act on them.
 ---
 
 # ds-report — Communication

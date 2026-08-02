@@ -1,6 +1,6 @@
 ---
 name: notebook-hygiene
-description: Keeps notebooks reproducible and reviewable — safe to rerun top-to-bottom, safe to read out of execution order. Use when finishing exploratory work that will be shared, reviewed, or handed off, or when a notebook's cells have been run out of order and its current state is no longer trustworthy.
+description: Makes a notebook safe to rerun top to bottom and safe to read out of execution order. Use when a notebook only works if cells are run in a particular order, or its current state can no longer be trusted. Use when someone asks to clean up or tidy a notebook before sharing, reviewing, or handing it over.
 ---
 
 # notebook-hygiene

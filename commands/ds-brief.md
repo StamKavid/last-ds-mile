@@ -1,6 +1,5 @@
 ---
-description: Translate the /ds-report narrative into a one-page brief for non-technical stakeholders
-argument-hint: "[optional: who the brief is for, e.g. 'the board' or 'the retention team lead']"
+description: Rewrite the results as a one-page brief with no jargon
 ---
 
 Invoke the `ds-brief` skill now via the Skill tool and follow its Core Process.

@@ -1,6 +1,6 @@
 ---
 name: ds-brief
-description: Translates the /ds-report narrative into a one-page, jargon-free brief for non-technical stakeholders — no metric names, dollar/percentage/count framing only. Use after /ds-report, or when asked to explain DS results to executives, a business audience, or anyone non-technical.
+description: Rewrites a technical write-up as a one-page brief for a non-technical reader — no metric names, framed in money, percentages, and counts. Use when someone asks to explain results to an executive, a business audience, or anyone who does not know what AUC means. Use when a plainer version is wanted for business stakeholders. Use when a summary needs to fit on one page with the jargon stripped out.
 ---
 
 # ds-brief — Executive Brief

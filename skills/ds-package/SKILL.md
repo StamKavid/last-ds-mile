@@ -1,6 +1,6 @@
 ---
 name: ds-package
-description: Packages a handed-off model into a servable, portable unit — an inference contract, a thin framework-agnostic predict wrapper, and a reproducible Dockerfile — and proves it serves the same predictions it produced offline. Hard gate — requires the /ds-handoff artifacts and refuses to proceed unless the training/serving parity check passes. Use when a model is ready to become a running service.
+description: Wraps a handed-off model as a servable unit — inference contract, thin predict wrapper, reproducible Dockerfile — and proves it returns the same predictions it produced offline. Hard gate on that parity check. Use when someone asks to turn a model into a service, build a container or Docker image for it, or define its inference contract. Use before any deployment.
 ---
 
 # ds-package — Make It Servable, Prove Parity

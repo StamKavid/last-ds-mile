@@ -240,6 +240,28 @@ and runs it against the current 30 descriptions; the collision matrix decides. A
 above 0.75 cosine merges or gets rewritten. Any merge the matrix does *not* justify gets
 dropped from this list.
 
+> ### ⛔ Checkpoint 2 outcome — this section is superseded
+>
+> The matrix ran ([`benchmarks/evals/routing-baseline.md`](benchmarks/evals/routing-baseline.md))
+> and **falsified the merge case**. Exactly one skill pair exceeds 0.50 cosine
+> (`ds-validate ↔ validation-strategy`, 0.546); **zero** reach the 0.75 error line. The
+> thirty descriptions barely overlap.
+>
+> The measured defect is elsewhere: **rank-1 routing is 47.8%** against a reference floor
+> of 80%. Descriptions are written in author vocabulary while users speak user vocabulary,
+> so skills are unreachable rather than confused with each other. `metric-selection` ranks
+> **#44 of 47** for *"is accuracy the right thing to report"*; `imbalanced-data` ranks
+> **#41** for *"only 0.2% of my rows are positive"* — the pack's two core claims on its own
+> flagship dataset. Merging would not have moved either.
+>
+> **Decision (approved):** Phase 3 rewrites all descriptions and performs exactly one
+> merge — `validation-strategy` into `ds-validate`. Every other merge in the table above is
+> dropped. No skill is renamed, so no `/ds-*` command, README row, or external link breaks.
+> Target: 30 → 29 skills, rank-1 47.8% → ≥80%.
+>
+> Further consolidation stays available, but must be argued from evidence in a later
+> iteration rather than from the architectural intuition that produced this table.
+
 ### 3.4 Artifact mode becomes mechanical
 
 Current: the model must *infer* whether a request is "single-shot" (express) or a "genuine

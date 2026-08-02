@@ -1,5 +1,5 @@
 ---
-description: Run systematic EDA with a hypothesis log
+description: Explore a dataset — distributions, feature-target relationships, hypotheses
 ---
 
 Invoke the `ds-explore` skill now via the Skill tool to run EDA on the profiled dataset.

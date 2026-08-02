@@ -1,6 +1,6 @@
 ---
 name: ds-prep
-description: Cleans data and engineers features with leakage prevention as the organizing principle — every transform is fit on training data only and wrapped in a pipeline. Use when building features, encoding variables, or imputing missing values for a model.
+description: Cleans data and builds features with leakage prevention as the organising principle — every transform fit on training rows only, wrapped in a pipeline. Use when someone asks to clean data, encode categorical variables, scale numerics, or handle missing values. Use when engineering or transforming features ahead of training a model.
 ---
 
 # ds-prep — Cleaning & Feature Engineering

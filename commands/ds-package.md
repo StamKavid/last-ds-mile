@@ -1,5 +1,5 @@
 ---
-description: Package the model into a servable, parity-checked container
+description: Package a model as a servable unit and prove prediction parity
 ---
 
 Invoke the `ds-package` skill now via the Skill tool to wrap the handed-off model

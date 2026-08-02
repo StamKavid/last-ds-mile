@@ -1,6 +1,6 @@
 ---
 name: target-leakage-detection
-description: Detects target leakage — features that encode the future, the target itself, or contamination between train and test data. Use when a metric looks too good on the first try, when engineering features from time-ordered or aggregated data, or when a single feature dominates an importance ranking.
+description: Finds features that encode the answer — computed from the label, from the future, or contaminated across the train/test boundary. Use when a score looks too good to be true on the first try, such as AUC near 0.99 or R-squared near 1. Use when one feature dominates the importance ranking. Use when a feature was built from aggregates, neighbours, or anything derived from the thing being predicted.
 ---
 
 # target-leakage-detection
@@ -18,7 +18,7 @@ usually happens, rather than a vague "watch out for leakage" reminder.
 - Building a feature from an aggregate, a rolling window, or a join that could include
   future rows.
 - A single feature dominates importance rankings in `/ds-explain` or an ad hoc check.
-- NOT for: choosing a validation split (that's `validation-strategy`) — this skill is
+- NOT for: choosing a validation split (that's `ds-validate`) — this skill is
   about what's *inside* a feature, not how data is split.
 
 ## Core Process
@@ -43,7 +43,7 @@ usually happens, rather than a vague "watch out for leakage" reminder.
 |---|---|---|---|
 | Post-outcome feature | A column is only populated *after* the target is known (e.g. "cancellation_reason" when predicting churn, "days_to_close" when predicting whether a deal closes) | Ask each feature's owner/source system when it's populated relative to the target event, not just what it's named | Drop it, or replace with a version computed strictly before the target event |
 | Full-dataset aggregate ("time-traveling feature") | A rolling mean/sum/rank computed once over the whole dataset instead of per-row as-of-date | Recompute the same aggregate using only rows with an earlier timestamp than the row being predicted, and diff against the original — if they differ, the original leaked | Recompute as an as-of, expanding/rolling-window aggregate |
-| Train/test contamination | The same real-world entity (customer, house, patient) appears in both train and validation, or a transform (scaler, encoder, target encoding) was fit on the full dataset before splitting | Check for duplicate/near-duplicate rows or shared keys across the split; confirm every fit-requiring transform lives inside a pipeline fit per-fold | Group-aware splitting (see `validation-strategy`); move every stateful transform inside the CV loop |
+| Train/test contamination | The same real-world entity (customer, house, patient) appears in both train and validation, or a transform (scaler, encoder, target encoding) was fit on the full dataset before splitting | Check for duplicate/near-duplicate rows or shared keys across the split; confirm every fit-requiring transform lives inside a pipeline fit per-fold | Group-aware splitting (see `ds-validate`); move every stateful transform inside the CV loop |
 | Direct target derivation | A feature is an arithmetic function of the target itself (e.g. "profit_margin" when predicting "profit", where margin = profit/revenue) | Compute the correlation AND check the literal formula/join that produced the feature, not just the correlation number | Drop the feature; if the underlying real-world quantity is genuinely available at prediction time, recompute it without touching the target |
 
 ## Common Rationalizations

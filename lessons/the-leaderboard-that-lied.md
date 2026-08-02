@@ -1,6 +1,6 @@
 ---
 title: The Leaderboard That Lied
-skills: [validation-strategy]
+skills: [ds-validate]
 stages: [ds-validate]
 ---
 

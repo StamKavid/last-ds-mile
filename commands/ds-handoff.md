@@ -1,5 +1,5 @@
 ---
-description: Package the model for reproducible handoff
+description: Make the project reproducible — pinned environment, model card, rerunnable
 ---
 
 Invoke the `ds-handoff` skill now via the Skill tool to package the model and project

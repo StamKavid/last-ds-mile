@@ -1,6 +1,6 @@
 ---
 name: causal-vs-predictive
-description: Distinguishes predictive/associational feature importance from causal claims about what would happen if a feature changed — catches "X causes/drives Y" stated as confirmed when only a correlational comparison was run. Use during /ds-explain when describing driver importance, or during /ds-report when a recommendation implies intervening on a feature rather than just ranking or scoring with it.
+description: Separates what a model found from what would happen if a feature were changed, and catches association reported as cause. Use when someone asks whether a feature causes an outcome, or whether changing it would change the result. Use when a write-up says something drives, causes, or leads to the target. Use when a recommendation implies intervening on a variable rather than just scoring with it.
 ---
 
 # causal-vs-predictive

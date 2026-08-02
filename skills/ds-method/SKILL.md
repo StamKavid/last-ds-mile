@@ -1,6 +1,6 @@
 ---
 name: ds-method
-description: Shared discipline layer for every Last DS Mile stage — the Red Flags, Common Rationalizations, and Hard Gates that keep data science results honest. Use when running any /ds-* stage, or when asked to skip a baseline, peek at a test set, or ship a model without validation.
+description: Holds the shared discipline every stage of this pipeline cites — the Red Flags, the Common Rationalizations, and the Hard Gates. Use when someone pushes back on a gate, asks why a baseline is needed, or wants to peek at the test set just once. Use when deciding whether a stage should stop and ask or produce the missing work itself.
 ---
 
 # ds-method — The Last DS Mile Discipline Layer

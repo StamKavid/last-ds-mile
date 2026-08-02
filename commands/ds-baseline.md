@@ -1,5 +1,5 @@
 ---
-description: Build the dumb baseline that anchors every later model score
+description: Score a dumb baseline so the model has a number to beat
 ---
 
 Invoke the `ds-baseline` skill now via the Skill tool to build and score the baseline.

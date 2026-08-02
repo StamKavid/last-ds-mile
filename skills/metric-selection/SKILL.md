@@ -1,6 +1,6 @@
 ---
 name: metric-selection
-description: Chooses an evaluation metric matched to the decision and the target's class balance or distribution shape. Use when picking or defending a metric for classification, regression, ranking, or probabilistic predictions, or when a metric choice seems arbitrary or disconnected from the actual decision.
+description: Picks the evaluation metric that matches the decision and the shape of the target, and says plainly when a familiar one is wrong. Use when someone asks whether accuracy is the right thing to report, or whether to optimise for precision or recall. Use when choosing or defending a metric for classification, regression, ranking, or probability estimates. Use when a metric was picked out of habit rather than from the decision it informs.
 ---
 
 # metric-selection
@@ -17,7 +17,7 @@ is a decision table, not a philosophy essay.
   `/ds-evaluate`.
 - The target is imbalanced (classification) or skewed (regression) and accuracy/plain
   RMSE feels wrong.
-- NOT for: picking the validation split (see `validation-strategy`) — this skill is
+- NOT for: picking the validation split (see `ds-validate`) — this skill is
   about how a prediction is scored, not how data is split for scoring.
 
 ## Core Process

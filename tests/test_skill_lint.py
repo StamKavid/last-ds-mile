@@ -9,9 +9,9 @@ The rules are ported from the reference implementation in
 addyosmani/agent-skills (`scripts/lib/skill-lint.js`), adapted to this repo's
 conventions.
 
-Known offenders are listed in KNOWN_VIOLATIONS below and reported as xfail so CI
-stays green while Phase 3 works through them. Deleting an entry from that dict is
-how a Phase 3 task gets marked done — the test then enforces the rule for real.
+Every rule here is enforced for real — KNOWN_VIOLATIONS is empty. It exists as the
+escape hatch for a deliberate, temporary exception: add an entry with a written
+reason rather than weakening a rule, and delete it when the skill is fixed.
 """
 
 import re
@@ -65,38 +65,10 @@ SKILL_REF_PATTERNS = [
     re.compile(r"`([a-z][a-z0-9-]+[a-z0-9])` skill\b"),
 ]
 
-# Rules the current 30-skill layout does not yet satisfy — the Phase 3 worklist
-# (tasks/plan-v1-architecture.md §3.5 rewrites every description to the enforced
-# formula). Keyed by (skill_name, rule); the value says why it is deferred.
-# Deleting an entry is how a Phase 3 task gets marked done.
-_ONE_TRIGGER = (
-    "Description carries a single trigger clause. Phase 3 §3.5 rewrites it to the "
-    "'<verb-s> <object>. Use when A. Use when B.' formula with >=2 distinct "
-    "vocabulary slices."
-)
-
-KNOWN_VIOLATIONS: dict[tuple[str, str], str] = {
-    ("data-science-project", "description-trigger"): (
-        "Opens with 'Use at the very start of a tabular ML task', which reads as a "
-        "trigger to a human but carries no 'Use when' token for the lexical router. "
-        "This is the front door — the one description that most needs to rank first, "
-        "and it is the skill that lost routing to /ds in iteration-2 eval-2."
-    ),
-    ("capturing-learnings", "description-multi-trigger"): _ONE_TRIGGER,
-    ("causal-vs-predictive", "description-multi-trigger"): _ONE_TRIGGER,
-    ("data-science-project", "description-multi-trigger"): _ONE_TRIGGER,
-    ("distribution-shift", "description-multi-trigger"): _ONE_TRIGGER,
-    ("ds-data", "description-multi-trigger"): _ONE_TRIGGER,
-    ("ds-deploy", "description-multi-trigger"): _ONE_TRIGGER,
-    ("ds-evaluate", "description-multi-trigger"): _ONE_TRIGGER,
-    ("ds-explain", "description-multi-trigger"): _ONE_TRIGGER,
-    ("ds-handoff", "description-multi-trigger"): _ONE_TRIGGER,
-    ("ds-model", "description-multi-trigger"): _ONE_TRIGGER,
-    ("ds-package", "description-multi-trigger"): _ONE_TRIGGER,
-    ("ds-prep", "description-multi-trigger"): _ONE_TRIGGER,
-    ("ds-report", "description-multi-trigger"): _ONE_TRIGGER,
-    ("uncertainty-quantification", "description-multi-trigger"): _ONE_TRIGGER,
-}
+# Deferred rule violations, keyed by (skill_name, rule), with the reason each is
+# deferred. Emptied by Phase 3 — every description now satisfies every rule, so a
+# new entry here should be rare and temporary.
+KNOWN_VIOLATIONS: dict[tuple[str, str], str] = {}
 
 FENCE_RE = re.compile(r"^(`{3,})[^\n]*\n.*?^\1[ \t]*$", re.DOTALL | re.MULTILINE)
 

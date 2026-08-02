@@ -1,6 +1,5 @@
 ---
-description: Frame the DS problem — target, decision, success metric
-argument-hint: [problem description]
+description: Frame a vague data request into a target, a decision, and a success metric
 ---
 
 Invoke the `ds-frame` skill now via the Skill tool to frame this data science problem.
