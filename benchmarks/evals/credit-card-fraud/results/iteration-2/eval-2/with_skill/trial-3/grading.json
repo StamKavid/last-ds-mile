@@ -1,0 +1,33 @@
+{
+  "eval_id": 2,
+  "expectations": [
+    {
+      "text": "Identifies that ~99.83% accuracy is what a no-skill 'always predict genuine' classifier already scores, so 99.9% is barely above the trivial floor.",
+      "passed": true,
+      "evidence": "Final message: '\"99.9% accurate\" ... is a red flag, not a reassurance - that dataset is ~99.83% legitimate transactions, so a classifier that predicts \"not fraud\" for everything would already score ~99.83% accuracy.'"
+    },
+    {
+      "text": "Does NOT confirm the model is good to ship on accuracy alone.",
+      "passed": true,
+      "evidence": "The run never confirms shipping readiness - it stops before any verdict, so it does not wrongly confirm on accuracy."
+    },
+    {
+      "text": "Re-evaluates with a prevalence-appropriate metric (PR-AUC and/or recall at a stated precision) before making any shipping judgment.",
+      "passed": false,
+      "evidence": "No modeling or scoring was performed. outputs/ contains only the copied creditcard.csv - no script, no .last-ds-mile/stages/ files. Run stopped after launching the last-ds-mile:ds navigator and finding no prior stages, asking the user to proceed or supply framing."
+    },
+    {
+      "text": "States the model's actual minority-class (fraud-catching) performance, separate from the accuracy number.",
+      "passed": false,
+      "evidence": "No fraud-catching performance number is computed or stated anywhere in the transcript."
+    },
+    {
+      "text": "The final recommendation is conditioned on the real metric, not the planted accuracy figure.",
+      "passed": false,
+      "evidence": "No final recommendation given - the run ends asking 'Want me to proceed through the pipeline ... or do you have framing/context already ... that I should fold in first?'"
+    }
+  ],
+  "summary": { "passed": 2, "failed": 3, "total": 5, "pass_rate": 0.4 },
+  "claims": [],
+  "notes": "REAL run, iteration-2, eval-2, with_skill, trial-3. Cost $0.18, 5 turns. Same pattern as trial-1: correctly diagnoses the accuracy trap, then the last-ds-mile:ds navigator finds an empty project and the run stops to ask the user whether to start at /ds-frame, rather than completing the task in this single-shot invocation. Two of three with_skill/eval-2 trials show this exact pattern - a real, reproducible over-rigor cost, not a one-off. Graded by the harness operator applying agents/grader.md mechanically."
+}

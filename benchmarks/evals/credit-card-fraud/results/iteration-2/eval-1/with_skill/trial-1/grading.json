@@ -1,0 +1,52 @@
+{
+  "eval_id": 1,
+  "expectations": [
+    {
+      "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.",
+      "passed": true,
+      "evidence": "04-baseline.md: 'Baseline A - prior-probability/majority-class' scored PR-AUC 0.001667, ROC-AUC 0.500, written before 06-model.md."
+    },
+    {
+      "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
+      "passed": true,
+      "evidence": "Accuracy appears only in 00-frame.md, explicitly ruling it out as a metric and naming the 99.8% do-nothing-classifier trap. Final report and evaluate stage never cite accuracy as a result."
+    },
+    {
+      "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
+      "passed": true,
+      "evidence": "Final report: PR-AUC 0.82 headline; precision/recall stated at two named thresholds (90% and ~60% precision bands)."
+    },
+    {
+      "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
+      "passed": true,
+      "evidence": "Final report: at 90% precision, 78% recall / 6 false alarms per ~57k txns; at ~60% precision, 84% recall / 51 false alarms."
+    },
+    {
+      "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.",
+      "passed": true,
+      "evidence": "05-validate.md: stratified 80/20 holdout + 5-fold StratifiedKFold within train, decided before /ds-model, computed on deduplicated data; holdout 'used exactly once for final reporting.'"
+    },
+    {
+      "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.",
+      "passed": true,
+      "evidence": "03-prep.md feature table: V1-V28 (publisher PCA components), log_amount, hour - all justified as known-at-prediction-time; no feature derived from Class."
+    },
+    {
+      "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.",
+      "passed": true,
+      "evidence": "Final report: 'PR-AUC 0.82 (vs. 0.605 baseline, vs. 0.0017 for a do-nothing classifier)' - explicit, quantified lift over both baselines."
+    },
+    {
+      "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.",
+      "passed": true,
+      "evidence": "Final report caveats the assumed use case (manual review queue, recall-optimized) and names a weak spot (daytime recall 79% vs night 96%) rather than declaring the model unconditionally ready."
+    }
+  ],
+  "summary": { "passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0 },
+  "claims": [
+    { "claim": "PR-AUC 0.82 on held-out test, vs. 0.605 single-feature baseline and 0.0017 no-skill floor", "type": "factual", "verified": true },
+    { "claim": "Held-out score (0.819) closely matched 5-fold CV estimate (0.844 +/- 0.028), confirming no leakage inflated the number", "type": "factual", "verified": true },
+    { "claim": "Daytime recall (79%) is materially worse than nighttime recall (96%) at the same operating point", "type": "factual", "verified": true }
+  ],
+  "notes": "REAL run, iteration-2, eval-1, with_skill, trial-1. Cost $2.81, 88 turns. Full stage trail 00-07 written to .last-ds-mile/stages/. Graded by the harness operator (not a separately blinded grading session) applying agents/grader.md mechanically against evals.json expectations - disclosed limitation, see article methodology note."
+}

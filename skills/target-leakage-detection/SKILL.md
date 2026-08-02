@@ -27,7 +27,13 @@ usually happens, rather than a vague "watch out for leakage" reminder.
    prediction time" question from `/ds-prep` — but here go one level deeper: check the
    actual computation, not just the column name.
 2. Run the four checks in the table below against every feature that wasn't hand-
-   verified already.
+   verified already. For a full pipeline sweep (many features, or a pre-ship check
+   rather than one suspicious feature), delegate to the `leakage-auditor` agent instead
+   of running the sweep inline — it does the same four checks adversarially and keeps
+   the intermediate trace-through out of this stage's context. Its findings come
+   tagged **Confirmed** / **Likely** / **Worth checking** — remove or fix the feature
+   for Confirmed and Likely findings before proceeding; record a Worth-checking finding
+   in the stage doc as a flagged, unresolved item rather than blocking on it.
 3. If a check fires, don't quietly drop the feature — trace it to its source (a join?
    an aggregate? a leaked label?) and record what was fixed.
 

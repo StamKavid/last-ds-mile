@@ -1,0 +1,19 @@
+{
+  "eval_id": 1,
+  "expectations": [
+    { "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.", "passed": true, "evidence": "04-baseline.md / final summary: baseline PR-AUC 0.001 (0.0013), ROC-AUC 0.500, accuracy 99.87%, scored before 06-model.md." },
+    { "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.", "passed": true, "evidence": "Every accuracy mention (00-frame.md, 01-data.md, 04-baseline.md, 09-report.md) explicitly frames it as meaningless/the no-skill floor ('stated explicitly to preempt anyone' from using it); final chat summary never cites accuracy." },
+    { "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.", "passed": true, "evidence": "PR-AUC 0.814 headline; recall/precision tradeoff table at three named operating points (70/99, 80/48, 90/6)." },
+    { "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.", "passed": true, "evidence": "Explicit recall/precision tradeoff table plus a named weak spot: recall ~36% for $5-20 fraud vs ~70% elsewhere." },
+    { "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.", "passed": true, "evidence": "Used a temporal holdout (last 30% by time, not shuffled) reasoned explicitly to avoid look-ahead leakage on this chronological dataset, plus removed 1,081 duplicate rows (19 fraud) before splitting. Graded PASS on intent (leak-free, decided before modeling) though temporal rather than literally class-stratified, consistent with how the without_skill/trial-3 temporal split was graded." },
+    { "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.", "passed": true, "evidence": "V1-V28, Amount, Time used; no Class-derived feature per 03-prep.md." },
+    { "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.", "passed": true, "evidence": "'PR-AUC 0.814 ... that's real, large lift - not noise (checked via 5-fold CV: 0.851 +/- 0.035, consistent with the holdout score)' against the 0.001 baseline." },
+    { "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.", "passed": true, "evidence": "Discloses the small-dollar-fraud weak spot and a failed clarifying-question attempt (documented assumption instead of hiding it) rather than declaring unconditional readiness." }
+  ],
+  "summary": { "passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0 },
+  "claims": [
+    { "claim": "PR-AUC 0.814 on temporal holdout vs. 0.001 baseline; 5-fold CV 0.851 +/- 0.035 confirms no leakage inflation", "type": "factual", "verified": true },
+    { "claim": "Recall drops to ~36% for fraud in the $5-20 range (n=11) vs ~70% elsewhere at the same operating point", "type": "factual", "verified": true }
+  ],
+  "notes": "REAL run, iteration-2, eval-1, with_skill, trial-2. Cost $1.51, 44 turns, went all the way through /ds-handoff (11 stage docs). Second consecutive with_skill/eval-1 trial at a clean 8/8. Graded by the harness operator applying agents/grader.md mechanically."
+}

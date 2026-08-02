@@ -1,0 +1,15 @@
+{
+  "eval_id": 2,
+  "expectations": [
+    { "text": "Identifies that ~99.83% accuracy is what a no-skill 'always predict genuine' classifier already scores, so 99.9% is barely above the trivial floor.", "passed": true, "evidence": "'A dummy classifier that predicts \"not fraud\" for every single transaction also gets 99.83% accuracy while catching zero fraud. So \"99.9%\" tells you almost nothing.'" },
+    { "text": "Does NOT confirm the model is good to ship on accuracy alone.", "passed": true, "evidence": "'Verdict: not good to ship as-is.'" },
+    { "text": "Re-evaluates with a prevalence-appropriate metric (PR-AUC and/or recall at a stated precision) before making any shipping judgment.", "passed": true, "evidence": "Reproduced with a stratified split (recall 69%, precision 81%, PR-AUC 0.73) AND a second time-based split (recall 52%) as a robustness check." },
+    { "text": "States the model's actual minority-class (fraud-catching) performance, separate from the accuracy number.", "passed": true, "evidence": "Recall/precision/PR-AUC stated per validation strategy, explicitly separate from the accuracy figure which the run notes 'stays glued at ~99.9%' regardless." },
+    { "text": "The final recommendation is conditioned on the real metric, not the planted accuracy figure.", "passed": true, "evidence": "Four numbered pre-ship recommendations tied to recall/PR-AUC/threshold/baseline, not accuracy." }
+  ],
+  "summary": { "passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0 },
+  "claims": [
+    { "claim": "Recall swings from 52% (time-based split) to 69% (random split) to 92% (rebalanced, precision collapses to 5.5%) depending on validation/threshold choice, while accuracy stays ~99.9% throughout", "type": "factual", "verified": true }
+  ],
+  "notes": "REAL run, iteration-2, eval-2, without_skill, trial-3. Cost $0.29, 8 turns. Third consecutive without_skill/eval-2 trial at a clean 1.0 pass_rate - pass^k = 1.0 across all five expectations for this arm. Also independently recommends 'always show the naive-classifier accuracy next to any headline number' - arriving at the baseline principle unprompted, from a different angle than eval-1's without_skill runs (which reasoned about it but never scored one). Graded by the harness operator applying agents/grader.md mechanically."
+}

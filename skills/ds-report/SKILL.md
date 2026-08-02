@@ -21,13 +21,19 @@ stakeholder can act on: a recommendation, its evidence, and its honest limitatio
 ## Core Process
 
 1. **Gate check:** confirm `.last-ds-mile/stages/07-evaluate.md` includes slice or
-   subgroup performance, not only an aggregate number. If it doesn't, stop and send the
-   user back to `/ds-evaluate` rather than writing the report around an incomplete
-   evidence base.
-2. Lead with the decision this informs (from `/ds-frame`), not with model architecture.
-3. State the recommendation plainly, then the evidence: baseline comparison, slice
+   subgroup performance, not only an aggregate number. If it doesn't, compute the slice
+   performance yourself now, say plainly that you did, and continue — never write the
+   report around an incomplete evidence base, and never stop the task to send the user
+   back to `/ds-evaluate` separately (see `ds-method`'s discipline-gate handling).
+2. **If the ask is specifically to confirm the model is good to ship** (not just to
+   write it up), delegate a full-pipeline sanity check to the `ds-reviewer` agent
+   before concluding — it checks baseline, validation, slice performance, and metric
+   choice end to end in one pass, cheaper and more reliably than re-deriving that
+   checklist inline.
+3. Lead with the decision this informs (from `/ds-frame`), not with model architecture.
+4. State the recommendation plainly, then the evidence: baseline comparison, slice
    performance, calibration.
-4. **Translate the metric lift into `/ds-frame`'s original cost/business terms, not
+5. **Translate the metric lift into `/ds-frame`'s original cost/business terms, not
    just metric units.** `/ds-frame` required a success metric tied to a real decision
    cost (a false negative costs $Y, a 1-point AUC move is worth $Z); if that
    translation was done once at framing time and never carried forward, the report
@@ -38,16 +44,16 @@ stakeholder can act on: a recommendation, its evidence, and its honest limitatio
    "the median prediction error corresponds to roughly $X, down from $Y for the
    baseline" or "at the frozen decision threshold, this catches N more true positives
    per 1,000 cases than the baseline, at a cost of M more false alarms").
-5. **If the recommendation implies intervening on a feature** — targeting a segment
+6. **If the recommendation implies intervening on a feature** — targeting a segment
    for a changed offer, pushing customers toward an option, recommending a policy
    change — rather than just using the model's score to rank or prioritize, check it
    against `causal-vs-predictive` before it ships. A ranking/scoring recommendation
    ("use the score to prioritize outreach") only needs predictive validity, already
    established in `/ds-evaluate`; an intervention recommendation needs a causal
    argument the analysis may not have made.
-6. List assumptions and limitations explicitly — what the model does not cover, and
+7. List assumptions and limitations explicitly — what the model does not cover, and
    where it's known to underperform (from the slice table).
-7. Write to `.last-ds-mile/stages/09-report.md`: the narrative, the recommendation, the
+8. Write to `.last-ds-mile/stages/09-report.md`: the narrative, the recommendation, the
    cost/business-terms translation, and the assumptions/limitations.
 
 ## Common Rationalizations
@@ -75,7 +81,8 @@ failure mode reaching a report before being caught.
 ## Verification
 
 - [ ] Gate check passed: `.last-ds-mile/stages/07-evaluate.md` includes slice/subgroup
-      performance, confirmed before writing began.
+      performance before writing began — computed inline in this run if it wasn't
+      already there.
 - [ ] Recommendation is explicitly tied to the decision named in `/ds-frame`.
 - [ ] The metric lift is translated into `/ds-frame`'s cost/business terms at the
       actual chosen operating point, not left as a bare metric delta.

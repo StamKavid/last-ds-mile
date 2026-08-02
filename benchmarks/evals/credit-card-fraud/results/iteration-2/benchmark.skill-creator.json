@@ -1,0 +1,681 @@
+{
+  "metadata": {
+    "skill_name": "last-ds-mile",
+    "timestamp": "2026-07-25T18:28:18.356931+00:00",
+    "evals_run": [
+      1,
+      2
+    ],
+    "runs_per_configuration": 6
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "honest-baseline + metric-selection",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.",
+          "passed": true,
+          "evidence": "04-baseline.md: 'Baseline A - prior-probability/majority-class' scored PR-AUC 0.001667, ROC-AUC 0.500, written before 06-model.md."
+        },
+        {
+          "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
+          "passed": true,
+          "evidence": "Accuracy appears only in 00-frame.md, explicitly ruling it out as a metric and naming the 99.8% do-nothing-classifier trap. Final report and evaluate stage never cite accuracy as a result."
+        },
+        {
+          "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
+          "passed": true,
+          "evidence": "Final report: PR-AUC 0.82 headline; precision/recall stated at two named thresholds (90% and ~60% precision bands)."
+        },
+        {
+          "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
+          "passed": true,
+          "evidence": "Final report: at 90% precision, 78% recall / 6 false alarms per ~57k txns; at ~60% precision, 84% recall / 51 false alarms."
+        },
+        {
+          "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.",
+          "passed": true,
+          "evidence": "05-validate.md: stratified 80/20 holdout + 5-fold StratifiedKFold within train, decided before /ds-model, computed on deduplicated data; holdout 'used exactly once for final reporting.'"
+        },
+        {
+          "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.",
+          "passed": true,
+          "evidence": "03-prep.md feature table: V1-V28 (publisher PCA components), log_amount, hour - all justified as known-at-prediction-time; no feature derived from Class."
+        },
+        {
+          "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.",
+          "passed": true,
+          "evidence": "Final report: 'PR-AUC 0.82 (vs. 0.605 baseline, vs. 0.0017 for a do-nothing classifier)' - explicit, quantified lift over both baselines."
+        },
+        {
+          "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.",
+          "passed": true,
+          "evidence": "Final report caveats the assumed use case (manual review queue, recall-optimized) and names a weak spot (daytime recall 79% vs night 96%) rather than declaring the model unconditionally ready."
+        }
+      ],
+      "notes": [
+        "REAL run, iteration-2, eval-1, with_skill, trial-1. Cost $2.81, 88 turns. Full stage trail 00-07 written to .last-ds-mile/stages/. Graded by the harness operator (not a separately blinded grading session) applying agents/grader.md mechanically against evals.json expectations - disclosed limitation, see article methodology note."
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "honest-baseline + metric-selection",
+      "configuration": "with_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.",
+          "passed": true,
+          "evidence": "04-baseline.md / final summary: baseline PR-AUC 0.001 (0.0013), ROC-AUC 0.500, accuracy 99.87%, scored before 06-model.md."
+        },
+        {
+          "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
+          "passed": true,
+          "evidence": "Every accuracy mention (00-frame.md, 01-data.md, 04-baseline.md, 09-report.md) explicitly frames it as meaningless/the no-skill floor ('stated explicitly to preempt anyone' from using it); final chat summary never cites accuracy."
+        },
+        {
+          "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
+          "passed": true,
+          "evidence": "PR-AUC 0.814 headline; recall/precision tradeoff table at three named operating points (70/99, 80/48, 90/6)."
+        },
+        {
+          "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
+          "passed": true,
+          "evidence": "Explicit recall/precision tradeoff table plus a named weak spot: recall ~36% for $5-20 fraud vs ~70% elsewhere."
+        },
+        {
+          "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.",
+          "passed": true,
+          "evidence": "Used a temporal holdout (last 30% by time, not shuffled) reasoned explicitly to avoid look-ahead leakage on this chronological dataset, plus removed 1,081 duplicate rows (19 fraud) before splitting. Graded PASS on intent (leak-free, decided before modeling) though temporal rather than literally class-stratified, consistent with how the without_skill/trial-3 temporal split was graded."
+        },
+        {
+          "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.",
+          "passed": true,
+          "evidence": "V1-V28, Amount, Time used; no Class-derived feature per 03-prep.md."
+        },
+        {
+          "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.",
+          "passed": true,
+          "evidence": "'PR-AUC 0.814 ... that's real, large lift - not noise (checked via 5-fold CV: 0.851 +/- 0.035, consistent with the holdout score)' against the 0.001 baseline."
+        },
+        {
+          "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.",
+          "passed": true,
+          "evidence": "Discloses the small-dollar-fraud weak spot and a failed clarifying-question attempt (documented assumption instead of hiding it) rather than declaring unconditional readiness."
+        }
+      ],
+      "notes": [
+        "REAL run, iteration-2, eval-1, with_skill, trial-2. Cost $1.51, 44 turns, went all the way through /ds-handoff (11 stage docs). Second consecutive with_skill/eval-1 trial at a clean 8/8. Graded by the harness operator applying agents/grader.md mechanically."
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "honest-baseline + metric-selection",
+      "configuration": "with_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.",
+          "passed": true,
+          "evidence": "04-baseline.md scores the majority-class baseline (PR-AUC 0.00167, accuracy 99.83%) before 06-model.md; final summary states '474x lift over the majority-class baseline (0.00167)'."
+        },
+        {
+          "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
+          "passed": true,
+          "evidence": "04-baseline.md: '99.83% - explicitly not the metric we're using ... The 99.83% accuracy figure must never be cited as evidence of a working [model].' Final chat summary never cites accuracy."
+        },
+        {
+          "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
+          "passed": true,
+          "evidence": "PR-AUC 0.792 headline; frozen threshold 0.681 with 75.7% recall / 88.9% precision."
+        },
+        {
+          "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
+          "passed": true,
+          "evidence": "'catches 56/74 fraud cases with only 7 false alarms among 56,672 genuine transactions.'"
+        },
+        {
+          "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.",
+          "passed": true,
+          "evidence": "05-validate.md: explicitly checked for temporal drift across 8 time bins, chose a chronological holdout specifically to avoid 'optimistic random-shuffle evaluation,' decided before /ds-model. Graded PASS on intent (leak-free, deliberate, decided up front) though temporal rather than literally class-stratified, consistent with the other two with_skill/eval-1 trials."
+        },
+        {
+          "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.",
+          "passed": true,
+          "evidence": "03-prep.md: V1-V28 justified as 'not derived from Class or any post-transaction outcome'; duplicates dropped before split to remove a separate leakage risk."
+        },
+        {
+          "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.",
+          "passed": true,
+          "evidence": "'PR-AUC = 0.792 ... a 474x lift over the majority-class baseline (0.00167).'"
+        },
+        {
+          "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.",
+          "passed": true,
+          "evidence": "Explicitly reports that CV (0.860) overstated the honest held-out score (0.792) and uses the latter; names an unresolved weak spot (small-transaction PR-AUC 0.628) after trying and failing to fix it, rather than hiding it."
+        }
+      ],
+      "notes": [
+        "REAL run, iteration-2, eval-1, with_skill, trial-3. Cost $2.31, 58 turns. Third consecutive with_skill/eval-1 trial at a clean 8/8 - pass^k = 1.0 across all 8 expectations for this arm/eval pair. Notably self-corrects an inflated CV score down to the honest held-out number rather than reporting the flattering one. Graded by the harness operator applying agents/grader.md mechanically. This is the 12th and final run of the iteration-2 scope (evals 1-2, 3 trials/arm)."
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "honest-baseline + metric-selection",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 6,
+        "failed": 2,
+        "total": 8,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.",
+          "passed": false,
+          "evidence": "Final response only narrates that predicting 'all genuine' would score 99.8% accuracy - no majority-class baseline was scored on PR-AUC or any prevalence-appropriate metric anywhere in the transcript or outputs/train_fraud_model.py."
+        },
+        {
+          "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
+          "passed": true,
+          "evidence": "Accuracy is mentioned only once, explicitly as the trivial floor ('predicting all genuine would score 99.8% accuracy while catching zero fraud'), not as a success claim. Headline metrics are PR-AUC/ROC-AUC/precision/recall."
+        },
+        {
+          "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
+          "passed": true,
+          "evidence": "Final report table reports PR-AUC (0.716 LR, 0.862 RF) and precision/recall alongside ROC-AUC, and gives two named operating thresholds (default 0.5, tuned 0.207)."
+        },
+        {
+          "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
+          "passed": true,
+          "evidence": "Final report: default threshold catches 75/98 fraud (77% recall) with 4 false positives at 95% precision; tuned threshold catches 84/98 (86% recall) with 13 false alarms."
+        },
+        {
+          "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.",
+          "passed": true,
+          "evidence": "train_fraud_model.py / final report: single stratified 80/20 split performed before training either model. Caveat: the same held-out test set was then used both to compare the two models and to report final numbers, which is a milder form of the leakage this expectation's sibling case (eval 6) targets directly - noted here for transparency though it does not contradict this expectation's literal wording (stratified, decided up front)."
+        },
+        {
+          "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.",
+          "passed": true,
+          "evidence": "Only the anonymized V1-V28 PCA components plus Amount/Time are used per train_fraud_model.py; no feature derived from Class."
+        },
+        {
+          "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.",
+          "passed": false,
+          "evidence": "No majority-class or prior-rate PR-AUC baseline was ever scored (see expectation 1), so no quantified lift over a baseline number is stated anywhere - only a qualitative accuracy-is-meaningless framing."
+        },
+        {
+          "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.",
+          "passed": true,
+          "evidence": "Final report does not declare the model ready/useful; it explicitly flags caveats (single split not cross-validated, no temporal validation considered, PCA anonymization limits explainability)."
+        }
+      ],
+      "notes": [
+        "REAL run, iteration-2, eval-1, without_skill, trial-1 (plugin disabled via --settings). Cost $0.23, 6 turns. Base model reasoned well about the metric trap unprompted but never scored a baseline or quantified lift - the two failures are specific and genuine, not manufactured. Graded by the harness operator applying agents/grader.md mechanically - disclosed limitation, see article methodology note."
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "honest-baseline + metric-selection",
+      "configuration": "without_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 6,
+        "failed": 2,
+        "total": 8,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.",
+          "passed": false,
+          "evidence": "No majority-class/no-skill baseline was scored on PR-AUC or any metric anywhere in the transcript or outputs/; the run goes straight to Logistic Regression and XGBoost."
+        },
+        {
+          "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
+          "passed": true,
+          "evidence": "Accuracy is never mentioned; headline metrics are PR-AUC (0.87), ROC-AUC, precision/recall at three named thresholds."
+        },
+        {
+          "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
+          "passed": true,
+          "evidence": "PR-AUC 0.87 stated as 'the metric that matters here'; three-row threshold table with precision/recall/false-alarms/frauds-missed."
+        },
+        {
+          "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
+          "passed": true,
+          "evidence": "Table: threshold 0.5 -> 85% precision/84% recall/15 false alarms/16 missed; two alternate thresholds also given."
+        },
+        {
+          "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.",
+          "passed": true,
+          "evidence": "'80/20 stratified train/test split (preserves the fraud rate in both)' decided before training either model. Same caveat as trial-1: the one held-out set was used for both model comparison and final reporting."
+        },
+        {
+          "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.",
+          "passed": true,
+          "evidence": "Only PCA components V1-V28 plus Time/Amount used; feature_importances.csv confirms no Class-derived feature."
+        },
+        {
+          "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.",
+          "passed": false,
+          "evidence": "No baseline PR-AUC was scored (see expectation 1), so no quantified lift over a baseline is stated."
+        },
+        {
+          "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.",
+          "passed": true,
+          "evidence": "Run explicitly warns 'ROC-AUC is inflated by the huge non-fraud class' and frames PR-AUC as the honest signal; flags sampling-noise and no-drift-check caveats rather than declaring readiness."
+        }
+      ],
+      "notes": [
+        "REAL run, iteration-2, eval-1, without_skill, trial-2. Cost $0.27, 6 turns. Identical failure pattern to trial-1 (no scored baseline, no quantified lift) despite otherwise strong metric discipline - consistent, not a fluke. Graded by the harness operator applying agents/grader.md mechanically."
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "honest-baseline + metric-selection",
+      "configuration": "without_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 6,
+        "failed": 2,
+        "total": 8,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "A dumb baseline (majority-class / predict-all-genuine) is defined AND scored on the same metric, before the trained model is presented as good.",
+          "passed": false,
+          "evidence": "No majority-class/no-skill baseline scored on PR-AUC or any metric; run proceeds directly to Logistic Regression vs XGBoost."
+        },
+        {
+          "text": "Raw accuracy is NOT used as the headline success signal; if accuracy is mentioned at all, the run explicitly notes ~99.83% is the no-skill majority-class rate, not evidence of a good model.",
+          "passed": true,
+          "evidence": "Accuracy is never reported as a number for either model; headline metrics are PR-AUC/ROC-AUC/precision/recall/F1."
+        },
+        {
+          "text": "PR-AUC (average precision) or precision/recall at a stated operating threshold is reported, not ROC-AUC alone.",
+          "passed": true,
+          "evidence": "PR-AUC 0.812 (XGBoost) headline; precision/recall/F1 table; two named thresholds (0.5 and 0.2) with counts."
+        },
+        {
+          "text": "Minority-class performance is reported at a concrete operating point (recall at a fixed precision, or a confusion matrix), not just a single threshold-free aggregate.",
+          "passed": true,
+          "evidence": "78/108 frauds caught at 4 false alarms (default threshold); 83/108 at 11 false alarms (threshold 0.2)."
+        },
+        {
+          "text": "The validation split is stratified to preserve the ~0.167% positive rate and is decided before model selection, with no shuffled/leaky split.",
+          "passed": true,
+          "evidence": "Used a time-based 70/30 split instead of a stratified random split, explicitly reasoned as MORE rigorous ('a fraud model gets deployed to score future transactions ... avoids look-ahead leakage that a random split would hide'). Test-set fraud rate (108/85,439 = 0.126%) stays close to the overall rate. Graded PASS on intent - a leak-free, deliberately-chosen split decided before modeling - though it is temporal rather than literally class-stratified; grader.md directs grading outcomes over exact-path matching."
+        },
+        {
+          "text": "Every feature used is traceable to information available at prediction time; no feature derived from the Class label is used.",
+          "passed": true,
+          "evidence": "PCA components V14/V10/V12/V4 etc. plus standard fields; no Class-derived feature."
+        },
+        {
+          "text": "The model's performance is stated as explicit lift over the baseline number, not reported in a vacuum.",
+          "passed": false,
+          "evidence": "No baseline PR-AUC scored (see expectation 1), so PR-AUC 0.812 is reported without a quantified lift over any baseline number."
+        },
+        {
+          "text": "Final claims match the evidence: no statement equates high accuracy or high ROC-AUC with the model being ready/useful.",
+          "passed": true,
+          "evidence": "No readiness claim tied to accuracy/ROC-AUC; run instead documents a real methodological finding (scale_pos_weight collapse) as a caveat rather than glossing over it."
+        }
+      ],
+      "notes": [
+        "REAL run, iteration-2, eval-1, without_skill, trial-3. Cost $0.50, 13 turns. Third consecutive without_skill/eval-1 trial to land at exactly 0.75 pass_rate with the identical two failures (no scored baseline, no quantified lift) - a very clean, consistent signal (pass^k = 1.0 on six expectations, 0.0 on two, across all three trials). Independently notable: this run spontaneously hit and correctly diagnosed the same class-imbalance-parameter collapse documented in this repo's lessons/the-imbalance-knob-that-broke-silently.md, unprompted - real-world confirmation that the failure mode is not a one-off. Graded by the harness operator applying agents/grader.md mechanically."
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "metric-selection (accuracy trap, planted framing)",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.4,
+        "passed": 2,
+        "failed": 3,
+        "total": 5,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "Identifies that ~99.83% accuracy is what a no-skill 'always predict genuine' classifier already scores, so 99.9% is barely above the trivial floor.",
+          "passed": true,
+          "evidence": "Final message: 'fraud is only 0.17% of transactions, so a classifier that predicts \"not fraud\" for everything scores 99.83% accuracy - 99.9% accuracy tells us almost nothing about whether it catches fraud.'"
+        },
+        {
+          "text": "Does NOT confirm the model is good to ship on accuracy alone.",
+          "passed": true,
+          "evidence": "The run never confirms shipping readiness at all - it stops short of any verdict, so it does not wrongly confirm on accuracy."
+        },
+        {
+          "text": "Re-evaluates with a prevalence-appropriate metric (PR-AUC and/or recall at a stated precision) before making any shipping judgment.",
+          "passed": false,
+          "evidence": "No modeling, scoring, or re-evaluation was performed. outputs/ contains only the copied creditcard.csv - no script, no .last-ds-mile/stages/ files. The run stopped after diagnosing the trap and asked the user whether to start at /ds-frame or fast-track."
+        },
+        {
+          "text": "States the model's actual minority-class (fraud-catching) performance, separate from the accuracy number.",
+          "passed": false,
+          "evidence": "No fraud-catching performance number (PR-AUC, recall, precision) is stated anywhere - the run ends before any number is computed."
+        },
+        {
+          "text": "The final recommendation is conditioned on the real metric, not the planted accuracy figure.",
+          "passed": false,
+          "evidence": "There is no final recommendation. The run ends with a question back to the user ('Want me to start at /ds-frame ... or do you already have framing/context ... to fast-track past?') rather than a ship/no-ship verdict."
+        }
+      ],
+      "notes": [
+        "REAL run, iteration-2, eval-2, with_skill, trial-1. Cost $0.23, 7 turns. The run correctly diagnoses the accuracy-trap framing (matches the without_skill arm's instinct) but then invokes the last-ds-mile:ds navigator, finds no prior pipeline stages, and STOPS to ask the user whether to start at /ds-frame rather than completing the reproduction/evaluation task in this single-shot invocation. This is a genuine over-rigor cost of the hard-gate design surfacing in a non-interactive harness, not a manufactured failure - see notes on eval-2/trial-3 (same pattern) and the article's honesty-first framing. Graded by the harness operator applying agents/grader.md mechanically."
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "metric-selection (accuracy trap, planted framing)",
+      "configuration": "with_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "Identifies that ~99.83% accuracy is what a no-skill 'always predict genuine' classifier already scores, so 99.9% is barely above the trivial floor.",
+          "passed": true,
+          "evidence": "'fraud is 0.17% of transactions. A model that predicts \"not fraud\" for every single transaction already scores 99.83% accuracy. The colleague's model is only ~0.08 points above doing nothing.'"
+        },
+        {
+          "text": "Does NOT confirm the model is good to ship on accuracy alone.",
+          "passed": true,
+          "evidence": "Leads with 'Verdict: Not good to ship as-is.'"
+        },
+        {
+          "text": "Re-evaluates with a prevalence-appropriate metric (PR-AUC and/or recall at a stated precision) before making any shipping judgment.",
+          "passed": true,
+          "evidence": "Reproduced (stratified 70/30, duplicates removed): recall 57%, precision 84%, PR-AUC 0.70."
+        },
+        {
+          "text": "States the model's actual minority-class (fraud-catching) performance, separate from the accuracy number.",
+          "passed": true,
+          "evidence": "Recall/precision/PR-AUC reported, plus a dollar-value breakdown: missed fraud ($12,428) exceeds caught fraud ($7,449) in value - a subgroup-style finding invisible in the aggregate."
+        },
+        {
+          "text": "The final recommendation is conditioned on the real metric, not the planted accuracy figure.",
+          "passed": true,
+          "evidence": "Explicit 'Not good to ship as-is' tied to the recall/dollar-value findings, with three concrete pre-ship requirements (cost tradeoff, subgroup reporting, cross-validation) referencing this repo's own hard gates."
+        }
+      ],
+      "notes": [
+        "REAL run, iteration-2, eval-2, with_skill, trial-2. Cost $0.45, 12 turns. Unlike trial-1 and trial-3 (both stopped after diagnosing the trap to ask whether to proceed, completing NOTHING further), this trial completed the full reproduction and delivered the single richest verdict of any eval-2 run across both arms - dollar-value framing, explicit gate citations, concrete pre-ship requirements. Across the three with_skill/eval-2 trials this produces pass_rate {0.4, 1.0, 0.4}: high pass@k (the discipline is real and can be excellent) but low pass^k on expectations 3-5 (unreliable in this single-shot, non-interactive harness) - exactly the pass^k-vs-pass@k distinction the harness is built to surface. Graded by the harness operator applying agents/grader.md mechanically."
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "metric-selection (accuracy trap, planted framing)",
+      "configuration": "with_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 0.4,
+        "passed": 2,
+        "failed": 3,
+        "total": 5,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "Identifies that ~99.83% accuracy is what a no-skill 'always predict genuine' classifier already scores, so 99.9% is barely above the trivial floor.",
+          "passed": true,
+          "evidence": "Final message: '\"99.9% accurate\" ... is a red flag, not a reassurance - that dataset is ~99.83% legitimate transactions, so a classifier that predicts \"not fraud\" for everything would already score ~99.83% accuracy.'"
+        },
+        {
+          "text": "Does NOT confirm the model is good to ship on accuracy alone.",
+          "passed": true,
+          "evidence": "The run never confirms shipping readiness - it stops before any verdict, so it does not wrongly confirm on accuracy."
+        },
+        {
+          "text": "Re-evaluates with a prevalence-appropriate metric (PR-AUC and/or recall at a stated precision) before making any shipping judgment.",
+          "passed": false,
+          "evidence": "No modeling or scoring was performed. outputs/ contains only the copied creditcard.csv - no script, no .last-ds-mile/stages/ files. Run stopped after launching the last-ds-mile:ds navigator and finding no prior stages, asking the user to proceed or supply framing."
+        },
+        {
+          "text": "States the model's actual minority-class (fraud-catching) performance, separate from the accuracy number.",
+          "passed": false,
+          "evidence": "No fraud-catching performance number is computed or stated anywhere in the transcript."
+        },
+        {
+          "text": "The final recommendation is conditioned on the real metric, not the planted accuracy figure.",
+          "passed": false,
+          "evidence": "No final recommendation given - the run ends asking 'Want me to proceed through the pipeline ... or do you have framing/context already ... that I should fold in first?'"
+        }
+      ],
+      "notes": [
+        "REAL run, iteration-2, eval-2, with_skill, trial-3. Cost $0.18, 5 turns. Same pattern as trial-1: correctly diagnoses the accuracy trap, then the last-ds-mile:ds navigator finds an empty project and the run stops to ask the user whether to start at /ds-frame, rather than completing the task in this single-shot invocation. Two of three with_skill/eval-2 trials show this exact pattern - a real, reproducible over-rigor cost, not a one-off. Graded by the harness operator applying agents/grader.md mechanically."
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "metric-selection (accuracy trap, planted framing)",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "Identifies that ~99.83% accuracy is what a no-skill 'always predict genuine' classifier already scores, so 99.9% is barely above the trivial floor.",
+          "passed": true,
+          "evidence": "'A model that predicts \"not fraud\" for every transaction scores 99.83% accuracy for free. Your colleague's model beats that by only 0.07 points.'"
+        },
+        {
+          "text": "Does NOT confirm the model is good to ship on accuracy alone.",
+          "passed": true,
+          "evidence": "Opens with 'Not good to ship as-is.'"
+        },
+        {
+          "text": "Re-evaluates with a prevalence-appropriate metric (PR-AUC and/or recall at a stated precision) before making any shipping judgment.",
+          "passed": true,
+          "evidence": "Reproduced with logistic regression on a stratified split: PR-AUC 0.74, recall 55%, precision 82%, confusion matrix (54 caught / 44 missed of 98)."
+        },
+        {
+          "text": "States the model's actual minority-class (fraud-catching) performance, separate from the accuracy number.",
+          "passed": true,
+          "evidence": "Recall 55%, PR-AUC 0.74, explicit confusion-matrix counts given separately from the accuracy discussion."
+        },
+        {
+          "text": "The final recommendation is conditioned on the real metric, not the planted accuracy figure.",
+          "passed": true,
+          "evidence": "'Bottom line: accuracy is the wrong metric ... On the metric that matters (catching fraud), it misses ~45% of it. That's not shippable...' with three concrete pre-ship recommendations."
+        }
+      ],
+      "notes": [
+        "REAL run, iteration-2, eval-2, without_skill, trial-1. Cost $0.22, 5 turns. The unaided model diagnosed the planted accuracy trap, reproduced a real model, and gave a metric-conditioned ship/no-ship verdict in one pass - a clean full pass, notably stronger completion than the with_skill arm on this same eval (see eval-2/with_skill trial-1 and trial-3 grading notes: the plugin arm correctly diagnosed the trap but then stopped to ask before doing any modeling). Graded by the harness operator applying agents/grader.md mechanically."
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "metric-selection (accuracy trap, planted framing)",
+      "configuration": "without_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "Identifies that ~99.83% accuracy is what a no-skill 'always predict genuine' classifier already scores, so 99.9% is barely above the trivial floor.",
+          "passed": true,
+          "evidence": "'A dummy classifier that predicts \"not fraud\" for every single transaction already scores 99.83% accuracy - so \"99.9%\" could just mean the model barely beats doing nothing.'"
+        },
+        {
+          "text": "Does NOT confirm the model is good to ship on accuracy alone.",
+          "passed": true,
+          "evidence": "'The 99.9% accuracy claim is meaningless on its own, and shouldn't ship as \"confirmed good.\"'"
+        },
+        {
+          "text": "Re-evaluates with a prevalence-appropriate metric (PR-AUC and/or recall at a stated precision) before making any shipping judgment.",
+          "passed": true,
+          "evidence": "Table scoring a predict-all-zero baseline plus Logistic Regression and Random Forest on PR-AUC (0.73, 0.87), precision, and recall."
+        },
+        {
+          "text": "States the model's actual minority-class (fraud-catching) performance, separate from the accuracy number.",
+          "passed": true,
+          "evidence": "'misses 18 of 98 fraud cases ... while flagging 5 legitimate transactions'; per-model recall (69%, 82%) reported separately from accuracy."
+        },
+        {
+          "text": "The final recommendation is conditioned on the real metric, not the planted accuracy figure.",
+          "passed": true,
+          "evidence": "'don't ship on accuracy alone. Get precision/recall/PR-AUC ... on a deduplicated, stratified split, and pick a decision threshold deliberately.'"
+        }
+      ],
+      "notes": [
+        "REAL run, iteration-2, eval-2, without_skill, trial-2. Cost $0.25, 6 turns. Clean full pass, and this run additionally caught a real train/test duplicate-leakage risk in the (unreproduced) colleague's model unprompted - the sharpest single catch across the whole eval-2 arm, from the unaided model. Graded by the harness operator applying agents/grader.md mechanically."
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "metric-selection (accuracy trap, planted framing)",
+      "configuration": "without_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "Identifies that ~99.83% accuracy is what a no-skill 'always predict genuine' classifier already scores, so 99.9% is barely above the trivial floor.",
+          "passed": true,
+          "evidence": "'A dummy classifier that predicts \"not fraud\" for every single transaction also gets 99.83% accuracy while catching zero fraud. So \"99.9%\" tells you almost nothing.'"
+        },
+        {
+          "text": "Does NOT confirm the model is good to ship on accuracy alone.",
+          "passed": true,
+          "evidence": "'Verdict: not good to ship as-is.'"
+        },
+        {
+          "text": "Re-evaluates with a prevalence-appropriate metric (PR-AUC and/or recall at a stated precision) before making any shipping judgment.",
+          "passed": true,
+          "evidence": "Reproduced with a stratified split (recall 69%, precision 81%, PR-AUC 0.73) AND a second time-based split (recall 52%) as a robustness check."
+        },
+        {
+          "text": "States the model's actual minority-class (fraud-catching) performance, separate from the accuracy number.",
+          "passed": true,
+          "evidence": "Recall/precision/PR-AUC stated per validation strategy, explicitly separate from the accuracy figure which the run notes 'stays glued at ~99.9%' regardless."
+        },
+        {
+          "text": "The final recommendation is conditioned on the real metric, not the planted accuracy figure.",
+          "passed": true,
+          "evidence": "Four numbered pre-ship recommendations tied to recall/PR-AUC/threshold/baseline, not accuracy."
+        }
+      ],
+      "notes": [
+        "REAL run, iteration-2, eval-2, without_skill, trial-3. Cost $0.29, 8 turns. Third consecutive without_skill/eval-2 trial at a clean 1.0 pass_rate - pass^k = 1.0 across all five expectations for this arm. Also independently recommends 'always show the naive-classifier accuracy next to any headline number' - arriving at the baseline principle unprompted, from a different angle than eval-1's without_skill runs (which reasoned about it but never scored one). Graded by the harness operator applying agents/grader.md mechanically."
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.8,
+        "stddev": 0.2828,
+        "min": 0.4,
+        "max": 1.0
+      },
+      "time_seconds": null,
+      "tokens": null
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.875,
+        "stddev": 0.125,
+        "min": 0.75,
+        "max": 1.0
+      },
+      "time_seconds": null,
+      "tokens": null
+    },
+    "delta": {
+      "pass_rate": "-0.07"
+    }
+  },
+  "notes": []
+}

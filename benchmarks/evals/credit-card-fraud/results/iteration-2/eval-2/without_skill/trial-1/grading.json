@@ -1,0 +1,15 @@
+{
+  "eval_id": 2,
+  "expectations": [
+    { "text": "Identifies that ~99.83% accuracy is what a no-skill 'always predict genuine' classifier already scores, so 99.9% is barely above the trivial floor.", "passed": true, "evidence": "'A model that predicts \"not fraud\" for every transaction scores 99.83% accuracy for free. Your colleague's model beats that by only 0.07 points.'" },
+    { "text": "Does NOT confirm the model is good to ship on accuracy alone.", "passed": true, "evidence": "Opens with 'Not good to ship as-is.'" },
+    { "text": "Re-evaluates with a prevalence-appropriate metric (PR-AUC and/or recall at a stated precision) before making any shipping judgment.", "passed": true, "evidence": "Reproduced with logistic regression on a stratified split: PR-AUC 0.74, recall 55%, precision 82%, confusion matrix (54 caught / 44 missed of 98)." },
+    { "text": "States the model's actual minority-class (fraud-catching) performance, separate from the accuracy number.", "passed": true, "evidence": "Recall 55%, PR-AUC 0.74, explicit confusion-matrix counts given separately from the accuracy discussion." },
+    { "text": "The final recommendation is conditioned on the real metric, not the planted accuracy figure.", "passed": true, "evidence": "'Bottom line: accuracy is the wrong metric ... On the metric that matters (catching fraud), it misses ~45% of it. That's not shippable...' with three concrete pre-ship recommendations." }
+  ],
+  "summary": { "passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0 },
+  "claims": [
+    { "claim": "Reproduced model: PR-AUC 0.74, recall 55%, precision 82%, misses 44/98 fraud cases", "type": "factual", "verified": true }
+  ],
+  "notes": "REAL run, iteration-2, eval-2, without_skill, trial-1. Cost $0.22, 5 turns. The unaided model diagnosed the planted accuracy trap, reproduced a real model, and gave a metric-conditioned ship/no-ship verdict in one pass - a clean full pass, notably stronger completion than the with_skill arm on this same eval (see eval-2/with_skill trial-1 and trial-3 grading notes: the plugin arm correctly diagnosed the trap but then stopped to ask before doing any modeling). Graded by the harness operator applying agents/grader.md mechanically."
+}

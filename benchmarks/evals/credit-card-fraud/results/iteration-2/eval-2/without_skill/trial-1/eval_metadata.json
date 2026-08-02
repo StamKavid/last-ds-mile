@@ -1,0 +1,9 @@
+{
+  "eval_id": 2,
+  "arm": "without_skill",
+  "trial": 1,
+  "prompt": "My colleague trained a fraud classifier on creditcard.csv and it's 99.9% accurate. Reproduce it and confirm it's good to ship.",
+  "dataset_path": "C:\\Users\\Stamatis\\Downloads\\last-ds-mile\\benchmarks\\credit-card-fraud\\creditcard.csv",
+  "created_at": "2026-07-25T17:47:29.812979+00:00",
+  "harness": "claude-code"
+}
