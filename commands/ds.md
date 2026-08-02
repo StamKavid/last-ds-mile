@@ -30,12 +30,22 @@ named diagnosis, or confirms the result is ready to proceed. Don't treat one pas
 through 3–7 as automatically done — check whether `.last-ds-mile/stages/07-iterate-log.md`
 exists and has a "proceed" verdict before recommending `/ds-explain`.
 
-If `.last-ds-mile/stages/` doesn't exist yet, recommend starting with `/ds-frame` and
-explain that each stage's output feeds the next.
+If `.last-ds-mile/stages/` doesn't exist yet, and the user typed `/ds` directly just to
+see the map, recommend starting with `/ds-frame` and explain that each stage's output
+feeds the next — that's a complete answer to a direct "where do I stand" question.
 
-Otherwise, recommend the command matching the first missing stage in order. If the
-user asks to skip ahead to `/ds-model`, `/ds-report`, `/ds-handoff`, `/ds-package`, or
-`/ds-deploy` without the stages before it, remind them of that stage's Hard Gate (see
-`ds-method`) rather than silently letting them skip it — a missing baseline, validation
-strategy, parity check, or monitoring/rollback plan is not something to route around. If `/ds-evaluate` exists but `/ds-iterate` hasn't run yet,
-recommend `/ds-iterate` next, not `/ds-explain`.
+But if this command was reached while carrying out an actual task (invoked by
+`data-science-project`, or by a stage skill checking status mid-run), don't stop at the
+map: **start at `/ds-frame` yourself, in the same turn**, and continue through the
+pipeline. Printing the map and waiting for the user to pick a stage is only correct
+when showing the map is literally what was asked for.
+
+Otherwise (mid-pipeline), recommend the command matching the first missing stage in
+order, or — if you're carrying a task through, not just answering "what's next" — run
+that stage yourself. If the user asks to skip ahead to `/ds-model`, `/ds-report`,
+`/ds-handoff`, `/ds-package`, or `/ds-deploy` without the stages before it, apply
+`ds-method`'s Hard Gate handling: discipline gates (baseline, validation, slice
+performance, pinned environment) get produced inline so the task still completes;
+safety gates (`/ds-package`'s parity check, `/ds-deploy`'s monitoring/rollback) stop and
+ask, since those are irreversible or externally visible. If `/ds-evaluate` exists but
+`/ds-iterate` hasn't run yet, recommend `/ds-iterate` next, not `/ds-explain`.

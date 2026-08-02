@@ -1,6 +1,6 @@
 ---
 name: ds-iterate
-description: Reads /ds-evaluate's error analysis and slice table, categorizes what's actually wrong (bias, variance, a specific slice, a leakage suspicion, or a data problem), and routes back to the exact prior stage that fixes it — closing the loop the pipeline would otherwise run once and stop. Use after /ds-evaluate whenever the result isn't good enough to ship, or when deciding whether to iterate again versus proceed to /ds-explain.
+description: Reads /ds-evaluate's error analysis and slice table, categorizes what's wrong (bias, variance, a slice weakness, a leakage suspicion, a data problem), and routes back to the exact prior stage that fixes it — closing the loop the pipeline would otherwise run once and stop. Use after /ds-evaluate whenever the result isn't good enough to ship, or when deciding whether to iterate again vs. proceed to /ds-explain.
 ---
 
 # ds-iterate — Diagnose and Route Back
@@ -8,11 +8,10 @@ description: Reads /ds-evaluate's error analysis and slice table, categorizes wh
 ## Overview
 
 `/ds-frame` through `/ds-handoff` reads like a straight line, but real modeling work is
-a loop: evaluate, find what's wrong, fix the specific thing, re-evaluate. Without an
-explicit stage for that loop, an agent following this pipeline literally will run one
-pass end-to-end and call it done, even when `/ds-evaluate`'s own error analysis is
-pointing at a fixable weakness. This stage is the diagnosis-and-routing step that turns
-one pass into a real iteration.
+a loop: evaluate, find what's wrong, fix the specific thing, re-evaluate. This stage is
+the diagnosis-and-routing step that turns one pass into a real iteration, instead of
+running the pipeline once and calling it done despite a fixable weakness in
+`/ds-evaluate`'s own error analysis.
 
 ## When to Use
 
@@ -60,9 +59,9 @@ one pass into a real iteration.
 
 | Rationalization | Reality |
 |---|---|
-| "The aggregate number is good enough, I don't need to look at the slice table again" | That's exactly what `/ds-evaluate` produced the slice table to prevent skipping — if a slice weakness is sitting there documented, ignoring it here just delays the same finding to `/ds-report`, where it's more expensive to fix. |
-| "I'll just retrain with a different seed and see if the number improves" | That's not iteration, it's hoping for favorable noise — see `uncertainty-quantification`. A real iteration changes a feature, a model class, or the data based on a specific diagnosis. |
-| "We've already looped twice, let's just ship what we have" | Fine, but say that explicitly as a stated limitation in `/ds-report` — don't quietly stop iterating and report the last number as if it were final and clean. |
+| "The aggregate number is good enough, I don't need to look at the slice table again" | Ignoring a documented slice weakness here just delays the same finding to `/ds-report`, where it's more expensive to fix. |
+| "I'll just retrain with a different seed and see if the number improves" | That's noise-chasing, not iteration — see `uncertainty-quantification`. A real iteration changes a feature, model class, or the data based on a specific diagnosis. |
+| "We've already looped twice, let's just ship what we have" | Fine, but state that explicitly as a limitation in `/ds-report` — don't report the last number as if it were final and clean. |
 
 See `ds-method` for the shared Rationalizations that apply to every stage.
 

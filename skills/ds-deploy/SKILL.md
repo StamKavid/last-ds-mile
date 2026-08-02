@@ -1,6 +1,6 @@
 ---
 name: ds-deploy
-description: Stands a packaged model up as a callable endpoint with the operational honesty layer — input/prediction logging against the live baseline, drift detection, and a rollback pointer. Hard gate — requires the /ds-package artifacts and refuses full-traffic deploy unless monitoring, drift, and rollback all exist. Local-container-first; any push to a remote or cloud target stops and asks. Use when a parity-verified package is ready to serve.
+description: Stands a packaged model up as a callable endpoint with the operational honesty layer — prediction logging against the live baseline, drift detection, a rollback pointer. Hard gate — requires /ds-package's artifacts and refuses full-traffic deploy unless monitoring, drift, and rollback all exist. Local-container-first; any remote/cloud push stops and asks. Use when a parity-verified package is ready to serve.
 ---
 
 # ds-deploy — Make It Callable, Safely

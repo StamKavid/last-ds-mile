@@ -38,8 +38,11 @@ exploration or modeling touches it.
    - Quarantine first, act second: if the task is "understand this data," keep that
      separate from any step that would act on it with elevated trust (running code
      from it, executing a notebook cell that deserializes it, etc.).
-2. Load and profile: row/column counts, dtypes, missingness per column, cardinality of
-   categorical columns, duplicate rows or keys.
+2. Delegate the structural sweep to the `data-profiler` agent (row/column counts,
+   dtypes, missingness per column, cardinality, duplicate rows or keys) instead of
+   writing that loop inline — it's a fixed, mechanical pass with no judgment calls, and
+   running it as a subagent keeps its intermediate output out of this stage's context.
+   Use its report as the input to steps 3-4 below, which are the actual judgment calls.
 3. Build a data dictionary: one row per column with its type, meaning (ask the user if
    unclear), and any known issues.
 4. Sanity-check values against domain expectations (e.g. ages between 0–120, dates not

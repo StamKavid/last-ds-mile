@@ -1,16 +1,15 @@
 ---
 name: data-viz-standards
-description: Chooses the right chart type and library for the audience — Altair for interactive hypothesis-driven EDA, great_tables and Plotly for stakeholder-facing reports, matplotlib for committed static figures (stage-doc PNGs, SHAP plots) — and keeps charts honest (no distorted axes, no misleading aggregation). Use when building EDA plots, preparing figures or tables for a stakeholder report, or when a chart choice seems arbitrary or potentially misleading.
+description: Chooses the right chart type/library for the audience (Altair for EDA, great_tables/Plotly for stakeholder reports, matplotlib for committed static PNGs) and keeps charts honest — no distorted axes, no misleading aggregation. Use when building EDA plots or report figures, or when a chart choice seems arbitrary or misleading.
 ---
 
 # data-viz-standards
 
 ## Overview
 
-The right visualization tool depends on who's looking at it and why — an exploratory
-hypothesis test and a stakeholder-facing table have different jobs and different
-tools. This skill also covers the honesty checks that keep any chart from misleading
-its audience, intentionally or not.
+The right visualization tool depends on who's looking and why — exploratory hypothesis
+testing and a stakeholder-facing table need different tools. Also covers the honesty
+checks that keep a chart from misleading its audience, intentionally or not.
 
 ## When to Use
 
@@ -42,18 +41,15 @@ its audience, intentionally or not.
 
 | Purpose | Recommended library | Why |
 |---|---|---|
-| Fast, hypothesis-driven EDA plots (interactive, notebook-embedded) | Altair | Declarative grammar-of-graphics — you state the encoding (x, y, color, facet) directly, which mirrors "state the hypothesis, then the chart" rather than imperative plot-building |
-| Interactive drill-down / a dashboard | Plotly | Best interactivity and browser integration; native support in Streamlit/Dash if the project grows that direction |
-| Very large or streaming data | Bokeh | More efficient than Altair/Plotly at genuinely large scale |
-| Stakeholder-facing tables (slice performance, model card figures, report numbers) | `great_tables` | Purpose-built for publication-quality tables — currency/percent formatting, source notes, exports to HTML/image — a better fit than a chart when the audience needs exact numbers |
-| **Committed static evidence** — a stage-doc figure saved to `.last-ds-mile/figures/*.png` and referenced from `.md` (not viewed interactively) | **matplotlib** | Altair/Plotly's native output is an interactive spec (HTML/JSON), which is the wrong shape for "one PNG committed alongside a stage doc"; matplotlib's `savefig` is the direct, dependency-light path to that. This is also what SHAP's own `shap.summary_plot`/`shap.plots.*` render with, so a SHAP figure and its neighboring EDA/slice figures share one library rather than mixing two for no reason. |
+| Fast, hypothesis-driven EDA plots (interactive, notebook-embedded) | Altair | Declarative grammar-of-graphics — state the encoding (x, y, color, facet) directly, mirroring "state the hypothesis, then the chart" |
+| Interactive drill-down / a dashboard | Plotly | Best interactivity and browser integration |
+| Very large or streaming data | Bokeh | More efficient than Altair/Plotly at genuine scale |
+| Stakeholder-facing tables (slice performance, model card figures, report numbers) | `great_tables` | Purpose-built for publication-quality tables — currency/percent formatting, source notes, HTML/image export — a better fit than a chart when exact numbers matter |
+| **Committed static evidence** — a stage-doc figure saved to `.last-ds-mile/figures/*.png`, not viewed interactively | **matplotlib** | Altair/Plotly's native output is an interactive spec, the wrong shape for a committed PNG; `savefig` is the direct path. Also what SHAP's own plotting functions render with, so figures share one library. |
 
-Both Altair and Plotly (v6+) accept Polars or pandas DataFrames directly via the
-Narwhals compatibility layer — the dataframe library choice (see
-`dataframe-performance`) doesn't force a particular visualization library or vice
-versa. Picking matplotlib for committed static figures isn't the same rationalization
-as "whatever matplotlib defaults to" (see below) — it's a deliberate choice for that
-specific purpose, with the honesty checklist still fully in force.
+Both Altair and Plotly (v6+) accept Polars or pandas directly via the Narwhals
+compatibility layer — the dataframe library choice (see `dataframe-performance`)
+doesn't force a particular visualization library.
 
 ### Honesty checklist
 

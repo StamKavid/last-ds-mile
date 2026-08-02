@@ -21,8 +21,12 @@ decision — not just against a modeling metric.
 
 ## Core Process
 
-1. Ask what decision this will inform: who acts on the output, how often, and what
-   happens today without it.
+1. Infer what decision this will inform — who acts on the output, how often, and what
+   happens today without it — from the request and the data, and state it as your own
+   read. Only ask the user when the answer would materially change the target
+   definition or the metric and genuinely can't be inferred (e.g. the request is
+   ambiguous between two different targets); otherwise state the assumption in one
+   line and continue.
 2. Define the unit of analysis and the target variable precisely — not "churn" but
    "customer with 0 purchases in the next 90 days, as of signup+30 days."
 3. Take an **information inventory**: write down what will actually be known at the
@@ -31,16 +35,18 @@ decision — not just against a modeling metric.
    arrive later, and anything derived from the target are not. This is the framing-time
    complement to `/ds-prep`'s per-feature check — it decides whether the problem is even
    feasible and tells you what signal to go looking for before anyone builds a feature.
-4. Ask whether this needs ML at all, or whether a simple rule or lookup would solve it
-   just as well (the "do we even need ML?" gate).
+4. Check whether this needs ML at all, or whether a simple rule or lookup would solve it
+   just as well (the "do we even need ML?" gate), and state your conclusion — this is a
+   judgment call to make and record, not a question to put back to the user.
 5. Pick a success metric tied to the decision, not only a modeling metric — e.g. "reduce
-   false negatives below X because a missed case costs $Y," not just "maximize AUC." Ask
-   explicitly whether over- and under-shooting cost the same: if understaffing hurts more
-   than overstaffing, a symmetric metric (RMSE, accuracy) optimizes the wrong thing — see
-   `metric-selection` for the asymmetric-cost options.
+   false negatives below X because a missed case costs $Y," not just "maximize AUC."
+   Check explicitly whether over- and under-shooting cost the same: if understaffing
+   hurts more than overstaffing, a symmetric metric (RMSE, accuracy) optimizes the wrong
+   thing — see `metric-selection` for the asymmetric-cost options.
 6. Write the brief to `.last-ds-mile/stages/00-frame.md`: problem statement, unit of
    analysis, target definition, the information inventory, decision, success metric, and
-   explicit non-goals.
+   explicit non-goals. Then continue to the next stage in the same turn — framing is a
+   record of what you decided, not a stopping point to wait at.
 
 ## Common Rationalizations
 

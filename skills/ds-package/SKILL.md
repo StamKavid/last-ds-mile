@@ -30,7 +30,9 @@ It ships no code itself — it guides you to generate the contract, wrapper, and
 1. **Gate check.** Confirm the `/ds-handoff` artifacts exist: a pinned environment
    (lockfile or exact-version `requirements.txt`/`environment.yml`), a serialized model
    with its version and training-data hash/date, and a model card. If any is missing,
-   stop and run `/ds-handoff` first.
+   produce it now (run `/ds-handoff`'s work inline), say plainly that you did, then
+   continue — this pre-check is a discipline gate; only the parity check below (step 5)
+   is the safety gate worth stopping for.
 2. **Write the inference contract** to `.last-ds-mile/package/contract.json`: the input
    schema (column names, dtypes, allowed ranges, known categories — derived from the
    training data) and the output schema (the prediction, plus probability/uncertainty
