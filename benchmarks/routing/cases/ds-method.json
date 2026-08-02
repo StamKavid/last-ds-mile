@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-method",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "why do I actually need a baseline, can't I skip it",
+        "top_k": 3
+      },
+      {
+        "prompt": "is it fine to peek at the test set just once",
+        "top_k": 3
+      },
+      {
+        "prompt": "what are the rules this pipeline enforces and why",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "plot the feature distributions",
+        "owner": "ds-explore"
+      },
+      {
+        "prompt": "build a docker image for serving",
+        "owner": "ds-package"
+      }
+    ]
+  }
+}

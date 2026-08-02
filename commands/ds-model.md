@@ -1,5 +1,5 @@
 ---
-description: Train and tune models against the baseline and validation strategy
+description: Train, tune, and compare candidate models against baseline and validation
 ---
 
 Invoke the `ds-model` skill now via the Skill tool to train and compare candidate

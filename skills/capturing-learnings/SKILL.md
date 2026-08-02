@@ -1,6 +1,6 @@
 ---
 name: capturing-learnings
-description: Defines what's worth capturing as a project-local lesson and when to proactively suggest /ds-learn — a genuine failure-and-fix pair with specifics, not a restated best practice. Use when a bug was found and fixed, a leakage or validation mistake was caught and corrected, or a metric/approach was changed after a bad result — and when the user runs /ds-learn and needs the capture format.
+description: Records a real failure-and-fix pair as a project-local lesson, with the specifics that make it recognisable next time. Use when a bug, leakage mistake, or validation error was found and corrected and should not recur. Use when someone asks to save what was learned from an experiment that went wrong.
 ---
 
 # capturing-learnings

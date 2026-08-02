@@ -1,0 +1,29 @@
+{
+  "skill_name": "distribution-shift",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "my CV score was great but it fell apart on the real data",
+        "top_k": 3
+      },
+      {
+        "prompt": "does my training set still look like production",
+        "top_k": 3
+      },
+      {
+        "prompt": "run adversarial validation between train and test",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "pick the chart for a stakeholder deck",
+        "owner": "data-viz-standards"
+      },
+      {
+        "prompt": "define the target variable precisely",
+        "owner": "ds-frame"
+      }
+    ]
+  }
+}

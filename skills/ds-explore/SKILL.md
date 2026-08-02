@@ -1,6 +1,6 @@
 ---
 name: ds-explore
-description: Runs systematic EDA — univariate, bivariate, and target-relationship analysis — with a running hypothesis log. Use after data understanding is complete and before feature engineering, or when asked to explore or visualize a dataset.
+description: Runs exploratory data analysis — distributions, relationships between each feature and the target, correlations — with a running hypothesis log. Use when someone asks for EDA, wants to explore or visualise a dataset, or wants to plot how features relate to what is being predicted. Use after a dataset has been profiled and before features are engineered.
 ---
 
 # ds-explore — Exploratory Data Analysis

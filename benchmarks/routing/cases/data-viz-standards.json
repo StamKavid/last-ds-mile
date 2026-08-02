@@ -1,0 +1,29 @@
+{
+  "skill_name": "data-viz-standards",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "what chart should I use to show this comparison",
+        "top_k": 3
+      },
+      {
+        "prompt": "this plot's axis looks misleading, fix it",
+        "top_k": 3
+      },
+      {
+        "prompt": "should I use plotly or matplotlib for the report figures",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "tune the model hyperparameters",
+        "owner": "ds-model"
+      },
+      {
+        "prompt": "check whether a feature leaks the label",
+        "owner": "target-leakage-detection"
+      }
+    ]
+  }
+}

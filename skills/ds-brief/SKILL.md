@@ -1,6 +1,6 @@
 ---
 name: ds-brief
-description: Translates the /ds-report narrative into a one-page, jargon-free brief for non-technical stakeholders — no metric names, dollar/percentage/count framing only. Use after /ds-report, or when asked to explain DS results to executives, a business audience, or anyone non-technical.
+description: Rewrites a technical write-up as a one-page brief for a non-technical reader — no metric names, framed in money, percentages, and counts. Use when someone asks to explain results to an executive, a business audience, or anyone who does not know what AUC means. Use when a plainer version is wanted for business stakeholders. Use when a summary needs to fit on one page with the jargon stripped out.
 ---
 
 # ds-brief — Executive Brief
@@ -25,9 +25,10 @@ first learning what a confusion matrix is.
 
 ## Core Process
 
-1. **Gate check:** confirm `.last-ds-mile/stages/09-report.md` exists. If it
-   doesn't, stop and send the user back to `/ds-report` — this stage translates an
-   existing narrative, it doesn't build one from raw evaluation results.
+1. **Gate check:** confirm `.last-ds-mile/stages/09-report.md` exists. If it doesn't,
+   run `/ds-report`'s work yourself now — this stage translates an existing narrative,
+   it doesn't build one from raw evaluation results, but "existing" means "produced in
+   this run if it wasn't already there," not "handed off to the user to go create."
 2. **Strip every metric name and statistical term** — RMSE, AUC, PR-AUC, F-beta,
    SHAP, p-value, standard deviation, fold, quintile/decile, calibration,
    coefficient, feature importance, confound. If a sentence can't be said without

@@ -1,6 +1,6 @@
 ---
 name: ds-handoff
-description: Packages the model and project for reproducibility and handoff — a model card, a pinned environment, and a rerunnable artifact. Hard gate — refuses to proceed without a pinned environment. Use when a model or analysis is ready to be shared, deployed, or handed to another team.
+description: Packages a project so someone else can rerun it — pinned environment, model card, and a rerunnable artifact. Hard gate — refuses to proceed without exact pinned versions. Use when someone asks to make work reproducible, pin dependencies, or write a model card. Use when a project is being handed to another person or team.
 ---
 
 # ds-handoff — Reproducibility & Handoff

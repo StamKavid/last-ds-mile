@@ -1,6 +1,6 @@
 ---
 name: ds-baseline
-description: Forces a dumb baseline (majority class, mean/median, or a single-rule heuristic) before any model is built, establishing the anchor metric everything else must beat. Use before /ds-model, or when asked to build or train a model and no baseline exists yet.
+description: Scores a deliberately dumb baseline — majority class, mean, median, or a one-rule heuristic — so there is a number the real model has to beat. Use when someone asks whether a score is actually good, what to compare a model against, or whether a result beats guessing. Use before training or tuning any model, whenever no baseline number exists yet.
 ---
 
 # ds-baseline — Honest Baseline

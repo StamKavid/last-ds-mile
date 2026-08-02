@@ -1,6 +1,6 @@
 ---
 name: imbalanced-data
-description: Techniques for rare-positive or otherwise imbalanced targets — resampling, class weighting, threshold tuning, and metric choice. Use when a classification target has a minority class below roughly 20%, when accuracy looks high but the model never predicts the rare class, or when asked about SMOTE, class_weight, or oversampling.
+description: Handles targets where the interesting class is rare — resampling, class weights, threshold tuning, and the metric consequences. Use when only a tiny fraction of rows are positive, or when a model never predicts the rare class at all. Use when someone mentions SMOTE, oversampling, undersampling, or class_weight. Use when accuracy looks high because almost everything belongs to one class.
 ---
 
 # imbalanced-data

@@ -1,0 +1,29 @@
+{
+  "skill_name": "dataframe-performance",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "this pandas operation takes ten minutes, speed it up",
+        "top_k": 3
+      },
+      {
+        "prompt": "should I switch to polars for this",
+        "top_k": 3
+      },
+      {
+        "prompt": "the dataframe doesn't fit in memory anymore",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "is my improvement statistically meaningful",
+        "owner": "uncertainty-quantification"
+      },
+      {
+        "prompt": "write the exec summary",
+        "owner": "ds-brief"
+      }
+    ]
+  }
+}
