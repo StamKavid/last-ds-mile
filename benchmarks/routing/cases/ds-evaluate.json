@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-evaluate",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "how well does this model actually perform on held out data",
+        "top_k": 3
+      },
+      {
+        "prompt": "give me a confusion matrix and precision recall at a threshold",
+        "top_k": 3
+      },
+      {
+        "prompt": "check whether the model does worse for some groups than others",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "frame the problem before we touch the data",
+        "owner": "ds-frame"
+      },
+      {
+        "prompt": "blend my two best models into an ensemble",
+        "owner": "model-ensembling"
+      }
+    ]
+  }
+}

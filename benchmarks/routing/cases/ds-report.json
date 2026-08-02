@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-report",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "write up these modelling results with the caveats",
+        "top_k": 3
+      },
+      {
+        "prompt": "turn this evaluation into a recommendation with assumptions and limitations",
+        "top_k": 3
+      },
+      {
+        "prompt": "I need to present these findings to the product team",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "engineer some interaction features",
+        "owner": "ds-prep"
+      },
+      {
+        "prompt": "detect whether a feature is leaking the label",
+        "owner": "target-leakage-detection"
+      }
+    ]
+  }
+}

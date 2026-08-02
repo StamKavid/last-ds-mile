@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-explain",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "which features is this model actually using",
+        "top_k": 3
+      },
+      {
+        "prompt": "run SHAP so I can see what drives the predictions",
+        "top_k": 3
+      },
+      {
+        "prompt": "sanity check that the model learned something sensible not an artifact",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "split the data so nothing leaks between folds",
+        "owner": "ds-validate"
+      },
+      {
+        "prompt": "make a docker image that serves this model",
+        "owner": "ds-package"
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "skill_name": "target-leakage-detection",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "my AUC is 0.999 on the first try, is that real",
+        "top_k": 3
+      },
+      {
+        "prompt": "I built a feature from the mean of the label for nearby rows, is that ok",
+        "top_k": 3
+      },
+      {
+        "prompt": "one feature has almost all the importance, should I worry",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "write the one page summary for executives",
+        "owner": "ds-brief"
+      },
+      {
+        "prompt": "set up the CI pipeline for the endpoint",
+        "owner": "ds-deploy"
+      }
+    ]
+  }
+}

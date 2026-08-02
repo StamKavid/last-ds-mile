@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-explore",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "do some EDA on this dataset and show me the distributions",
+        "top_k": 3
+      },
+      {
+        "prompt": "plot how each feature relates to the target",
+        "top_k": 3
+      },
+      {
+        "prompt": "explore this data and tell me what's interesting",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "serialize the model and build a Dockerfile",
+        "owner": "ds-package"
+      },
+      {
+        "prompt": "compare xgboost against lightgbm on my cv folds",
+        "owner": "ds-model"
+      }
+    ]
+  }
+}

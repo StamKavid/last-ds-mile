@@ -1,0 +1,29 @@
+{
+  "skill_name": "uncertainty-quantification",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "is this 2 point improvement actually real or just noise",
+        "top_k": 3
+      },
+      {
+        "prompt": "report the spread across folds not just the mean",
+        "top_k": 3
+      },
+      {
+        "prompt": "how confident should I be that model A beats model B",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "clean and encode the raw features",
+        "owner": "ds-prep"
+      },
+      {
+        "prompt": "what does this dataset contain",
+        "owner": "ds-data"
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-model",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "train a few candidate models and pick the best one",
+        "top_k": 3
+      },
+      {
+        "prompt": "tune the hyperparameters on my gradient boosting model",
+        "top_k": 3
+      },
+      {
+        "prompt": "compare random forest and logistic regression on this task",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "what columns does this file have",
+        "owner": "ds-data"
+      },
+      {
+        "prompt": "check whether my training data still looks like production",
+        "owner": "distribution-shift"
+      }
+    ]
+  }
+}

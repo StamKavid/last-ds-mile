@@ -1,0 +1,29 @@
+{
+  "skill_name": "causal-vs-predictive",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "can I say this feature causes the outcome",
+        "top_k": 3
+      },
+      {
+        "prompt": "the report says price drives churn, is that claim safe",
+        "top_k": 3
+      },
+      {
+        "prompt": "if we changed this variable would the outcome change",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "speed up this groupby, it takes forever",
+        "owner": "dataframe-performance"
+      },
+      {
+        "prompt": "set up stratified k fold",
+        "owner": "ds-validate"
+      }
+    ]
+  }
+}

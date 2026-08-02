@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-brief",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "explain this to an exec who doesn't know what AUC means",
+        "top_k": 3
+      },
+      {
+        "prompt": "one page, no jargon, in dollars and percentages",
+        "top_k": 3
+      },
+      {
+        "prompt": "make a version of this for the business stakeholders",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "choose between stratified and grouped cross validation",
+        "owner": "ds-validate"
+      },
+      {
+        "prompt": "profile the schema and check integrity",
+        "owner": "ds-data"
+      }
+    ]
+  }
+}

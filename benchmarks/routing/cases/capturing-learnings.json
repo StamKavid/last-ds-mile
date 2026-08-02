@@ -1,0 +1,29 @@
+{
+  "skill_name": "capturing-learnings",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "we just fixed a nasty leakage bug, record it so it doesn't recur",
+        "top_k": 3
+      },
+      {
+        "prompt": "save this as a lesson for the project",
+        "top_k": 3
+      },
+      {
+        "prompt": "what did we learn from that failed experiment",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "compare candidate models on the validation folds",
+        "owner": "ds-model"
+      },
+      {
+        "prompt": "plot the target distribution",
+        "owner": "ds-explore"
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "skill_name": "metric-selection",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "should I optimise for precision or recall here",
+        "top_k": 3
+      },
+      {
+        "prompt": "is accuracy the right thing to report for this problem",
+        "top_k": 3
+      },
+      {
+        "prompt": "which metric matches the decision this model feeds",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "profile the new dataset's schema",
+        "owner": "ds-data"
+      },
+      {
+        "prompt": "pin the environment for handoff",
+        "owner": "ds-handoff"
+      }
+    ]
+  }
+}

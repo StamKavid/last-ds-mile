@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-handoff",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "make this reproducible so someone else can rerun it",
+        "top_k": 3
+      },
+      {
+        "prompt": "pin the environment and write a model card",
+        "top_k": 3
+      },
+      {
+        "prompt": "I'm handing this project to another team, what do they need",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "which chart type should I use for this comparison",
+        "owner": "data-viz-standards"
+      },
+      {
+        "prompt": "try lots of models and pick the best test score",
+        "owner": "ds-validate"
+      }
+    ]
+  }
+}

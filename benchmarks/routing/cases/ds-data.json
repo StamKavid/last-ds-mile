@@ -1,0 +1,29 @@
+{
+  "skill_name": "ds-data",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "what columns does this csv have and how many rows",
+        "top_k": 3
+      },
+      {
+        "prompt": "profile this new table for me - dtypes, missingness, duplicates",
+        "top_k": 3
+      },
+      {
+        "prompt": "I just got handed a dataset, what's in it",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "pick a metric for this imbalanced classification problem",
+        "owner": "metric-selection"
+      },
+      {
+        "prompt": "write the model card and pin the environment",
+        "owner": "ds-handoff"
+      }
+    ]
+  }
+}
