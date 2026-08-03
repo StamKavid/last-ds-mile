@@ -105,3 +105,36 @@ def test_ci_can_be_triggered_manually():
 def test_ci_still_runs_on_pull_requests():
     _, triggers = _load_ci()
     assert "pull_request" in triggers, "CI must run on pull requests"
+
+
+def test_readme_skill_count_matches_reality():
+    """The README claimed 30 skills after the catalog dropped to 29.
+
+    Counts in prose drift silently every time the catalog changes, and a wrong
+    count on the front page is the cheapest possible credibility loss.
+    """
+    import re
+    actual = len([p for p in (ROOT / "skills").iterdir() if p.is_dir()])
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    claims = {int(n) for n in re.findall(r"(\d+)\s+skills\b", readme)}
+    claims |= {int(n) for n in re.findall(r"^## All (\d+) Skills", readme, re.M)}
+    wrong = sorted(c for c in claims if c != actual)
+    assert not wrong, (
+        f"README claims {wrong} skill(s) but there are {actual}. Update the prose "
+        f"counts whenever the catalog changes."
+    )
+
+
+def test_readme_does_not_cite_the_removed_illustrative_example():
+    """`benchmarks/evals/example/` had a fabricated `without_skill` arm, and its
+    +0.875 / +0.80 gaps were being presented on the front page as evidence the
+    plugin works. A comparison against a strawman is not evidence."""
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "evals/example" not in readme, (
+        "README references the removed illustrative example tree"
+    )
+    for fabricated in ("+0.875", "+0.80 "):
+        assert fabricated not in readme, (
+            f"README still cites {fabricated!r} — a gap measured against an "
+            f"illustrative naive baseline, not a live run."
+        )

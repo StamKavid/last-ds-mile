@@ -107,9 +107,9 @@ then re-run the install command.
 
 ---
 
-## All 30 Skills
+## All 29 Skills
 
-The commands above are entry points. Behind them are 30 skills total — 15 pipeline skills (now including `ds-package` and `ds-deploy` for the deployment mile), 12 domain skills that auto-trigger by situation, 2 shared methodology skills, and 1 entry-point skill (`data-science-project`) that auto-routes a cold-start user into the pipeline before any data or model is touched. Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
+The commands above are entry points. Behind them are 29 skills total — 15 pipeline skills (including `ds-package` and `ds-deploy` for the deployment mile), 11 domain skills that auto-trigger by situation, 1 shared methodology skill (`ds-method`), and 1 entry-point skill (`data-science-project`) that auto-routes a cold-start user into the pipeline before any data or model is touched. Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
 
 ### Navigate — Find your stage
 
@@ -239,7 +239,7 @@ Every skill follows a consistent anatomy:
 
 ```
 last-ds-mile/
-├── skills/                          # 30 skills total
+├── skills/                          # 29 skills total
 │   ├── ds-method/                   #   Shared discipline layer (meta)
 │   ├── data-science-project/        #   Entry point (auto-routes a cold start)
 │   ├── ds-frame/                    #   Frame
@@ -317,16 +317,31 @@ To reproduce any run: `cd benchmarks/<dataset> && python scripts/model.py` (cand
 
 ### Does the plugin actually change the outcome?
 
-The runs above prove the discipline produces good numbers; they don't isolate what the *plugin* adds versus the same model working unaided. [`benchmarks/evals/`](benchmarks/evals/) answers that: it runs each task twice — once with the plugin installed, once without — grades both **blind on the outcome**, and reports the reproducible per-expectation gap (`pass^k`). The `evals.json` + `grading.json` contract and the blind two-arm grader are taken from Anthropic's [`skill-creator`](https://github.com/anthropics/skills/tree/main/skills/skill-creator) eval system; the `pass^k` aggregation and `eval-viewer.html` are the harness's own, and `aggregate.py` additionally exports `benchmark.skill-creator.json` in skill-creator's exact schema for its viewer. The harness follows the ten skill-eval best practices — directive assertions, negative-trigger tests, outcome-over-path grading, run isolation, `pass^k` vs `pass@k`, cross-harness runs, eval graduation, and skill-retirement detection — each mapped in [`benchmarks/evals/README.md`](benchmarks/evals/README.md).
+The runs above prove the discipline produces good numbers; they don't isolate what the *plugin* adds versus the same model working unaided. [`benchmarks/evals/`](benchmarks/evals/) is built to answer that: it runs each task twice — once with the plugin installed, once without — grades both on the outcome, and reports the per-expectation gap (`pass^k`). Grading is blinded mechanically: `grade_manifest.py` copies each run under a shuffled opaque id with no arm anywhere in the path, and identity is restored only after the grade is written. The `evals.json` + `grading.json` contract and the two-arm design are taken from Anthropic's [`skill-creator`](https://github.com/anthropics/skills/tree/main/skills/skill-creator); the `pass^k` aggregation and `eval-viewer.html` are the harness's own, and `aggregate.py` also exports `benchmark.skill-creator.json` in skill-creator's schema.
 
-A committed [worked example](benchmarks/evals/example/) grades the "build a model, tell me how well it works" ask on two datasets. The `with_skill` arm is graded against the real shipped pipelines above; the `without_skill` arm is a clearly-labelled *illustrative* naive baseline (not a captured live run). The discipline gap is stark:
+A separate, free tier runs in CI on every PR: [`route_check.py`](benchmarks/evals/scripts/route_check.py) scores whether a realistic phrasing actually reaches the skill that owns it, and whether any two descriptions collide. That check reproduced the case-2 failure below deterministically, in under a second — a bug that cost twelve live runs and roughly $15 to find the first time.
 
-| Dataset | Trap it exposes | `with_skill` pass^k | `without_skill` pass^k | gap |
-|---|---|---|---|---|
-| Credit Card Fraud | imbalanced-metric (accuracy) trap | **1.0** (8/8) | 0.125 (1/8) | **+0.875** |
-| House Prices | target-leakage trap | **1.0** (5/5) | 0.20 (1/5) | **+0.80** |
+Of the ten skill-eval best practices mapped in [`benchmarks/evals/README.md`](benchmarks/evals/README.md), one is scaffolded but not exercised: **cross-harness testing**. Every committed run is Claude Code, and this plugin ships no Gemini or Codex command variants.
 
-The one expectation the unaided arm passes in each case is "introduced no leaked feature" — it's too simple to leak, but also too simple to score a baseline, pick a scale-appropriate metric, or validate honestly. A `gap` near zero on a *passed* expectation is the retirement signal: the base model already does it, so that guidance can be trimmed.
+**The honest answer today: not proven, and the one real measurement went against the plugin.**
+
+Iteration-2 ([`benchmarks/evals/credit-card-fraud/results/iteration-2/`](benchmarks/evals/credit-card-fraud/results/iteration-2/)) is the only run so far where *both* arms were live agents on the same task. It ran 2 of the 6 cases that existed then, 3 trials each:
+
+| Case | `with_skill` pass^k | `without_skill` pass^k |
+|---|---|---|
+| 1 — "build a fraud model, tell me how well it works" | **1.00** (8/8) | 0.75 (6/8) |
+| 2 — "it's 99.9% accurate, confirm it's good to ship" | **0.40** | **1.00** |
+| **Overall** | **0.769** | **0.846** — gap **−0.077** |
+
+Cost: **$1.25 mean with the plugin vs $0.29 without — 4.25×**, and 63 turns vs 8 on case 1.
+
+The cause was specific, not mysterious. In two of three case-2 trials the plugin correctly spotted the accuracy trap, then printed the pipeline map and stopped to ask which stage to start at — producing no number and no verdict. The unaided model just answered.
+
+Two caveats that cut against reading too much into it either way: both arms ran inside this repository, under a `CLAUDE.md` that states the pipeline's hard-gate doctrine, so the "no plugin" arm cannot be certified clean; and 3 trials on 2 cases is a 12-run sample.
+
+**What changed since, and what hasn't.** The front-door stall is fixed (gates are now output properties rather than input preconditions), skill routing went from 47.8% to 91.3% rank-1 ([`routing-baseline.md`](benchmarks/evals/routing-baseline.md)), and the harness now scaffolds outside this repo with mechanically blind grading and per-case cost budgets. **None of that has been re-measured against a live agent.** Iteration-3 — 6 cases × 5 trials × 2 arms, plus authority/time/sunk-cost pressure variants — is specified and has not been run.
+
+Until it is, treat the plugin's marginal value over an unaided current-generation model as **an open question**. What is measured is that the right skill is now reachable from how a user actually phrases a request; what is not measured is whether that changes the answer you get.
 
 ---
 

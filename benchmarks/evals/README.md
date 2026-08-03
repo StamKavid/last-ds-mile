@@ -43,22 +43,28 @@ benchmarks/evals/
 ├── scripts/
 │   ├── run_eval.py      ← scaffolds isolated per-run workspaces from an evals.json
 │   └── aggregate.py     ← grading.json × trials → pass^k, arm gap, benchmark.json
+├── cases/               ← per-skill trigger prompts for the Tier 2 routing check
+├── eval-viewer.html     ← renders benchmark.json (moved here from the removed example/)
+├── routing-baseline.md  ← the committed before/after routing numbers
 ├── credit-card-fraud/
-│   ├── evals.json       ← 6 eval cases (4 positive, 2 negative-trigger) — accuracy trap
-│   └── results/         ← generated, git-ignored: iteration-N/eval-K/<arm>/trial-T/
-├── house-prices/
-│   └── evals.json       ← 6 eval cases — target-leakage trap on a skewed regression target
-└── example/             ← committed worked example (see example/README.md)
-    ├── credit-card-fraud/…  ← eval 1 graded: real skilled run vs. illustrative naive run
-    └── house-prices/…
+│   ├── evals.json       ← 8 eval cases (positive, negative-trigger, pressure) — accuracy trap
+│   └── results/         ← iteration-N/eval-K/<arm>/trial-T/ (only iteration-2 is committed)
+└── house-prices/
+    └── evals.json       ← 7 eval cases — target-leakage trap on a skewed regression target
 ```
 
 Two datasets ship eval sets, chosen for complementary failure modes: **credit-card-fraud**
 for the imbalanced-metric (accuracy) trap, **house-prices** for the target-leakage trap
-(a neighbourhood-mean-of-`SalePrice` feature) on a skewed regression target. The
-`example/` tree is a committed, graded comparison so the output format is legible before
-you run anything — read [example/README.md](example/README.md) for exactly what in it is
-a real run and what is an illustrative baseline.
+(a neighbourhood-mean-of-`SalePrice` feature) on a skewed regression target.
+
+The only committed results are `credit-card-fraud/results/iteration-2/` — a real two-arm
+run in which the plugin **lost** (pass^k 0.769 vs 0.846) at 4.25x the cost. It is kept
+deliberately. A harness that only preserves its flattering runs is not a harness.
+
+An earlier `example/` tree was removed: its `without_skill` arm was an illustrative naive
+baseline rather than a captured live run, and the +0.875 / +0.80 gaps it produced were
+being cited on the project README as evidence the plugin works. A comparison against a
+strawman is not evidence, and this project has no business publishing one.
 
 ## Why credit-card-fraud
 
