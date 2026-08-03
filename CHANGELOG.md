@@ -76,6 +76,19 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Removed
 
+- **`benchmarks/evals/example/`, and the README table built on it.** The tree's
+  `without_skill` arm was an *illustrative naive baseline*, not a captured live run — its
+  own README said so. But the `+0.875` and `+0.80` gaps it produced were being presented
+  on the project README under the heading "Does the plugin actually change the outcome?",
+  described as "stark", while the repository's one real two-arm measurement
+  (`results/iteration-2/`, gap **−0.077**) went unmentioned there entirely. A comparison
+  against a strawman is not evidence, and a plugin about honest reporting has no business
+  publishing the flattering number and omitting the measured one. The README section now
+  leads with the real result, its cause, and its caveats. `eval-viewer.html` moved to
+  `benchmarks/evals/`; `results/iteration-2/` is kept deliberately.
+- **`SPEC.md`, `tasks/plan.md`, `tasks/todo.md`** — the deployment-mile planning docs,
+  shipped in 0.8.0 and superseded.
+
 - **`validation-strategy`**, merged into `ds-validate` — its splitter reference table and
   nested-CV section move across intact. It was the one merge the collision matrix
   justified (0.546 cosine), and once `ds-validate` carried the vocabulary it ranked
