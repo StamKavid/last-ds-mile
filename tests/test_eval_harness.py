@@ -152,3 +152,33 @@ def test_eval_results_are_not_committed_by_default():
         "benchmarks/evals/.gitignore must exclude generated run workspaces — they "
         "carry multi-hundred-MB dataset copies."
     )
+
+
+def test_executor_separates_the_arms_by_plugin_loading():
+    """The arms must differ by exactly one thing: whether the plugin is loaded.
+
+    Iteration-2 recorded no arm toggle at all, so a surprising result could not be
+    separated from a misconfigured run.
+    """
+    execute_runs = _load("execute_runs")
+    prompt = "does this model work"
+    with_skill = execute_runs.build_command(
+        Path("/tmp/ws"), {"arm": "with_skill", "prompt": prompt}, "claude")
+    without = execute_runs.build_command(
+        Path("/tmp/ws"), {"arm": "without_skill", "prompt": prompt}, "claude")
+
+    assert "--plugin-dir" in with_skill, "with_skill arm must load the plugin"
+    assert "--plugin-dir" not in without, "without_skill arm must not load the plugin"
+    assert [c for c in with_skill if c != "--plugin-dir"
+            and not c.endswith("last-ds-mile")] == without, (
+        "the arms differ by more than plugin loading — any other difference "
+        "confounds the comparison"
+    )
+
+
+def test_executor_requires_confirmation_before_spending():
+    """A script that spends money on import or on a bare invocation is a trap."""
+    source = (SCRIPTS / "execute_runs.py").read_text(encoding="utf-8")
+    assert "--dry-run" in source, "executor must offer a dry run"
+    assert 'input(' in source, "executor must confirm before spending"
+    assert "--yes" in source, "unattended runs must be opt-in and explicit"
