@@ -2,8 +2,16 @@ name: CI
 
 on:
   push:
-    branches: [master, main]
+    # `dev` is the integration branch — every PR lands here first, so it needs CI
+    # on merge. It was missing, which meant work could reach `dev` unverified.
+    # `master` is deliberately absent: it is 108 commits behind `main` with no
+    # unique commits, i.e. abandoned. `main` is the default branch and the one
+    # the marketplace resolves against.
+    branches: [main, dev]
   pull_request:
+  # Lets CI be run by hand against any branch. Without this there is no way to
+  # confirm the workflow still fires except by pushing a commit and hoping.
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
