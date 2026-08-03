@@ -63,6 +63,17 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   cross-harness claim says scaffolded-not-exercised, because every committed run is Claude
   Code and this pack ships no Gemini or Codex command variants.
 
+- **Marketplace installs are pinned to a release tag.** `marketplace.json` named the
+  repo with no `ref`, so an install resolved to whatever was on the default branch at
+  that moment. `main` had already drifted four commits past the `v0.9.0` tag it claimed
+  to be. Now pinned to `v0.9.0`; a test asserts the pin exists, is a release tag, and
+  matches `plugin.json`'s version, so the two can only move together.
+- **CI runs on `dev` and can be triggered manually.** `dev` is where every PR lands and
+  it had no push trigger, so merges to the integration branch ran nothing. `master` is
+  removed from the trigger list — it is 108 commits behind `main` with no unique commits.
+  `workflow_dispatch` added because there was otherwise no way to confirm the workflow
+  still fires short of pushing a commit.
+
 ### Removed
 
 - **`validation-strategy`**, merged into `ds-validate` — its splitter reference table and
