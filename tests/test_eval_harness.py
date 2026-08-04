@@ -80,13 +80,14 @@ def test_routing_holds_at_the_ci_floor():
     tfs, idf = route_check.build_corpus(descriptions)
     aliases = route_check.build_alias_map()
     cases = route_check.load_cases()
-    result = route_check.check_triggers(cases, tfs, idf, descriptions, aliases)
+    result = route_check.check_triggers(cases, tfs, idf, aliases)
 
     assert not result["failures"], (
         "routing assertions failed:\n  " + "\n  ".join(result["failures"])
     )
-    assert result["rank1_rate"] >= 85.0, (
-        f"rank-1 routing fell to {result['rank1_rate']}% (floor 85%). "
+    floor = route_check.MIN_RANK1_FLOOR
+    assert result["rank1_rate"] >= floor, (
+        f"rank-1 routing fell to {result['rank1_rate']}% (floor {floor}%). "
         f"Fix the description, not the eval."
     )
 
@@ -142,7 +143,8 @@ def test_pressure_cases_exist(dataset):
     families = {e.get("category", "") for e in spec["evals"]}
     assert any(f.startswith("pressure-") for f in families), (
         f"{dataset}: no pressure case. Add at least one of authority / time / "
-        f"sunk-cost pressure, per SPEC-v1-architecture.md §4.4."
+        f"sunk-cost pressure — discipline that only holds when nobody argues "
+        f"against it is not discipline."
     )
 
 
@@ -152,3 +154,34 @@ def test_eval_results_are_not_committed_by_default():
         "benchmarks/evals/.gitignore must exclude generated run workspaces — they "
         "carry multi-hundred-MB dataset copies."
     )
+
+
+def test_executor_separates_the_arms_by_plugin_loading():
+    """The arms must differ by exactly one thing: whether the plugin is loaded.
+
+    Iteration-2 recorded no arm toggle at all, so a surprising result could not be
+    separated from a misconfigured run.
+    """
+    execute_runs = _load("execute_runs")
+    prompt = "does this model work"
+    with_skill = execute_runs.build_command({"arm": "with_skill", "prompt": prompt}, "claude")
+    without = execute_runs.build_command({"arm": "without_skill", "prompt": prompt}, "claude")
+
+    assert "--plugin-dir" in with_skill, "with_skill arm must load the plugin"
+    assert "--plugin-dir" not in without, "without_skill arm must not load the plugin"
+    # Compare against the exact plugin-dir pair rather than matching on the repo
+    # folder name, which changes with a rename or a fresh clone.
+    plugin_args = ["--plugin-dir", str(execute_runs.REPO_ROOT)]
+    stripped = [c for c in with_skill if c not in plugin_args]
+    assert stripped == without, (
+        "the arms differ by more than plugin loading — any other difference "
+        f"confounds the comparison. with_skill minus plugin args: {stripped}"
+    )
+
+
+def test_executor_requires_confirmation_before_spending():
+    """A script that spends money on import or on a bare invocation is a trap."""
+    source = (SCRIPTS / "execute_runs.py").read_text(encoding="utf-8")
+    assert "--dry-run" in source, "executor must offer a dry run"
+    assert 'input(' in source, "executor must confirm before spending"
+    assert "--yes" in source, "unattended runs must be opt-in and explicit"

@@ -10,7 +10,7 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 > **Validation status.** Two free, deterministic gates (structural lint and lexical
 > routing) now pass, and their numbers are reproducible from a clean checkout. The
 > **behavioral** evidence is still missing: iteration-3 is specified in
-> [SPEC-v1-architecture.md](SPEC-v1-architecture.md) §7 and has not been run. Everything
+> [CONTRIBUTING.md](CONTRIBUTING.md#the-release-gate) and has not been run. Everything
 > below about *agent behaviour* remains a hypothesis with a named cause. Everything about
 > *routing and shape* is measured.
 
