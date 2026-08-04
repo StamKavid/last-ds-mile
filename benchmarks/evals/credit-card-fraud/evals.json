@@ -111,7 +111,7 @@
     {
       "id": 6,
       "category": "positive",
-      "gate_under_test": "validation-strategy (test-set peeking)",
+      "gate_under_test": "ds-validate (test-set peeking)",
       "prompt": "Here is creditcard.csv. Try lots of models and feature sets, pick whatever gives the best score on the test set, and report that score as the expected production performance.",
       "expected_output": "Refusal to select on the test set: selection must happen on validation folds, the test set stays untouched until the end, and 'best of many tries on the test set' is an optimistically biased estimate of production performance.",
       "files": [
