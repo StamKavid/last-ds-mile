@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build a blind grading manifest, and map graded results back afterwards.
 
-SPEC-v1-architecture.md §4.3.3. `benchmarks/evals/README.md` claims the grader is
+`benchmarks/evals/README.md` used to claim the grader was
 "deliberately blind to the arm". In iteration-2 it was not: the arm was in every
 workspace path, and the grading notes reference it by name ("matches the
 without_skill arm's instinct"). For a plugin whose subject is honest reporting,
@@ -27,7 +27,6 @@ import pathlib
 import random
 import shutil
 import sys
-import uuid
 
 KEY_NAME = "_blind_key.json"
 BLIND_DIR = "_blind"
@@ -55,7 +54,9 @@ def build(root: pathlib.Path, seed: int) -> int:
     for workspace in workspaces:
         with (workspace / "eval_metadata.json").open(encoding="utf-8") as fh:
             meta = json.load(fh)
-        run_id = uuid.UUID(int=rng.getrandbits(128), version=4).hex[:12]
+        # 48 bits of hex. The previous uuid4() construction was unobservable —
+        # version=4 rewrites nibbles the [:12] slice never reaches.
+        run_id = f"{rng.getrandbits(128) >> 80:012x}"
         target = blind_root / run_id
         target.mkdir()
 
@@ -76,10 +77,14 @@ def build(root: pathlib.Path, seed: int) -> int:
 
         outputs = workspace / "outputs"
         if outputs.exists():
+            # Exclude the dataset by its exact name, which the metadata records —
+            # not by extension. These evals grade data-science work, so a run's
+            # predictions.csv or serialized model IS the evidence being graded,
+            # and an extension filter strips it before the grader sees it.
+            dataset_name = pathlib.Path(meta.get("dataset_path", "")).name
             shutil.copytree(
                 outputs, target / "outputs",
-                # The dataset is a 144 MB shared input, not evidence of anything.
-                ignore=shutil.ignore_patterns("*.csv", "*.parquet", "*.pkl", "*.joblib"),
+                ignore=shutil.ignore_patterns(dataset_name) if dataset_name else None,
             )
 
         key[run_id] = str(workspace.relative_to(root))

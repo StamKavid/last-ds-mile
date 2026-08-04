@@ -1,6 +1,6 @@
 """Tier 1 of the eval harness: structural rules every SKILL.md must satisfy.
 
-See SPEC-v1-architecture.md §4.1. These are the free, deterministic checks that
+These are the free, deterministic checks that
 define "well-formed" for this pack. They complement test_plugin_structure.py,
 which checks *wiring* (commands point at real skills, manifests agree); this file
 checks *shape* (descriptions can be routed to, sections are present, links resolve).
@@ -9,9 +9,9 @@ The rules are ported from the reference implementation in
 addyosmani/agent-skills (`scripts/lib/skill-lint.js`), adapted to this repo's
 conventions.
 
-Every rule here is enforced for real — KNOWN_VIOLATIONS is empty. It exists as the
-escape hatch for a deliberate, temporary exception: add an entry with a written
-reason rather than weakening a rule, and delete it when the skill is fixed.
+Every rule here is enforced for real, with no per-skill escape hatch. If a rule
+needs an exception, add it to SECTION_EXEMPT with a written reason — and expect
+test_no_orphan_exemptions to fail once that reason stops being true.
 """
 
 import re
@@ -25,6 +25,10 @@ SKILLS_DIR = ROOT / "skills"
 # ─── Policy ──────────────────────────────────────────────────────────────────
 
 MAX_DESCRIPTION_CHARS = 1024
+
+# Total chars across every skill description — the text that is resident in
+# context at all times. Raise deliberately, never to make a failure go away.
+ALWAYS_ON_DESCRIPTION_BUDGET = 16000
 
 KEBAB_CASE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
@@ -47,13 +51,14 @@ REQUIRED_SECTIONS = [
 
 # Exemptions live HERE, not in skill frontmatter, so a skill cannot excuse itself.
 # Every entry needs a written reason.
-SECTION_EXEMPT = {
-    "ds-method": (
-        "Shared discipline layer, not a stage. Its Rationalizations/Red Flags tables "
-        "are the ones other skills cite, so it has no separate 'Common Rationalizations' "
-        "of its own to restate. Slated to become references/discipline.md in Phase 3."
-    ),
-}
+SECTION_EXEMPT: dict[str, str] = {}
+"""Skills exempted from the required-section check, each with a written reason.
+
+Empty, and it should stay that way. `ds-method` sat here on the claim that it had
+no Rationalizations table of its own; it has had all five sections for some time,
+so the exemption was silently skipping the most-cited skill in the pack while the
+suite reported green. An exemption that outlives its reason is worse than no rule.
+"""
 
 # Explicit cross-skill reference forms. Generic backticked words are excluded on
 # purpose — only these shapes assert "go read that skill".
@@ -65,10 +70,6 @@ SKILL_REF_PATTERNS = [
     re.compile(r"`([a-z][a-z0-9-]+[a-z0-9])` skill\b"),
 ]
 
-# Deferred rule violations, keyed by (skill_name, rule), with the reason each is
-# deferred. Emptied by Phase 3 — every description now satisfies every rule, so a
-# new entry here should be rare and temporary.
-KNOWN_VIOLATIONS: dict[tuple[str, str], str] = {}
 
 FENCE_RE = re.compile(r"^(`{3,})[^\n]*\n.*?^\1[ \t]*$", re.DOTALL | re.MULTILINE)
 
@@ -89,12 +90,6 @@ def skill_path(name: str) -> Path:
 ALL_SKILLS = skill_names()
 
 
-def maybe_xfail(name: str, rule: str) -> None:
-    reason = KNOWN_VIOLATIONS.get((name, rule))
-    if reason:
-        pytest.xfail(f"{name} / {rule}: {reason}")
-
-
 # ─── Frontmatter ─────────────────────────────────────────────────────────────
 
 
@@ -109,7 +104,6 @@ def test_skill_name_is_kebab_and_matches_directory(name):
 
 @pytest.mark.parametrize("name", ALL_SKILLS)
 def test_description_length(name):
-    maybe_xfail(name, "description-length")
     frontmatter, _ = parse_frontmatter(skill_path(name))
     description = frontmatter.get("description", "")
     assert description, f"{name}: missing description"
@@ -123,7 +117,6 @@ def test_description_length(name):
 def test_description_states_when_to_use(name):
     """The description is the routing mechanism. Without a trigger clause a skill
     is discoverable only by luck."""
-    maybe_xfail(name, "description-trigger")
     frontmatter, _ = parse_frontmatter(skill_path(name))
     description = frontmatter.get("description", "")
     assert TRIGGER_RE.search(description), (
@@ -136,7 +129,6 @@ def test_description_states_when_to_use(name):
 def test_description_trigger_is_not_negated(name):
     """"Do not use when X" is an exclusion, not a trigger. Exclusions belong in
     the body's When to Use section."""
-    maybe_xfail(name, "description-trigger-negated")
     frontmatter, _ = parse_frontmatter(skill_path(name))
     description = frontmatter.get("description", "")
     assert not TRIGGER_NEGATED_RE.search(description), (
@@ -150,9 +142,8 @@ def test_description_carries_distinct_trigger_vocabulary(name):
     """Two or more trigger clauses, each carrying different user vocabulary.
 
     One trigger clause covers one phrasing. Real users say the same thing several
-    ways, and the routing index is lexical — see SPEC-v1-architecture.md §2.4.
+    ways, and the routing index is lexical.
     """
-    maybe_xfail(name, "description-multi-trigger")
     frontmatter, _ = parse_frontmatter(skill_path(name))
     description = frontmatter.get("description", "")
     clauses = TRIGGER_RE.findall(description)
@@ -170,7 +161,6 @@ def test_description_carries_distinct_trigger_vocabulary(name):
 def test_required_sections_present(name):
     if name in SECTION_EXEMPT:
         pytest.skip(f"{name} exempt: {SECTION_EXEMPT[name]}")
-    maybe_xfail(name, "required-sections")
     _, body = parse_frontmatter(skill_path(name))
     body = strip_fences(body)
     missing = [
@@ -188,7 +178,6 @@ def test_cross_skill_references_resolve(name):
     A dead reference sends the agent looking for a file that isn't there, which
     is how a run ends up doing filesystem archaeology mid-task.
     """
-    maybe_xfail(name, "cross-refs")
     _, body = parse_frontmatter(skill_path(name))
     body = strip_fences(body)
     known = set(ALL_SKILLS)
@@ -213,7 +202,6 @@ def test_reference_links_resolve_and_are_one_level_deep(name):
     Deeply nested references cause partial reads: the agent follows the first
     hop, decides it has enough, and never reaches the content that mattered.
     """
-    maybe_xfail(name, "ref-depth")
     path = skill_path(name)
     _, body = parse_frontmatter(path)
     body = strip_fences(body)
@@ -246,25 +234,34 @@ def test_reference_links_resolve_and_are_one_level_deep(name):
 
 
 def test_no_orphan_exemptions():
-    """Every SECTION_EXEMPT / KNOWN_VIOLATIONS entry must name a skill that exists.
+    """Every SECTION_EXEMPT entry must name a skill that exists.
 
-    Stale exemptions silently disable a rule for a skill that was renamed.
+    A stale exemption silently disables a rule for a skill that was renamed — or,
+    as happened with `ds-method`, for one that has since started satisfying it.
     """
     known = set(ALL_SKILLS)
     stale_exempt = sorted(set(SECTION_EXEMPT) - known)
     assert not stale_exempt, f"SECTION_EXEMPT names skills that don't exist: {stale_exempt}"
-    stale_known = sorted({n for n, _ in KNOWN_VIOLATIONS} - known)
-    assert not stale_known, f"KNOWN_VIOLATIONS names skills that don't exist: {stale_known}"
 
 
-def test_skill_count_is_intentional():
-    """Guardrail against silent catalog growth.
 
-    Every skill costs ~70 tokens of always-on description index and one more
-    competitor in the routing space. SPEC-v1-architecture.md §3.3 targets 18;
-    this asserts the current number so a new skill is a deliberate edit here.
+def test_always_on_description_budget():
+    """Guard the resource that actually costs something.
+
+    Every skill's description sits in context at all times, whether or not the
+    skill is used. Skill *count* is only a proxy for that, and a poor one — with a
+    1024-char cap per description, 29 terse skills and 29 maximal ones differ by
+    5x in real cost. Budget the characters instead, and name the offenders.
     """
-    assert len(ALL_SKILLS) <= 30, (
-        f"{len(ALL_SKILLS)} skills — the catalog grew. Either consolidate, or raise "
-        f"this ceiling deliberately and say why in the CHANGELOG."
+    sizes = {}
+    for name in ALL_SKILLS:
+        frontmatter, _ = parse_frontmatter(skill_path(name))
+        sizes[name] = len(frontmatter.get("description", ""))
+    total = sum(sizes.values())
+    worst = sorted(sizes.items(), key=lambda kv: -kv[1])[:3]
+    assert total <= ALWAYS_ON_DESCRIPTION_BUDGET, (
+        f"always-on description index is {total} chars, over the "
+        f"{ALWAYS_ON_DESCRIPTION_BUDGET} budget. Largest: "
+        + ", ".join(f"{n} ({c})" for n, c in worst)
+        + ". Trim one, or raise the budget deliberately and say why in the CHANGELOG."
     )

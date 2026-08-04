@@ -8,7 +8,7 @@ the environment the run will see, then prints the exact command to run in each
 one. You run the agent in each workspace, drop its transcript + outputs there,
 then grade with agents/grader.md and aggregate with aggregate.py.
 
-ISOLATION (SPEC-v1-architecture.md §4.3). Workspaces default to a temp directory
+ISOLATION. Workspaces default to a temp directory
 OUTSIDE this repository. Iteration-2 scaffolded into
 `benchmarks/evals/<dataset>/results/`, which sits under this repo's own
 CLAUDE.md — a file that states the pipeline's hard-gate doctrine verbatim. Both
@@ -26,6 +26,7 @@ stdlib-only, no third-party deps. Usage:
 """
 import argparse
 import datetime as dt
+import functools
 import json
 import os
 import pathlib
@@ -44,8 +45,9 @@ def load_evals(evals_path: pathlib.Path) -> dict:
         return json.load(fh)
 
 
-def capture_environment(arm: str) -> dict:
-    """Record what the run will actually see, so a contaminated arm is detectable.
+@functools.lru_cache(maxsize=None)
+def _environment(arm: str) -> tuple:
+    """Cached inner form of capture_environment, as a hashable tuple.
 
     Iteration-2's metadata recorded only `arm: with_skill`, with nothing about how
     the plugin was enabled or disabled and nothing about ambient context. When the
@@ -78,7 +80,17 @@ def capture_environment(arm: str) -> dict:
             env["installed_plugins_source"] = str(manifest)
         except Exception:
             pass
-    return env
+    return tuple(sorted(env.items(), key=lambda kv: kv[0]))
+
+
+def capture_environment(arm: str) -> dict:
+    """Record what the run will actually see, so a contaminated arm is detectable.
+
+    Depends only on `arm`, so it is computed once per arm rather than once per
+    workspace — a 60-run scaffold was otherwise spawning 58 redundant
+    `git rev-parse` subprocesses.
+    """
+    return dict(_environment(arm))
 
 
 def workspace_for(root, eval_id, arm, trial):
@@ -144,7 +156,7 @@ def scaffold(evals_path, trials, arms, harness, iteration, workspace_root,
                     "created_at": dt.datetime.now(dt.timezone.utc).isoformat(),
                     "harness": harness,
                     "iteration": iteration,
-                    "workspace_is_outside_repo": True,
+                    "workspace_root": str(root),
                     "max_turns": ev.get("max_turns"),
                     "max_cost_usd": ev.get("max_cost_usd"),
                     "environment": capture_environment(arm),
@@ -162,18 +174,17 @@ def _print_instructions(made, root, spec, arms, selected, trials):
     print(f"Scaffolded {len(made)} workspaces under\n  {root}\n")
     print(f"  {len(selected)} eval(s) x {len(arms)} arm(s) x {trials} trial(s)\n")
     print("Workspaces are OUTSIDE the repository on purpose — neither arm should")
-    print("inherit this repo's CLAUDE.md. See SPEC-v1-architecture.md §4.3.\n")
+    print("inherit this repo's CLAUDE.md.\n")
     print(f"  with_skill arm : {spec['arms']['with_skill']}")
     print(f"  without_skill  : {spec['arms']['without_skill']}\n")
-    print("For each workspace, run the executor with cwd = its outputs/ dir, feeding")
-    print("it prompt.md, and save the JSONL transcript beside it:\n")
-    print('  claude -p "$(cat ../prompt.md)" \\')
-    print("    --output-format stream-json --verbose \\")
-    print("    --permission-mode acceptEdits \\")
-    print("    > ../transcript.jsonl\n")
-    print("The without_skill arm must run with the plugin disabled. Verify that in the")
-    print("transcript and fill in environment.plugin_disabled_how in eval_metadata.json —")
-    print("an unrecorded arm toggle is why iteration-2's baseline can't be trusted.\n")
+    print("Run them with the executor — it builds the per-arm command, so the two")
+    print("arms differ by exactly one thing (whether the plugin is loaded), and each")
+    print("run records how its own arm was configured:\n")
+    print("  python benchmarks/evals/scripts/execute_runs.py \\")
+    print(f"      --results-root {root} --dry-run\n")
+    print("Do not hand-roll the `claude -p` invocation. Omitting --plugin-dir gives a")
+    print("with_skill arm with no plugin loaded — two identical arms, and the exact")
+    print("confound that made iteration-2 uninterpretable.\n")
     print("Then grade blind (scripts/grade_manifest.py builds the shuffled, arm-stripped")
     print("manifest), write grading.json next to each transcript, and aggregate:\n")
     print("  python benchmarks/evals/scripts/aggregate.py <dataset> --iteration N \\")

@@ -45,7 +45,7 @@ def iter_workspaces(root: pathlib.Path, only_arm: str | None):
         yield meta_path.parent, meta
 
 
-def build_command(workspace: pathlib.Path, meta: dict, claude_bin: str) -> list[str]:
+def build_command(meta: dict, claude_bin: str) -> list[str]:
     cmd = [
         claude_bin,
         "-p", meta["prompt"],
@@ -63,7 +63,7 @@ def run_one(workspace: pathlib.Path, meta: dict, claude_bin: str, timeout_s: int
     outputs.mkdir(exist_ok=True)
     transcript = workspace / "transcript.jsonl"
     stderr_log = workspace / "stderr.log"
-    cmd = build_command(workspace, meta, claude_bin)
+    cmd = build_command(meta, claude_bin)
 
     started = dt.datetime.now(dt.timezone.utc)
     try:
