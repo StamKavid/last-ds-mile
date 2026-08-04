@@ -27,12 +27,12 @@ CI = ROOT / ".github" / "workflows" / "ci.yml"
 SEMVER_TAG = re.compile(r"^v\d+\.\d+\.\d+$")
 
 
-def _load_ci():
+def _ci_triggers():
     with CI.open(encoding="utf-8") as fh:
         workflow = yaml.safe_load(fh)
     # PyYAML reads a bare `on:` key as the boolean True under YAML 1.1. GitHub
     # parses it as the string "on"; accept whichever the loader produced.
-    return workflow, workflow.get("on", workflow.get(True))
+    return workflow.get("on", workflow.get(True))
 
 
 def test_marketplace_pins_a_ref():
@@ -75,7 +75,7 @@ def test_pinned_ref_matches_the_declared_version():
 
 
 def test_ci_runs_on_the_integration_branch():
-    _, triggers = _load_ci()
+    triggers = _ci_triggers()
     branches = triggers["push"]["branches"]
     assert "dev" in branches, (
         "CI does not run on pushes to `dev`. Every PR lands there first, so without "
@@ -85,17 +85,19 @@ def test_ci_runs_on_the_integration_branch():
 
 
 def test_ci_does_not_watch_the_abandoned_branch():
-    _, triggers = _load_ci()
+    triggers = _ci_triggers()
     assert "master" not in triggers["push"]["branches"], (
-        "`master` is 108 commits behind `main` with no unique commits. Watching it "
-        "implies it is live and invites PRs into a dead branch."
+        "`master` is abandoned. Watching it in CI implies it is live and invites "
+        "PRs into a branch nothing ships from. (The archaeology — how far behind "
+        "it was when it was retired — belongs in the CHANGELOG, not here, where a "
+        "decaying number would undermine the rule at the moment someone reads it.)"
     )
 
 
 def test_ci_can_be_triggered_manually():
     """Without workflow_dispatch there is no way to confirm CI still fires short of
     pushing a commit — which is exactly the position PR #12 left us in."""
-    _, triggers = _load_ci()
+    triggers = _ci_triggers()
     assert "workflow_dispatch" in triggers, (
         "ci.yml has no `workflow_dispatch:` trigger, so the workflow cannot be run "
         "by hand to verify it works."
@@ -103,7 +105,7 @@ def test_ci_can_be_triggered_manually():
 
 
 def test_ci_still_runs_on_pull_requests():
-    _, triggers = _load_ci()
+    triggers = _ci_triggers()
     assert "pull_request" in triggers, "CI must run on pull requests"
 
 
@@ -113,7 +115,6 @@ def test_readme_skill_count_matches_reality():
     Counts in prose drift silently every time the catalog changes, and a wrong
     count on the front page is the cheapest possible credibility loss.
     """
-    import re
     actual = len([p for p in (ROOT / "skills").iterdir() if p.is_dir()])
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     claims = {int(n) for n in re.findall(r"(\d+)\s+skills\b", readme)}

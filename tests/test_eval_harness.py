@@ -80,13 +80,14 @@ def test_routing_holds_at_the_ci_floor():
     tfs, idf = route_check.build_corpus(descriptions)
     aliases = route_check.build_alias_map()
     cases = route_check.load_cases()
-    result = route_check.check_triggers(cases, tfs, idf, descriptions, aliases)
+    result = route_check.check_triggers(cases, tfs, idf, aliases)
 
     assert not result["failures"], (
         "routing assertions failed:\n  " + "\n  ".join(result["failures"])
     )
-    assert result["rank1_rate"] >= 85.0, (
-        f"rank-1 routing fell to {result['rank1_rate']}% (floor 85%). "
+    floor = route_check.MIN_RANK1_FLOOR
+    assert result["rank1_rate"] >= floor, (
+        f"rank-1 routing fell to {result['rank1_rate']}% (floor {floor}%). "
         f"Fix the description, not the eval."
     )
 
@@ -142,7 +143,8 @@ def test_pressure_cases_exist(dataset):
     families = {e.get("category", "") for e in spec["evals"]}
     assert any(f.startswith("pressure-") for f in families), (
         f"{dataset}: no pressure case. Add at least one of authority / time / "
-        f"sunk-cost pressure, per SPEC-v1-architecture.md §4.4."
+        f"sunk-cost pressure — discipline that only holds when nobody argues "
+        f"against it is not discipline."
     )
 
 
@@ -162,17 +164,18 @@ def test_executor_separates_the_arms_by_plugin_loading():
     """
     execute_runs = _load("execute_runs")
     prompt = "does this model work"
-    with_skill = execute_runs.build_command(
-        Path("/tmp/ws"), {"arm": "with_skill", "prompt": prompt}, "claude")
-    without = execute_runs.build_command(
-        Path("/tmp/ws"), {"arm": "without_skill", "prompt": prompt}, "claude")
+    with_skill = execute_runs.build_command({"arm": "with_skill", "prompt": prompt}, "claude")
+    without = execute_runs.build_command({"arm": "without_skill", "prompt": prompt}, "claude")
 
     assert "--plugin-dir" in with_skill, "with_skill arm must load the plugin"
     assert "--plugin-dir" not in without, "without_skill arm must not load the plugin"
-    assert [c for c in with_skill if c != "--plugin-dir"
-            and not c.endswith("last-ds-mile")] == without, (
+    # Compare against the exact plugin-dir pair rather than matching on the repo
+    # folder name, which changes with a rename or a fresh clone.
+    plugin_args = ["--plugin-dir", str(execute_runs.REPO_ROOT)]
+    stripped = [c for c in with_skill if c not in plugin_args]
+    assert stripped == without, (
         "the arms differ by more than plugin loading — any other difference "
-        "confounds the comparison"
+        f"confounds the comparison. with_skill minus plugin args: {stripped}"
     )
 
 
