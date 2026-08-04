@@ -18,6 +18,40 @@ scientist wouldn't take, so changes are held to that standard.
 | `tests/` | Plugin-structure and hook-behavior tests (pytest) |
 | `lessons/` | Shipped corpus of project-local lessons that auto-resurface |
 
+## The release gate
+
+A change is shippable to `main` when all eight hold. They exist because
+[`benchmarks/evals/credit-card-fraud/results/iteration-2/`](benchmarks/evals/credit-card-fraud/results/iteration-2/)
+is a run where the plugin **lost** to the unaided model at 4.25x the cost, and every
+criterion below is a thing that run got wrong.
+
+**Free, every PR (CI enforces 1-3):**
+
+1. `pytest` green, including the SKILL.md shape rules in `tests/test_skill_lint.py`.
+2. Trigger rank-1 rate at or above the CI floor, no description collision >= 0.75 cosine
+   (`benchmarks/evals/scripts/route_check.py`).
+3. The `data-science-project` vs `cmd:ds` pairwise negative passes — the routing failure
+   that produced iteration-2's regression.
+
+**Behavioural, before a version bump:**
+
+4. All eval cases x 5 trials x 2 arms, scaffolded **outside** this repository and
+   blind-graded via `grade_manifest.py`.
+5. Per-case **macro** pass^k gap >= **+0.15** in favour of `with_skill`.
+6. **No case regresses.** Evals 3, 4 and 6 — the plain-question, hallucinated-slice, and
+   test-set-peek cases, where *stopping* is the correct behaviour — at `with_skill`
+   pass^k >= 0.8.
+7. `with_skill` mean cost <= **2x** `without_skill` on **every** case, not just in
+   aggregate.
+
+**Always:**
+
+8. Every methodology and results claim in `README.md` and `benchmarks/evals/README.md` is
+   true as written. This is not bureaucratic. The plugin's entire proposition is honesty
+   in how results are reported; an overclaim in its own documentation is the one bug it
+   cannot ship. A `+0.875` gap measured against a hand-written strawman was on the front
+   page once. It should not happen twice.
+
 ## Development setup
 
 Requires Python 3.10–3.13.

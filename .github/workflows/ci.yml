@@ -46,4 +46,6 @@ jobs:
         # The floor is set below the achieved baseline so an unrelated description
         # edit doesn't turn CI red. Raise it as routing improves; never lower it
         # to make a regression pass. See benchmarks/evals/routing-baseline.md.
-        run: python benchmarks/evals/scripts/route_check.py --min-rank1 85
+        # Bare --min-rank1 uses the floor declared in route_check.py, which the
+        # pytest suite also reads — one number, not two hand-mirrored copies.
+        run: python benchmarks/evals/scripts/route_check.py --min-rank1

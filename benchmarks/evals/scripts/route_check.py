@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tier 2 of the eval harness: does the right skill get picked?
 
-SPEC-v1-architecture.md §4.2. Two deterministic, free checks over the skill
+Two deterministic, free checks over the skill
 catalog's descriptions:
 
   1. TRIGGER ROUTING -- for each case file's `trigger.positive[]` prompts, does the
@@ -46,6 +46,7 @@ SKILLS_DIR = REPO_ROOT / "skills"
 COMMANDS_DIR = REPO_ROOT / "commands"
 CASES_DIR = REPO_ROOT / "benchmarks" / "evals" / "cases"
 
+MIN_RANK1_FLOOR = 85.0  # CI gate; tests/test_eval_harness.py reads this
 COLLISION_WARN = 0.50
 COLLISION_ERROR = 0.75
 
@@ -71,7 +72,7 @@ def stem(token: str) -> str:
     Not a real stemmer, and not trying to be -- it only needs to stop trivially
     related surface forms from being treated as unrelated terms.
     """
-    for suffix in ("ations", "ation", "ings", "ing", "edly", "ers", "er", "ed", "es", "s"):
+    for suffix in ("ations", "ation", "ings", "ing", "ers", "er", "ed", "es", "s"):
         if len(token) > len(suffix) + 3 and token.endswith(suffix):
             return token[: -len(suffix)]
     return token
@@ -100,20 +101,36 @@ def build_corpus(docs: dict[str, str]) -> tuple[dict[str, Counter], dict[str, fl
     return tfs, idf
 
 
-def vectorize(tf: Counter, idf: dict[str, float]) -> dict[str, float]:
+def vectorize(tf: Counter, idf: dict[str, float], default: float | None = None) -> dict[str, float]:
     # Unseen terms get the max IDF a singleton would earn — an unusual word in a
-    # prompt is informative, not meaningless.
-    default = max(idf.values()) if idf else 1.0
+    # prompt is informative, not meaningless. `default` is hoisted by callers in
+    # hot paths; recomputing max() per call dominated the runtime.
+    if default is None:
+        default = max(idf.values()) if idf else 1.0
     return {term: freq * idf.get(term, default) for term, freq in tf.items()}
 
 
-def cosine(a: dict[str, float], b: dict[str, float]) -> float:
+def corpus_vectors(tfs: dict[str, Counter], idf: dict[str, float]) -> dict[str, dict[str, float]]:
+    """Vectorize every document once.
+
+    The document vectors are a pure function of (tfs, idf), both fixed for a run.
+    Rebuilding them per prompt was ~98% of all vectorize() calls.
+    """
+    default = max(idf.values()) if idf else 1.0
+    return {name: vectorize(tf, idf, default) for name, tf in tfs.items()}
+
+
+def norm(v: dict[str, float]) -> float:
+    return math.sqrt(sum(x * x for x in v.values()))
+
+
+def cosine(a: dict[str, float], b: dict[str, float],
+           na: float | None = None, nb: float | None = None) -> float:
     if not a or not b:
         return 0.0
-    common = a.keys() & b.keys()
-    dot = sum(a[t] * b[t] for t in common)
-    na = math.sqrt(sum(v * v for v in a.values()))
-    nb = math.sqrt(sum(v * v for v in b.values()))
+    dot = sum(a[t] * b[t] for t in a.keys() & b.keys())
+    na = norm(a) if na is None else na
+    nb = norm(b) if nb is None else nb
     return 0.0 if na == 0 or nb == 0 else dot / (na * nb)
 
 
@@ -157,9 +174,21 @@ def load_descriptions() -> dict[str, str]:
     return out
 
 
-def rank(prompt: str, tfs: dict[str, Counter], idf: dict[str, float]) -> list[tuple[str, float]]:
+def rank(prompt: str, tfs: dict[str, Counter], idf: dict[str, float],
+         vectors: dict[str, dict[str, float]] | None = None,
+         norms: dict[str, float] | None = None) -> list[tuple[str, float]]:
+    """Score one prompt against every corpus entry, best first.
+
+    `vectors` and `norms` are per-corpus and invariant across prompts; callers in
+    a loop should build them once via corpus_vectors() and pass them in.
+    """
+    if vectors is None:
+        vectors = corpus_vectors(tfs, idf)
+    if norms is None:
+        norms = {name: norm(v) for name, v in vectors.items()}
     pv = vectorize(term_freq(tokenize(prompt)), idf)
-    scored = [(name, cosine(pv, vectorize(tf, idf))) for name, tf in tfs.items()]
+    pn = norm(pv)
+    scored = [(name, cosine(pv, v, pn, norms[name])) for name, v in vectors.items()]
     scored.sort(key=lambda kv: (-kv[1], kv[0]))
     return scored
 
@@ -179,23 +208,22 @@ def load_cases() -> list[dict]:
 # ─── Checks ──────────────────────────────────────────────────────────────────
 
 
-def check_triggers(cases, tfs, idf, descriptions, aliases):
+def check_triggers(cases, tfs, idf, aliases):
     positives = rank1 = strict_rank1 = topk = 0
     failures: list[str] = []
-    per_skill: dict[str, dict] = {}
+    vectors = corpus_vectors(tfs, idf)
+    norms = {name: norm(v) for name, v in vectors.items()}
 
     for case in cases:
         skill = case["skill_name"]
-        if skill not in descriptions:
+        if skill not in tfs:
             failures.append(f"{case['_path']}: names unknown skill '{skill}'")
             continue
-        rec = per_skill.setdefault(skill, {"rank1": 0, "positives": 0, "misses": []})
 
         for pos in case.get("trigger", {}).get("positive", []):
             positives += 1
-            rec["positives"] += 1
             k = pos.get("top_k", 3)
-            scored = rank(pos["prompt"], tfs, idf)
+            scored = rank(pos["prompt"], tfs, idf, vectors, norms)
             names = [n for n, _ in scored]
             position = names.index(skill) + 1
             if position == 1:
@@ -204,11 +232,9 @@ def check_triggers(cases, tfs, idf, descriptions, aliases):
             # still routed correctly -- same destination, different door.
             if names[0] == skill or names[0] in aliases.get(skill, ()):
                 rank1 += 1
-                rec["rank1"] += 1
             if position <= k:
                 topk += 1
             else:
-                rec["misses"].append((pos["prompt"], position, names[:3]))
                 failures.append(
                     f"{skill}: positive prompt ranked #{position} (needs top-{k}) — "
                     f"{pos['prompt']!r} → top3 {names[:3]}"
@@ -216,7 +242,7 @@ def check_triggers(cases, tfs, idf, descriptions, aliases):
 
         for neg in case.get("trigger", {}).get("negative", []):
             owner = neg.get("owner")
-            scored = rank(neg["prompt"], tfs, idf)
+            scored = rank(neg["prompt"], tfs, idf, vectors, norms)
             names = [n for n, _ in scored]
             if owner and owner in names:
                 if names.index(owner) > names.index(skill):
@@ -238,7 +264,6 @@ def check_triggers(cases, tfs, idf, descriptions, aliases):
         "strict_rank1_rate": round(100 * strict_rank1 / positives, 1) if positives else 0.0,
         "topk_rate": round(100 * topk / positives, 1) if positives else 0.0,
         "failures": failures,
-        "per_skill": per_skill,
     }
 
 
@@ -276,12 +301,13 @@ def _is_alias_pair(a: str, b: str, aliases: dict[str, set[str]]) -> bool:
 
 def check_collisions(tfs, idf, aliases):
     names = sorted(tfs)
-    vectors = {n: vectorize(tfs[n], idf) for n in names}
+    vectors = corpus_vectors(tfs, idf)
+    norms = {n: norm(vectors[n]) for n in names}
     pairs = []
     for i, a in enumerate(names):
         for b in names[i + 1:]:
-            pairs.append((round(cosine(vectors[a], vectors[b]), 3), a, b,
-                          _is_alias_pair(a, b, aliases)))
+            pairs.append((round(cosine(vectors[a], vectors[b], norms[a], norms[b]), 3),
+                          a, b, _is_alias_pair(a, b, aliases)))
     pairs.sort(key=lambda p: -p[0])
     real = [p for p in pairs if not p[3]]
     return {
@@ -296,8 +322,10 @@ def check_collisions(tfs, idf, aliases):
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--min-rank1", type=float, default=None,
-                    help="fail if the rank-1 rate falls below this percentage")
+    ap.add_argument("--min-rank1", type=float, nargs="?", const=MIN_RANK1_FLOOR,
+                    default=None,
+                    help=f"fail if the rank-1 rate falls below this percentage "
+                         f"(bare flag uses the checked-in floor, {MIN_RANK1_FLOOR})")
     ap.add_argument("--matrix", action="store_true", help="print the full collision table")
     ap.add_argument("--top", type=int, default=15, help="collision pairs to print (default 15)")
     ap.add_argument("--json", action="store_true", help="machine-readable output")
@@ -312,7 +340,9 @@ def main() -> int:
     aliases = build_alias_map()
     cases = load_cases()
     collisions = check_collisions(tfs, idf, aliases)
-    triggers = check_triggers(cases, tfs, idf, descriptions, aliases) if cases else None
+    triggers = check_triggers(cases, tfs, idf, aliases) if cases else None
+
+    shown = collisions["pairs"] if args.matrix else collisions["pairs"][: args.top]
 
     if args.json:
         print(json.dumps({
@@ -322,14 +352,13 @@ def main() -> int:
             "collisions": {
                 "errors": collisions["errors"],
                 "warnings": collisions["warnings"],
-                "pairs": collisions["pairs"] if args.matrix else collisions["pairs"][: args.top],
+                "pairs": shown,
             },
         }, indent=2))
     else:
         print(f"Skill catalog: {len(descriptions)} descriptions, {len(cases)} case file(s)\n")
 
         print("── Description collisions ──────────────────────────────────────")
-        shown = collisions["pairs"] if args.matrix else collisions["pairs"][: args.top]
         for score, a, b, alias in shown:
             if alias:
                 mark = "alias"
