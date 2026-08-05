@@ -109,12 +109,14 @@ then re-run the install command.
 
 ## All 29 Skills
 
-The commands above are entry points. Behind them are 29 skills total — 15 pipeline skills (including `ds-package` and `ds-deploy` for the deployment mile), 11 domain skills that auto-trigger by situation, 1 shared methodology skill (`ds-method`), and 1 entry-point skill (`data-science-project`) that auto-routes a cold-start user into the pipeline before any data or model is touched. Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
+The commands above are entry points. Behind them are 29 skills total — 15 pipeline skills (including `ds-package` and `ds-deploy` for the deployment mile), 12 domain skills that auto-trigger by situation, 1 shared methodology skill (`ds-method`), and 1 entry-point skill (`data-science-project`) that carries a cold-start request through the pipeline in the same turn. Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
 
 ### Navigate — Find your stage
 
 | Skill | What It Does | Use When |
 |-------|-------------|----------|
+| [data-science-project](skills/data-science-project/SKILL.md) | The front door — carries a plain-language modelling request through framing, baseline, validation, and evaluation to a verdict, in one turn | A tabular ML task starts in plain language and no `.last-ds-mile/` work exists yet |
+| [capturing-learnings](skills/capturing-learnings/SKILL.md) | Records a real failure-and-fix pair as a project-local lesson, with the specifics that make it recognisable next time | A bug, leakage mistake, or validation error was found and corrected and should not recur |
 | [ds-method](skills/ds-method/SKILL.md) | Shared discipline layer — the Red Flags, Rationalizations, and Hard Gates every stage inherits | Running any pipeline stage, or when asked to skip a gate |
 
 ### Frame — Define the problem
