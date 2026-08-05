@@ -126,6 +126,41 @@ def test_readme_skill_count_matches_reality():
     )
 
 
+def test_readme_lists_every_skill():
+    """A skill absent from the README tables is a skill nobody can discover.
+
+    Two were missing (`data-science-project` — the front door — and
+    `capturing-learnings`), and the prose breakdown summed to 28 against 29 on
+    disk. Counts and tables drift independently; both need checking.
+    """
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    listed = set(re.findall(r"^\| \[([a-z0-9-]+)\]\(skills/", readme, re.M))
+    actual = {p.name for p in (ROOT / "skills").iterdir() if p.is_dir()}
+    assert not (actual - listed), (
+        f"skills on disk but absent from the README tables: {sorted(actual - listed)}"
+    )
+    assert not (listed - actual), (
+        f"README tables list skills that no longer exist: {sorted(listed - actual)}"
+    )
+
+
+def test_readme_skill_breakdown_adds_up():
+    """The prose breakdown must sum to the real skill count."""
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    m = re.search(
+        r"(\d+) pipeline skills.*?(\d+) domain skills.*?(\d+) shared methodology skill.*?"
+        r"(\d+) entry-point skill",
+        readme, re.S,
+    )
+    assert m, "README no longer states a skill breakdown — update this test or restore it"
+    total = sum(int(g) for g in m.groups())
+    actual = len([p for p in (ROOT / "skills").iterdir() if p.is_dir()])
+    assert total == actual, (
+        f"README breakdown sums to {total} ({' + '.join(m.groups())}) but there are "
+        f"{actual} skills"
+    )
+
+
 def test_readme_does_not_cite_the_removed_illustrative_example():
     """`benchmarks/evals/example/` had a fabricated `without_skill` arm, and its
     +0.875 / +0.80 gaps were being presented on the front page as evidence the
