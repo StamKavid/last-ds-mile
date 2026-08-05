@@ -7,7 +7,8 @@ prints what to do. This is the other half: it walks those workspaces and invokes
 
 THIS SPENDS MONEY. It prints a cost estimate from each eval's `max_cost_usd`
 budget and requires explicit confirmation before the first run. `--dry-run`
-prints the plan and exits.
+prints the plan and exits. `max_cost_usd` is passed to the executor as a real
+`--max-budget-usd` hard cap, not just a printed estimate.
 
 The two arms differ only in whether the plugin is loaded:
 
@@ -19,6 +20,27 @@ Either way the workspace sits outside the repository, so neither arm inherits th
 project's CLAUDE.md. How the arm was configured is written into
 `eval_metadata.json` under `environment.plugin_disabled_how`, because an
 unrecorded arm toggle is why iteration-2's baseline cannot be trusted.
+
+Both arms run with `--permission-mode bypassPermissions` and
+`--setting-sources project,local` (drops the `user` source). Found the hard
+way, twice:
+
+  1. A first smoke run under `acceptEdits` never completed a single
+     model-training eval. `acceptEdits` grants file edits, not Bash execution,
+     and this machine's `~/.claude/settings.json` separately wires a global
+     `PreToolUse` hook on Bash (RTK) that no `--permission-mode` controls,
+     since permission mode and hooks are different mechanisms.
+  2. `--bare` looked like the fix (it skips hooks) but also skips OAuth/keychain
+     auth per its own `--help` text — fine for API-key setups, a hard failure
+     ("Not logged in") for a keychain-authenticated one. `--setting-sources
+     project,local` is the surgical version: it excludes exactly the `user`
+     settings source (where the RTK hook lives), leaves credential resolution
+     alone, and still honors an explicit `--plugin-dir`.
+
+`bypassPermissions` is the contained choice here, not a shortcut: the workspace
+`run_eval.py` builds is already isolated outside the repository and scoped to
+one disposable `outputs/` directory, which is exactly the situation
+non-interactive automation is meant for.
 
 Usage:
     python execute_runs.py --results-root <root> --dry-run
@@ -51,8 +73,12 @@ def build_command(meta: dict, claude_bin: str) -> list[str]:
         "-p", meta["prompt"],
         "--output-format", "stream-json",
         "--verbose",
-        "--permission-mode", "acceptEdits",
+        "--permission-mode", "bypassPermissions",
+        "--setting-sources", "project,local",
     ]
+    max_cost = meta.get("max_cost_usd")
+    if max_cost:
+        cmd += ["--max-budget-usd", str(max_cost)]
     if meta["arm"] == "with_skill":
         cmd += ["--plugin-dir", str(REPO_ROOT)]
     return cmd
@@ -86,6 +112,11 @@ def run_one(workspace: pathlib.Path, meta: dict, claude_bin: str, timeout_s: int
     meta.setdefault("environment", {})["plugin_disabled_how"] = (
         "n/a — plugin loaded via --plugin-dir" if meta["arm"] == "with_skill"
         else "no --plugin-dir passed; plugin not on the command line"
+    )
+    meta["environment"]["hooks_and_claude_md"] = (
+        "--setting-sources project,local — neither arm loads this machine's "
+        "~/.claude/settings.json (the user source), so neither sees its hooks "
+        "(including any global Bash-interception hook) or its enabledPlugins state"
     )
     meta["environment"]["executor_command"] = [
         c if c != meta["prompt"] else "<prompt.md>" for c in cmd
@@ -129,8 +160,8 @@ def main() -> int:
         print(f"  eval-{meta['eval_id']} {meta['arm']:<14} trial-{meta['trial']}  "
               f"budget ${meta.get('max_cost_usd', 0):.2f}  "
               f"{workspace.relative_to(root)}")
-    print(f"\nBudgeted total: ~${budget:.2f} (per-case max_cost_usd, not a hard cap —"
-          f" nothing kills a run mid-flight)")
+    print(f"\nBudgeted total: ~${budget:.2f} (each run's max_cost_usd is passed as a real "
+          f"--max-budget-usd cap)")
     print(f"Executor: {args.claude_bin}")
 
     if args.dry_run:
