@@ -327,17 +327,29 @@ Two real problems were caught and fixed during these runs, not glossed over — 
 
 To reproduce any run: `cd benchmarks/<dataset> && python scripts/model.py` (candidate comparison) `&& python scripts/evaluate.py` (OOF evaluation + figures) `&& python scripts/explain.py` (interpretation) — see `requirements-lock.txt` in each folder for the exact pinned environment.
 
-### Does the plugin actually change the outcome?
+### What else is measured
 
-The runs above prove the discipline produces good numbers; they don't isolate what the *plugin* adds versus the same model working unaided. [`benchmarks/evals/`](benchmarks/evals/) is built to answer that: it runs each task twice — once with the plugin installed, once without — grades both on the outcome, and reports the per-expectation gap (`pass^k`). Grading is blinded mechanically: `grade_manifest.py` copies each run under a shuffled opaque id with no arm anywhere in the path, and identity is restored only after the grade is written. The `evals.json` + `grading.json` contract and the two-arm design are taken from Anthropic's [`skill-creator`](https://github.com/anthropics/skills/tree/main/skills/skill-creator); the `pass^k` aggregation and `eval-viewer.html` are the harness's own, and `aggregate.py` also exports `benchmark.skill-creator.json` in skill-creator's schema.
+Two more checks run free in CI on every PR, and both reproduce from a clean checkout:
 
-A separate, free tier runs in CI on every PR: [`route_check.py`](benchmarks/evals/scripts/route_check.py) scores whether a realistic phrasing actually reaches the skill that owns it, and whether any two descriptions collide. That check reproduced the case-2 failure below deterministically, in under a second — a bug that cost twelve live runs and roughly $15 to find the first time.
+| Check | What it answers | Current |
+|---|---|---|
+| [`test_skill_lint.py`](tests/test_skill_lint.py) | Does every SKILL.md hold its shape — description budget, a real trigger clause, ≥2 distinct trigger vocabularies, required sections, resolving cross-references? | **407 tests green** |
+| [`route_check.py`](benchmarks/evals/scripts/route_check.py) | Does a realistic phrasing actually reach the skill that owns it, and do any two descriptions collide? | **91.3% rank-1, 100% top-k, 0 collisions ≥0.75** |
 
-Of the ten skill-eval best practices mapped in [`benchmarks/evals/README.md`](benchmarks/evals/README.md), one is scaffolded but not exercised: **cross-harness testing**. Every committed run is Claude Code, and this plugin ships no Gemini or Codex command variants.
+Routing went from 47.8% to 91.3% rank-1 over the rewrite recorded in [`routing-baseline.md`](benchmarks/evals/routing-baseline.md). `route_check.py` is a stdlib TF-IDF approximation — it measures lexical reachability, not whether a model *understands* the description — but it is deterministic, costs nothing, and it caught the routing collision behind the iteration-2 regression below in under a second, a bug that took twelve live runs and roughly $15 to find the first time.
 
-**The honest answer today: not proven, and the one real measurement went against the plugin.**
+### What is not measured: does the plugin change the answer?
 
-Iteration-2 ([`benchmarks/evals/credit-card-fraud/results/iteration-2/`](benchmarks/evals/credit-card-fraud/results/iteration-2/)) is the only run so far where *both* arms were live agents on the same task. It ran 2 of the 6 cases that existed then, 3 trials each:
+The runs above prove the discipline produces good numbers. They do **not** isolate what the plugin adds over the same model working unaided — there's no control arm. [`benchmarks/evals/`](benchmarks/evals/) is the harness built to answer that: each task runs twice, once with the plugin and once without, graded on the outcome and reported as a per-expectation `pass^k` gap. The `evals.json` + `grading.json` contract and the two-arm design come from Anthropic's [`skill-creator`](https://github.com/anthropics/skills/tree/main/skills/skill-creator); the `pass^k` aggregation and `eval-viewer.html` are the harness's own.
+
+**The honest answer today: this is an open question, and the plugin as it currently ships has never been measured.**
+
+Iteration-3 — 6 cases × 5 trials × 2 arms, scaffolded outside this repository and blind-graded via `grade_manifest.py` — is specified in [CONTRIBUTING.md](CONTRIBUTING.md#the-release-gate) and has not been run. Until it is, treat the marginal value over an unaided current-generation model as unproven. What's measured is that the right skill is reachable from how a user actually phrases a request; what isn't is whether that changes the answer you get.
+
+<details>
+<summary><b>The one live A/B so far — iteration-2 — and why its number no longer describes this plugin</b></summary>
+
+[`results/iteration-2/`](benchmarks/evals/credit-card-fraud/results/iteration-2/) ran 2 of the 6 cases that existed then, 3 trials each, on credit-card fraud:
 
 | Case | `with_skill` pass^k | `without_skill` pass^k |
 |---|---|---|
@@ -347,15 +359,21 @@ Iteration-2 ([`benchmarks/evals/credit-card-fraud/results/iteration-2/`](benchma
 
 Cost: **$1.25 mean with the plugin vs $0.29 without — 4.25×**, and 63 turns vs 8 on case 1.
 
-The headline is the macro average, one vote per case. Weighting instead by how many expectations each case happens to carry (micro) gives 0.769 vs 0.846, gap −0.077 — a kinder number, and the one this README used to quote, but it lets a single 5-expectation case swing 38% of a two-case verdict. Both are in [`summary.md`](benchmarks/evals/credit-card-fraud/results/iteration-2/summary.md); `aggregate.py` regenerates both from the committed `grading.json` files.
+The plugin lost. Three things are worth knowing about that number before anyone quotes it in either direction.
 
-The cause was specific, not mysterious. In two of three case-2 trials the plugin correctly spotted the accuracy trap, then printed the pipeline map and stopped to ask which stage to start at — producing no number and no verdict. The unaided model just answered.
+**It measures a defect that no longer exists.** All three failing expectations are in case 2, and all three have `pass_at_k = 1.0` — the plugin passed them in one of three trials. In the other two, it correctly spotted the accuracy trap, then printed the pipeline map and stopped to ask which stage to start at, producing no verdict. The unaided model just answered. That stall is fixed: [`data-science-project`](skills/data-science-project/SKILL.md) now states *"Never end the turn asking permission to begin,"* and gates became output properties rather than input preconditions. So iteration-2 grades a build that isn't shipped anymore.
 
-Two caveats that cut against reading too much into it either way: both arms ran inside this repository, under a `CLAUDE.md` that states the pipeline's hard-gate doctrine, so the "no plugin" arm cannot be certified clean; and 3 trials on 2 cases is a 12-run sample.
+**Most of its expectations can't tell the arms apart.** 8 of 13 scored `gap: 0.00` — the unaided model already stratified the split, already reported PR-AUC, already caught the accuracy trap. By the harness's own skill-retirement rule that's a signal to retire those expectations, not to keep averaging over them. It also means the verdict rests on a handful of discriminating items, which is why one bug moved the headline by 0.10. The two clear wins were both the same behaviour: *a dumb baseline is defined and scored*, and *performance is stated as explicit lift over it*.
 
-**What changed since, and what hasn't.** The front-door stall is fixed (gates are now output properties rather than input preconditions), skill routing went from 47.8% to 91.3% rank-1 ([`routing-baseline.md`](benchmarks/evals/routing-baseline.md)), and the harness now scaffolds outside this repo with mechanically blind grading and per-case cost budgets. **None of that has been re-measured against a live agent.** Iteration-3 — 6 cases × 5 trials × 2 arms, plus authority/time/sunk-cost pressure variants — is specified and has not been run.
+**It was graded by hand, with the arm visible.** Every `grading.json` names its arm in the notes. `grade_manifest.py`, which shuffles runs under opaque ids so the grader can't see the arm, was committed 43 minutes *after* these results. Blind grading is wired up and has never actually been applied to a committed result. That cuts against the two wins more than the losses — unblinded self-grading would bias toward the plugin, not away.
 
-Until it is, treat the plugin's marginal value over an unaided current-generation model as **an open question**. What is measured is that the right skill is now reachable from how a user actually phrases a request; what is not measured is whether that changes the answer you get.
+Two further caveats: both arms ran inside this repository, under a `CLAUDE.md` that states the hard-gate doctrine, so the "no plugin" arm cannot be certified clean; and 12 runs on one dataset is a small sample.
+
+*On the aggregation:* the headline is the macro average, one vote per case. Weighting by how many expectations each case happens to carry (micro) gives 0.769 vs 0.846, gap −0.077 — a kinder number, and the one this README used to quote, but it lets an 8-expectation case outvote a 5-expectation one 62/38. Both are in [`summary.md`](benchmarks/evals/credit-card-fraud/results/iteration-2/summary.md), and `aggregate.py` regenerates both from the committed `grading.json` files.
+
+</details>
+
+Of the ten skill-eval best practices mapped in [`benchmarks/evals/README.md`](benchmarks/evals/README.md), one is scaffolded but not exercised: **cross-harness testing**. Every committed run is Claude Code, and this plugin ships no Gemini or Codex command variants.
 
 ---
 
