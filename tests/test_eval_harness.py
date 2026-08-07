@@ -208,7 +208,7 @@ def test_committed_transcripts_carry_no_operator_identity():
 
     dirty = [
         path.relative_to(ROOT)
-        for path in sorted(ROOT.glob("benchmarks/evals/**/transcript.jsonl"))
+        for path in sorted([p for g in module.RESULTS_GLOBS for p in ROOT.glob(g)])
         if module.has_residue(path.read_text(encoding="utf-8"))
     ]
     assert not dirty, (
