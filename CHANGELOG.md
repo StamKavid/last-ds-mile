@@ -10,11 +10,12 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [0.10.0] — 2026-08-07 — cut the tag the docs describe; close the injection channel
 
 > **Validation status.** Two free, deterministic gates (structural lint and lexical
-> routing) now pass, and their numbers are reproducible from a clean checkout. The
-> **behavioral** evidence is still missing: iteration-3 is specified in
-> [CONTRIBUTING.md](CONTRIBUTING.md#the-release-gate) and has not been run. Everything
-> below about *agent behaviour* remains a hypothesis with a named cause. Everything about
-> *routing and shape* is measured.
+> routing) pass, and their numbers reproduce from a clean checkout. Three full pipeline
+> runs on real datasets land inside independently published ranges. What is **not**
+> measured is whether the plugin changes the answer versus a capable unaided model —
+> the harness that tried to answer that has been removed rather than left to imply a
+> verdict it could not support. Everything here about *routing, shape, and pipeline
+> output* is measured; the marginal-value claim is open.
 
 ### Security
 
@@ -40,32 +41,20 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **`scrub_transcripts.py`, and CI enforcement of it.** Committed eval transcripts
-  carried the operator's username in 470 places, their home path, an inventory of 111
-  installed slash commands, and the names of four connected MCP accounts — all shipped
-  to anyone who installs the plugin. They can't simply be deleted, because
-  `aggregate.py` reads each trial's `result` record to publish cost and latency, so the
-  scrubber redacts identity and machine inventory while keeping the `last-ds-mile`
-  entries that let a reader verify which arm actually had the plugin loaded. `pytest`
-  and a CI step both fail if a transcript regresses.
-- **A three-tier eval harness.** Tier 1 (`tests/test_skill_lint.py`) enforces SKILL.md
-  shape: description length, a mandatory trigger clause, ≥2 distinct trigger vocabularies,
-  required sections, kebab naming, cross-reference resolution, one-level-deep links.
-  Tier 2 (`benchmarks/evals/scripts/route_check.py`) is a stdlib TF-IDF routing check —
-  does a realistic phrasing actually reach the skill that owns it, and do any two
-  descriptions collide. Tier 3 is the existing behavioral harness, now isolated and
-  blinded. Tiers 1 and 2 run in CI and cost nothing.
-- **Trigger case files for every skill** (`benchmarks/evals/cases/*.json`) — 92 positive
+- **Two free, deterministic quality gates, both in CI.** `tests/test_skill_lint.py`
+  enforces SKILL.md shape: description length, a mandatory trigger clause, ≥2 distinct
+  trigger vocabularies, required sections, kebab naming, cross-reference resolution,
+  one-level-deep links. `benchmarks/routing/route_check.py` is a stdlib TF-IDF routing
+  check — does a realistic phrasing actually reach the skill that owns it, and do any two
+  descriptions collide. Neither costs anything to run.
+- **Trigger case files for every skill** (`benchmarks/routing/cases/*.json`) — 92 positive
   and 60 negative prompts, each negative naming the skill that *should* own it so the
-  assertion is a real pairwise routing test.
-- **Blind grading, mechanically** (`grade_manifest.py`). Runs are copied under shuffled
-  opaque ids with no arm in the path; identity is restored only after grading.
-- **Pressure cases** — time pressure and sunk cost on credit-card-fraud, authority
-  pressure on house-prices. Discipline that only holds when nobody argues against it
-  isn't discipline.
-- **Per-case `max_turns` / `max_cost_usd` budgets** and an explicit completion
-  expectation on every positive case, so a run that stalls without a verdict fails one
-  named check rather than three content checks by accident.
+  assertion is a real pairwise routing test rather than one that passes by matching
+  nothing.
+- **[`benchmarks/README.md`](benchmarks/README.md)** — what each of the three datasets is
+  and why those three, where to download them (the repo ships no data), how the scores
+  compare to independently published work, and why the House Prices Kaggle leaderboard is
+  *not* a usable reference. Plus a re-run log, recording null results too.
 
 ### Changed
 
@@ -76,29 +65,16 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   accuracy the right thing to report"* and `imbalanced-data` ranked #41 for *"only 0.2% of
   my rows are positive"* — the pack's two core claims on its own flagship dataset were
   effectively unreachable. Full before/after in
-  [`benchmarks/evals/routing-baseline.md`](benchmarks/evals/routing-baseline.md).
+  [`benchmarks/routing/routing-baseline.md`](benchmarks/routing/routing-baseline.md).
 - **`/ds` shows the map and stops, always.** The previous text asked the model to infer
   *why* it had been invoked, which a command cannot know. That conditional is how a task
   routed into a status display and ended without a verdict in two of three iteration-2
   eval-2 trials.
-- **Behavioral eval workspaces scaffold outside the repository**, and `run_eval.py`
-  refuses to scaffold inside it. Iteration-2 scaffolded into `benchmarks/evals/…/results/`,
-  under this repo's own `CLAUDE.md`, which states the hard-gate doctrine the
-  `without_skill` arm is supposed to lack — so that arm cannot be certified clean.
-  `eval_metadata.json` now records the resolved environment.
-- **The benchmark headline is a macro average over cases**, one vote each. The
-  per-expectation micro average is reported beside it; it weights a case by how many
-  expectations it happens to carry, which let a single 5-expectation case swing 38% of
-  iteration-2's two-case verdict.
-- **`benchmarks/evals/README.md` methodology claims corrected.** The blind-grader claim is
-  now true (it is enforced, not requested); the trials claim says 3 where 3 were run; the
-  cross-harness claim says scaffolded-not-exercised, because every committed run is Claude
-  Code and this pack ships no Gemini or Codex command variants.
 
 - **Marketplace installs are pinned to a release tag.** `marketplace.json` named the
   repo with no `ref`, so an install resolved to whatever was on the default branch at
   that moment. `main` had already drifted four commits past the `v0.9.0` tag it claimed
-  to be. Now pinned to `v0.9.0`; a test asserts the pin exists, is a release tag, and
+  to be. Now pinned to `v0.10.0`; a test asserts the pin exists, is a release tag, and
   matches `plugin.json`'s version, so the two can only move together.
 - **CI runs on `dev` and can be triggered manually.** `dev` is where every PR lands and
   it had no push trigger, so merges to the integration branch ran nothing. `master` is
@@ -108,16 +84,34 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Removed
 
-- **`benchmarks/evals/example/`, and the README table built on it.** The tree's
-  `without_skill` arm was an *illustrative naive baseline*, not a captured live run — its
-  own README said so. But the `+0.875` and `+0.80` gaps it produced were being presented
-  on the project README under the heading "Does the plugin actually change the outcome?",
-  described as "stark", while the repository's one real two-arm measurement
-  (`results/iteration-2/`, gap **−0.077**) went unmentioned there entirely. A comparison
-  against a strawman is not evidence, and a plugin about honest reporting has no business
-  publishing the flattering number and omitting the measured one. The README section now
-  leads with the real result, its cause, and its caveats. `eval-viewer.html` moved to
-  `benchmarks/evals/`; `results/iteration-2/` is kept deliberately.
+- **The entire with/without-skill eval harness (`benchmarks/evals/`), removed from the
+  repo and purged from git history.** Two separate problems converged on the same answer.
+
+  *It could not support the claim it existed to make.* It had run once — two cases, three
+  trials, one dataset. The result went against the plugin, and was then traced to a
+  front-door defect that has since been fixed, so it graded a build that no longer
+  exists. 8 of its 13 expectations scored a zero gap, meaning they could not separate the
+  arms at all, which left the verdict resting on a handful of items and let one bug swing
+  the headline by 0.10. And every run was graded by hand with the arm visible — the
+  blinding tool was committed 43 minutes *after* the results it was meant to blind.
+  Shipping that number, in either direction, would have been publishing something that
+  looks like evidence and isn't.
+
+  *Its artifacts leaked the operator's machine.* The committed transcripts carried a
+  username in 470 places, a home path, an inventory of 111 installed slash commands, and
+  four connected MCP account names. No credentials — all 1,550 objects in history were
+  scanned — but nothing a stranger needed either. Scrubbing the working tree did not fix
+  it, because the unscrubbed originals remained retrievable from earlier commits, so the
+  history was rewritten rather than patched at the tip.
+
+  Also removed with it: `benchmarks/evals/example/`, whose `without_skill` arm was an
+  *illustrative naive baseline* rather than a captured run, and whose `+0.875` gap was
+  once presented on the front page as evidence the plugin worked.
+
+  What survives is the part that was always skill-level rather than plugin-level: the
+  trigger corpus and the routing check, now at [`benchmarks/routing/`](benchmarks/routing/)
+  under an honest name. `CONTRIBUTING.md` records the bar any future behavioural
+  measurement has to clear.
 - **`SPEC.md`, `tasks/plan.md`, `tasks/todo.md`** — the deployment-mile planning docs,
   shipped in 0.8.0 and superseded.
 
@@ -158,14 +152,6 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     interval that is invalid here. Now states why the raw SD is used deliberately as a
     conservative screen, and points at the corrected resampled t-test and held-out
     bootstrap for when an actual test is needed.
-- **The published iteration-2 headline was stale, and the corrected number is worse.**
-  `summary.md` had been generated by an older `aggregate.py` that headlined a *micro*
-  average (0.769 vs 0.846, gap −0.077). The current one headlines the **macro** average
-  — one vote per case — which is 0.70 vs 0.875, **gap −0.175**. Regenerating from the
-  committed `grading.json` files makes both numbers reproducible, and the README now
-  quotes the macro figure with the micro noted for comparability. The micro average let
-  a single 5-expectation case swing 38% of a two-case verdict, which is why it is no
-  longer the headline.
 - **Windows was the least-served platform, on the maintainer's own OS.** The
   installer's "install Claude Code first" guard was dead code there (`shell: true`
   makes cmd.exe report a missing binary as a non-zero *status*, never `.error`), so the

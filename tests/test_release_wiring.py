@@ -165,9 +165,15 @@ def test_readme_skill_breakdown_adds_up():
 
 
 def test_readme_does_not_cite_the_removed_illustrative_example():
-    """`benchmarks/evals/example/` had a fabricated `without_skill` arm, and its
-    +0.875 / +0.80 gaps were being presented on the front page as evidence the
-    plugin works. A comparison against a strawman is not evidence."""
+    """`benchmarks/evals/example/` had a fabricated `without_skill` arm whose
+    +0.875 / +0.80 gaps were presented on the front page as evidence the plugin
+    works. A comparison against a strawman is not evidence.
+
+    The whole with/without harness has since been removed from the repo (and from
+    git history), so the tree this guarded is gone — but the numbers are cheap to
+    keep asserting against, and a fabricated figure reappearing in the README is
+    exactly the regression worth catching.
+    """
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "evals/example" not in readme, (
         "README references the removed illustrative example tree"

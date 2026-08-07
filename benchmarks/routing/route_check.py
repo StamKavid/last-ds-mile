@@ -25,10 +25,10 @@ Ported from addyosmani/agent-skills `scripts/run-evals.js`. Stdlib only -- this
 repo has no lockfile and pytest/pyyaml are its only test deps.
 
 Usage:
-    python benchmarks/evals/scripts/route_check.py
-    python benchmarks/evals/scripts/route_check.py --min-rank1 80
-    python benchmarks/evals/scripts/route_check.py --matrix   # full collision table
-    python benchmarks/evals/scripts/route_check.py --json
+    python benchmarks/routing/route_check.py
+    python benchmarks/routing/route_check.py --min-rank1 80
+    python benchmarks/routing/route_check.py --matrix   # full collision table
+    python benchmarks/routing/route_check.py --json
 """
 
 from __future__ import annotations
@@ -50,10 +50,10 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 SKILLS_DIR = REPO_ROOT / "skills"
 COMMANDS_DIR = REPO_ROOT / "commands"
-CASES_DIR = REPO_ROOT / "benchmarks" / "evals" / "cases"
+CASES_DIR = REPO_ROOT / "benchmarks" / "routing" / "cases"
 
 MIN_RANK1_FLOOR = 85.0  # CI gate; tests/test_eval_harness.py reads this
 COLLISION_WARN = 0.50

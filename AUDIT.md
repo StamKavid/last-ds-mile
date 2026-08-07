@@ -78,18 +78,24 @@ To verify the no-network and stdlib-only claims yourself: `grep -n "^import\|^fr
 ## What ships in the repo itself
 
 `claude plugin install` clones the whole repository, so everything tracked here lands
-on your machine — including `benchmarks/evals/**/transcript.jsonl`, the raw agent
-transcripts behind the published eval numbers. Those are recorded on a real machine,
-so before they are committed they go through
-`benchmarks/evals/scripts/scrub_transcripts.py`, which replaces the operator's
-username and home paths with `<user>` and collapses the `init` record's inventory of
-installed slash commands, skills, agents and connected MCP servers to a count. The
-`last-ds-mile` entries are deliberately kept, so you can still verify which arm of a
-with/without comparison actually had the plugin loaded. CI enforces this
-(`scrub_transcripts.py --check`), and `pytest` fails if any transcript regresses.
+on your machine. Worth knowing what that is, and what it deliberately is not:
 
-No credentials are committed anywhere in this repo. To check for yourself:
-`git ls-files -z | xargs -0 grep -lE "sk-ant-|ghp_|AKIA[0-9A-Z]{16}"` returns nothing.
+- **No datasets.** This repo never commits third-party data — see `.gitignore`. That
+  also keeps dataset redistribution licensing out of scope.
+- **No agent transcripts.** A with/without-skill eval harness previously committed raw
+  transcripts of real runs. Recorded on a real machine, those carried the operator's
+  home paths and an inventory of their installed tooling — no credentials, but nothing
+  a stranger needed either. The harness and its results have been removed from the
+  repo **and purged from git history**, so they are not recoverable from an old commit.
+- **What remains under `benchmarks/`** is narrative stage output (`*.md`), figures,
+  model-card metadata, the scripts that generated each run, and the routing-check
+  corpus under `benchmarks/routing/`. None of it contains machine-specific paths.
+
+No credentials are committed anywhere in this repo, and none appear in its history —
+all 1,550 historical objects were scanned for `sk-ant-`, `ghp_`, `github_pat_`,
+`AKIA…`, `xox[baprs]-` and PEM private-key headers. To spot-check the current tree
+yourself: `git ls-files -z | xargs -0 grep -lE "sk-ant-|ghp_|AKIA[0-9A-Z]{16}"`
+returns nothing.
 
 ## Recommended permission baseline
 

@@ -39,11 +39,11 @@ first missing one.
 
 Never route a task through this command. A request to build, evaluate, or ship a
 model belongs to the `data-science-project` skill, which carries it to a result in the
-same turn — reaching this map mid-task and stopping to ask which stage to start at is
-the exact failure iteration-2 measured
-(`benchmarks/evals/credit-card-fraud/results/iteration-2/`, eval-2: two of three trials
-produced no verdict at all). If you are carrying out a task and find yourself here,
-you took a wrong turn: go back to `data-science-project` and do the work.
+same turn — reaching this map mid-task and stopping to ask which stage to start at is a
+measured failure, not a hypothetical one: in a two-arm eval it cost two of three trials
+their verdict entirely, while the unaided model simply answered. If you are carrying out
+a task and find yourself here, you took a wrong turn: go back to `data-science-project`
+and do the work.
 
 When recommending the next stage: name the command matching the first missing stage in
 order. If the user asks to skip ahead to `/ds-model`, `/ds-report`,

@@ -40,20 +40,12 @@ jobs:
         # runtime behavior of the four hooks that read your data and notebooks.
         run: python -m pytest
 
-      - name: Skill routing (Tier 2)
+      - name: Skill routing
         # Free, deterministic check that the right skill is reachable from how a
         # user actually phrases the ask, and that no two descriptions collide.
         # The floor is set below the achieved baseline so an unrelated description
         # edit doesn't turn CI red. Raise it as routing improves; never lower it
-        # to make a regression pass. See benchmarks/evals/routing-baseline.md.
+        # to make a regression pass. See benchmarks/routing/routing-baseline.md.
         # Bare --min-rank1 uses the floor declared in route_check.py, which the
         # pytest suite also reads — one number, not two hand-mirrored copies.
-        run: python benchmarks/evals/scripts/route_check.py --min-rank1
-
-      - name: Transcript hygiene
-        # Committed eval transcripts are recorded on a real machine and ship to every
-        # installer. This fails if any of them still carries the operator's username,
-        # home path, or the init record's inventory of their installed tooling and
-        # connected MCP servers. pytest covers this too; the standalone run prints the
-        # exact fix command.
-        run: python benchmarks/evals/scripts/scrub_transcripts.py --check
+        run: python benchmarks/routing/route_check.py --min-rank1

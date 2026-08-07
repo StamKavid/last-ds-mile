@@ -14,8 +14,8 @@ modelling, evaluation, explanation, report, handoff — is committed under each 
 
 > **What these do *not* show.** There is no control arm here. These runs prove the
 > pipeline produces good numbers; they cannot tell you what the *plugin* adds over the
-> same model working unaided. That question lives in [`evals/`](evals/) and is
-> [currently unanswered](../README.md#what-is-not-measured-does-the-plugin-change-the-answer).
+> same model working unaided. That question is
+> [open and currently unanswered](../README.md#what-is-not-measured-does-the-plugin-change-the-answer).
 
 ---
 
@@ -35,7 +35,10 @@ bites differently — not because they're famous.
 
 The fraud set is the one that earns its place hardest: at 0.167% positives, majority-class
 accuracy is **99.83%**, which is exactly the number that makes an unaided model declare
-victory. It's also the dataset used by the with/without eval in [`evals/`](evals/).
+victory.
+
+Skill *routing* is checked separately and for free — see [`routing/`](routing/), which
+holds a trigger corpus for every skill and the deterministic check that runs in CI.
 
 ---
 

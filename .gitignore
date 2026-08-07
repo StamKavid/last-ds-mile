@@ -36,3 +36,7 @@ benchmarks/**/catboost_info/
 
 # Local drafts / reference material — not part of the plugin.
 latest-substack.md
+
+# The with/without-skill eval harness was removed from the repo (and purged from
+# git history). Local copies stay on disk but must never be re-committed.
+benchmarks/evals/
