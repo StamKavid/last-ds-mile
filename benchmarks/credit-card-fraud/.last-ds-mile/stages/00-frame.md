@@ -38,11 +38,36 @@ a default reach for complexity.
 ## Success metric
 
 **PR-AUC (average precision)** as the primary ranking metric — per
-`metric-selection`'s imbalanced-classification row, ROC-AUC stays misleadingly high
-under 0.17% fraud because it's dominated by the easy majority-class true-negative
-rate; PR-AUC is sensitive to exactly the minority-class performance the decision
-actually depends on. ROC-AUC is still reported, but never as the metric used to rank
-candidates.
+`metric-selection`'s imbalanced-classification row.
+
+The reason is *not* that ROC-AUC is inflated by the easy majority class. ROC-AUC is
+**invariant to class balance** — TPR and FPR are each computed within a class, so the
+578:1 negative-to-positive ratio in this file does not move it at all. That invariance
+is the problem: ROC-AUC will look the same here as it would on a balanced dataset,
+while the thing the fraud-ops team actually feels — how many genuine transactions get
+held for every fraud caught — is driven entirely by the ratio. With 284,315 genuine
+transactions and 492 frauds, a small *rate* is a large *count*:
+
+| Operating point | False alarms | Per fraud that exists | Precision ceiling, even at 100% recall |
+|---|---|---|---|
+| FPR 1.0% | 2,843 | 5.8 | **14.8%** |
+| FPR 0.1% | 284 | 0.58 | **63.4%** |
+
+So a model can trace an excellent ROC curve and still swamp the review queue. PR-AUC
+uses precision, which moves with that ratio, so it tracks what the decision depends on.
+ROC-AUC is still reported, but never as the metric used to rank candidates.
+
+**PR-AUC's own caveat, recorded here so no later stage misreads it:** unlike ROC-AUC it
+has *no fixed anchor*. Its no-skill floor is the positive rate, not 0.5 — **0.00173** on
+this raw file. Every PR-AUC quoted downstream is a multiple of that floor, and is not
+comparable to a PR-AUC from a dataset with a different base rate.
+
+> **The floor moves once, downstream, and that is expected.** `/ds-data` finds 1,081
+> exact duplicate rows (19 of them fraud) and `/ds-prep` drops them as a train/test
+> contamination control. The modelling set is therefore 283,726 rows at 0.167%, so
+> `/ds-baseline` computes the floor as **0.00167** and every later stage compares
+> against that. Framing sees the raw file; modelling sees the deduplicated one. Both
+> numbers are correct for their stage — see `01-data.md`, `03-prep.md`, `04-baseline.md`.
 
 **Business framing:** the real deployment decision is not "rank all transactions,"
 it's "pick an operating threshold." `/ds-model` freezes a threshold chosen to

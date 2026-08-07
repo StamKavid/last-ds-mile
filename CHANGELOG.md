@@ -192,6 +192,17 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **The README skill breakdown summed to 29 by cancelling errors** — it claimed 12
   domain skills against 11 on disk and omitted `capturing-learnings`. Each category is
   now named and the guard test checks all five.
+- **The `credit-card-fraud` benchmark was re-run against the corrected
+  `metric-selection`,** rather than carrying the stale rationale as documented drift.
+  `00-frame.md` had justified PR-AUC using the wrong mechanism, so its Success Metric
+  section is rewritten — now grounded in this dataset's own arithmetic (at 578:1, FPR
+  1.0% is 2,843 false alarms against 492 frauds, capping precision at 14.8% even at
+  perfect recall) and carrying PR-AUC's own caveat, including why the no-skill floor
+  legitimately moves from 0.00173 to 0.00167 once `/ds-prep` drops 1,081 duplicates.
+  `model.py`, `evaluate.py` and `seed_stability.py` were re-executed: CV PR-AUC
+  0.8455 ± 0.0117, baseline 0.00167, frozen threshold 0.4932 and seed-stability mean
+  0.8465 / std 0.0010 all reproduced exactly, and every committed figure and artifact
+  came back byte-identical. Recorded in [benchmarks/README.md](benchmarks/README.md).
 - **Two false claims in `AUDIT.md`.** It said all four hooks "exit 0 unconditionally" —
   true of the Python scripts, but the invoked command is `ds-python.sh`, which exits 1
   (or 127) when no Python 3 is found; still non-blocking, but not silent. And it said

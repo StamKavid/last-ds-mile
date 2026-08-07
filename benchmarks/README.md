@@ -155,15 +155,42 @@ Figures land in `.last-ds-mile/figures/`; a curated selection is in
 
 ---
 
-## Known drift
+## Re-run log
 
-Tracked here rather than silently fixed, because these runs are evidence and rewriting
-evidence to match current guidance is its own kind of dishonesty.
+When a skill's guidance changes in a way that would have changed what one of these runs
+did, the affected stage is re-run rather than assumed still valid. Re-runs are recorded
+here, including the ones that changed nothing — "we checked and it held" is a result.
 
-- **`credit-card-fraud/00-frame.md` cites a superseded rationale for PR-AUC.** It repeats
-  the old explanation that ROC-AUC misleads under imbalance "because it's dominated by the
-  easy majority-class true-negative rate." That mechanism is wrong — ROC-AUC is *invariant*
-  to class balance — and [`metric-selection`](../skills/metric-selection/SKILL.md) has been
-  corrected. **The metric choice the run made is unaffected**: PR-AUC was and remains the
-  right call at 0.167% positives. Only the stated reason was wrong, so the stage has not
-  been re-run.
+### 2026-08-07 — `credit-card-fraud`, after the `metric-selection` correction
+
+**Why.** [`metric-selection`](../skills/metric-selection/SKILL.md) had explained ROC-AUC's
+failure under imbalance with a wrong mechanism ("dominated by the easy majority-class
+true-negative rate"). ROC-AUC is *invariant* to class balance — that is its defining
+property — so the stated cause was backwards. `00-frame.md` had quoted that reasoning
+when it chose PR-AUC.
+
+**What changed.** `00-frame.md`'s Success Metric section, rewritten against the corrected
+skill. The metric choice is unchanged — PR-AUC was and remains right here — but the
+justification is now the real one, and it's grounded in this dataset's own arithmetic
+rather than a general claim: at 578:1, an FPR of 1.0% is 2,843 false alarms against 492
+frauds, capping precision at **14.8% even at perfect recall**. The rewrite also records
+PR-AUC's missing caveat (no fixed anchor; its no-skill floor is the base rate) and notes
+that the floor legitimately moves from 0.00173 to 0.00167 once `/ds-prep` drops the 1,081
+duplicate rows.
+
+**What was re-run, and what it produced.** `model.py`, `evaluate.py`, and
+`seed_stability.py` were all re-executed against the full 284,807-row dataset:
+
+| Quantity | Committed | Re-run | |
+|---|---|---|---|
+| CV PR-AUC | 0.8455 ± 0.0117 | 0.8455 ± 0.0117 | ✅ |
+| Baseline PR-AUC | 0.00167 | 0.00167 | ✅ |
+| Frozen threshold (max-F2) | 0.4932 | 0.4932 | ✅ |
+| Precision / recall at threshold | — | 0.8851 / 0.8309 | TP 393, FP 51, FN 80 |
+| Seed stability (5 seeds) | mean 0.8465, std 0.0010 | mean 0.8465, std 0.0010 | ✅ |
+| Temporal holdout PR-AUC | — | 0.7725 | day 0 → day 1 |
+
+**Every committed figure and artifact came back byte-identical.** The only file the
+re-run modified was the framing narrative. That is the expected outcome — no code and no
+metric changed, only a sentence of reasoning — but it is now verified rather than
+asserted, and it doubles as a reproducibility check on the whole run.
