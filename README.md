@@ -27,6 +27,37 @@ FRAME         UNDERSTAND    PREPARE       MODEL         EVALUATE      SHIP
 
 ---
 
+## Will it work on your problem?
+
+**Tabular supervised learning — regression and classification on rows and columns.** That
+is the whole supported surface today, and the plugin is built to say so out loud rather
+than give you confident advice outside it.
+
+| Task type | Status | Notes |
+|---|---|---|
+| **Tabular regression** | ✅ **Supported** | Benchmarked end-to-end on [House Prices](benchmarks/house-prices/). Skewed targets, log-space metrics, small-n. |
+| **Tabular binary classification** | ✅ **Supported** | Benchmarked at both moderate (26.5%) and severe (0.167%) imbalance — [Telco Churn](benchmarks/telco-churn/), [Credit Card Fraud](benchmarks/credit-card-fraud/). |
+| **Tabular multiclass** | 🟡 **Works, unbenchmarked** | Nothing blocks it and the metric guidance covers it, but no committed run proves it. Treat the guidance as sound and the evidence as absent. |
+| **Time-ordered tabular data** | 🟡 **As a leakage concern only** | `/ds-validate` handles temporal splits, embargo, and `gap=` for label horizons. This is *not* the same as forecasting — see below. |
+| **Time-series forecasting** | ⛔ **Out of scope** | If the target is a future value of a series, `/ds-frame` trips a Red Flag and says so. No lag/rolling feature machinery, no backtest windows, no MASE/sMAPE, and a global-mean baseline would be a strawman. **On the roadmap.** |
+| **Causal questions** | 🟡 **Guarded, not run** | `causal-vs-predictive` stops a predictive result being written up as a causal claim. It does not design or run an identification strategy. |
+| **NLP / text** | ⛔ **Out of scope** | No plans. |
+| **Computer vision** | ⛔ **Out of scope** | No plans. |
+| **Recommenders / ranking** | ⛔ **Out of scope** | `metric-selection` mentions NDCG/MAP@k only so they aren't confused with classification metrics. |
+| **Deep learning** | ⛔ **Out of scope** | The discipline generalises; the guidance assumes sklearn-scale tabular tooling. |
+
+**Scale:** the guidance assumes data that fits in memory on one machine (pandas/Polars,
+sklearn, LightGBM/CatBoost). `dataframe-performance` covers dtype downcasting and the
+pandas→Polars move; nothing here addresses out-of-core or distributed training.
+
+**Deployment** is local-first: `/ds-package` proves training/serving parity and emits a
+reproducible Dockerfile, `/ds-deploy` stands the model up locally with monitoring, drift
+detection, and a rollback pointer. Cloud targets are documented adapter stubs you fill in
+— the plugin never pushes to a remote on its own. **Automated retraining triggers are on
+the roadmap.**
+
+---
+
 ## Quick Start
 
 **Option A — one command, from any terminal (recommended):**
@@ -311,7 +342,9 @@ Run `/ds-learn` to capture your own project-local lesson — what broke and what
 
 ## Benchmarks
 
-Three real datasets, each taken through the full `/ds-frame`→`/ds-handoff` pipeline, not just described in the abstract — proof the discipline produces real, reliable numbers rather than plausible-sounding prose. Full evidence trail for each run lives in [`benchmarks/`](benchmarks/); a curated set of figures is in [`showcase/`](showcase/).
+Three real datasets, each taken through the full `/ds-frame`→`/ds-handoff` pipeline, not just described in the abstract — proof the discipline produces real, reliable numbers rather than plausible-sounding prose.
+
+**→ [`benchmarks/README.md`](benchmarks/README.md)** explains what each case is, why those three, where to download the data, how our scores compare against independent published work, and why the House Prices Kaggle leaderboard is *not* a usable reference. A curated set of figures is in [`showcase/`](showcase/).
 
 | Dataset | Problem | Shipped model | Score | 5-seed reliability | vs. published reference |
 |---|---|---|---|---|---|
@@ -398,10 +431,7 @@ cat settings-baseline.json
 
 ## Scope
 
-Worth knowing before you install:
-
-- **Tabular supervised learning.** Regression and classification on rows and columns via pandas and scikit-learn. No text, vision, recommenders, or time-series forecasting — time-ordered data is handled as a splitting and leakage concern, not a forecasting stack.
-- **The deployment mile is local-first.** `/ds-package` proves training/serving parity and produces a reproducible Dockerfile; `/ds-deploy` stands the model up as a local endpoint with monitoring, drift detection, and a rollback pointer. Cloud targets are documented adapter stubs you fill in — the plugin never pushes to a remote on its own. **Automated retraining triggers are the one part still on the roadmap.**
+See [**Will it work on your problem?**](#will-it-work-on-your-problem) at the top for the full supported-task table and roadmap. The short version: tabular regression and classification, in-memory, local-first deployment. Time-series forecasting, NLP, vision, and recommenders are out of scope — and the plugin is built to say so rather than give you confident advice outside its range.
 
 ---
 
