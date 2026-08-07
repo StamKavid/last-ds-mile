@@ -33,3 +33,6 @@ benchmarks/**/preds.csv
 benchmarks/**/oof_predictions.csv
 benchmarks/**/seal_state.json
 benchmarks/**/catboost_info/
+
+# Local drafts / reference material — not part of the plugin.
+latest-substack.md

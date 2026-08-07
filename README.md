@@ -27,50 +27,6 @@ FRAME         UNDERSTAND    PREPARE       MODEL         EVALUATE      SHIP
 
 ---
 
-## Why Last DS Mile?
-
-Data science projects don't fail in the modeling cell. They fail in the last mile: target leakage that inflates a metric, a validation scheme that trains on the future, evaluation that reports one aggregate number while hiding where the model fails, and notebooks that can't be rerun six months later.
-
-AI coding agents make this worse by default — they optimize for a result that looks right quickly, skipping the steps that reveal whether the result *is* right. Last DS Mile gives agents structured workflows with checkpoints that match how experienced data scientists actually work: baselines before complexity, honest splits before training, slices before reporting.
-
-Four principles run through every stage:
-
-- **Leakage first.** Target leakage, temporal leakage, and validation leakage are actively hunted — not left to chance. The `leakage-auditor` subagent is available for adversarial review before any model ships.
-- **Baselines are required, not optional.** A model that doesn't beat the simplest thing that could work has proven nothing. `/ds-baseline` is a hard prerequisite for `/ds-model`.
-- **Aggregate scores are not enough.** Slice performance (including protected/sensitive attributes where relevant), calibration, and error analysis are required before any model ships. `/ds-evaluate` results are a hard prerequisite for `/ds-report`.
-- **A point estimate is not a finding.** Every reported metric carries its fold spread, and a lift over baseline is only real if it exceeds that spread — see `uncertainty-quantification`. One pass through evaluation is also rarely the end: `/ds-iterate` diagnoses what's actually wrong and routes back to the stage that fixes it before the pipeline is allowed to call itself done.
-
-
-## Commands
-
-17 slash commands — one navigator, 14 pipeline stages (including the `/ds-iterate` loop-back step), plus `/ds-learn` to capture project-local lessons and `/ds-brief` to translate `/ds-report` for a non-technical audience. Each activates the right skills automatically. Five stages are hard gates that stop and verify discipline before proceeding.
-
-| What you're doing | Command | Key principle |
-|-------------------|---------|---------------|
-| Navigate the pipeline | `/ds` | Know where you are before the next step |
-| Frame the problem | `/ds-frame` | Decide what winning looks like before touching data |
-| Audit the data | `/ds-data` | Understand before transforming |
-| Explore distributions and relationships | `/ds-explore` | Surface surprises before they become bugs |
-| Clean and engineer features | `/ds-prep` | Features should represent what you know, not what you measured |
-| Establish an honest baseline | `/ds-baseline` | Complexity must beat the dumbest thing that could work |
-| Design the validation scheme | `/ds-validate` | The split is part of the model |
-| Train models | `/ds-model` ⚠ | No model without a baseline and a validation plan |
-| Evaluate with slices | `/ds-evaluate` | Aggregate scores lie; slice performance reveals |
-| Diagnose and route back | `/ds-iterate` | One pass rarely finishes the job — name the gap, fix the right stage |
-| Interpret results | `/ds-explain` | Explanation is evidence, not decoration |
-| Communicate findings | `/ds-report` ⚠ | Slices and uncertainty, not one number |
-| Package for handoff | `/ds-handoff` ⚠ | Pinned environment before shipping any model |
-| Package to serve | `/ds-package` ⚠ | The served model must predict identically to the offline one |
-| Deploy behind monitoring | `/ds-deploy` ⚠ | No production model without monitoring, drift, and a rollback |
-| Capture a lesson | `/ds-learn` | What broke and what fixed it, for the next session |
-| Brief a non-technical audience | `/ds-brief` | Translate the report, don't re-analyze — no jargon, one page |
-
-The five ⚠ stages are **hard gates**: `/ds-model` requires a completed baseline and validation strategy to exist first; `/ds-report` requires subgroup performance, not just an aggregate metric; `/ds-handoff` requires a pinned environment before packaging a model; `/ds-package` requires the training/serving parity check to pass before the model is servable; `/ds-deploy` requires monitoring, drift detection, and a rollback pointer before a full-traffic deploy.
-
-Each stage writes its output to `.last-ds-mile/stages/` in your project, so later stages build on earlier ones and `/ds` can always detect your progress.
-
----
-
 ## Quick Start
 
 **Option A — one command, from any terminal (recommended):**
@@ -92,6 +48,10 @@ Once installed, open Claude Code in any project and run `/ds-frame` to start the
 
 **Requirements:** [Claude Code](https://claude.com/claude-code) (either option), plus [Node.js](https://nodejs.org) 18+ for the `npx` one-liner.
 
+The four hooks are Python scripts launched through a small `bash` shim, so they also need **Python 3** and **`bash`** on your `PATH` (Git Bash is fine on Windows). Without them the hooks can't run — they still can't block a tool call, but you'll get a `no working Python 3 interpreter found` line on stderr for every file read. See [AUDIT.md](AUDIT.md) for exactly what each hook does.
+
+**To uninstall:** `/plugin uninstall last-ds-mile`, then `/plugin marketplace remove last-ds-mile` to drop the marketplace entry. Neither touches the `.last-ds-mile/` directory in your project — that's your stage output, delete it yourself if you want it gone. The plugin never wrote to your `.claude/settings.json`, so there is nothing to revert there.
+
 <details>
 <summary><b>Troubleshooting: SSH clone errors</b></summary>
 
@@ -107,9 +67,59 @@ then re-run the install command.
 
 ---
 
+## Why Last DS Mile?
+
+Data science projects don't fail in the modeling cell. They fail in the last mile: target leakage that inflates a metric, a validation scheme that trains on the future, evaluation that reports one aggregate number while hiding where the model fails, and notebooks that can't be rerun six months later.
+
+AI coding agents make this worse by default — they optimize for a result that looks right quickly, skipping the steps that reveal whether the result *is* right. Last DS Mile gives agents structured workflows with checkpoints that match how experienced data scientists actually work: baselines before complexity, honest splits before training, slices before reporting.
+
+Four principles run through every stage:
+
+- **Leakage first.** Target leakage, temporal leakage, and validation leakage are actively hunted — not left to chance. The `leakage-auditor` subagent is available for adversarial review before any model ships.
+- **Baselines are required, not optional.** A model that doesn't beat the simplest thing that could work has proven nothing. `/ds-baseline` is a hard prerequisite for `/ds-model`.
+- **Aggregate scores are not enough.** Slice performance (including protected/sensitive attributes where relevant), calibration, and error analysis are required before any model ships. `/ds-evaluate` results are a hard prerequisite for `/ds-report`.
+- **A point estimate is not a finding.** Every reported metric carries its fold spread, and a lift over baseline is only real if it exceeds that spread — see `uncertainty-quantification`. One pass through evaluation is also rarely the end: `/ds-iterate` diagnoses what's actually wrong and routes back to the stage that fixes it before the pipeline is allowed to call itself done.
+
+
+## Commands
+
+17 slash commands — one navigator, 14 pipeline stages (including the `/ds-iterate` loop-back step), plus `/ds-learn` to capture project-local lessons and `/ds-brief` to translate `/ds-report` for a non-technical audience. Each activates the right skills automatically. Five stages are hard gates, in two flavours: three *discipline* gates that won't proceed on missing evidence but produce it for you inline, and two *safety* gates that genuinely stop.
+
+| What you're doing | Command | Key principle |
+|-------------------|---------|---------------|
+| Navigate the pipeline | `/ds` | Know where you are before the next step |
+| Frame the problem | `/ds-frame` | Decide what winning looks like before touching data |
+| Audit the data | `/ds-data` | Understand before transforming |
+| Explore distributions and relationships | `/ds-explore` | Surface surprises before they become bugs |
+| Clean and engineer features | `/ds-prep` | Features should represent what you know, not what you measured |
+| Establish an honest baseline | `/ds-baseline` | Complexity must beat the dumbest thing that could work |
+| Design the validation scheme | `/ds-validate` | The split is part of the model |
+| Train models | `/ds-model` ⚠ | No model without a baseline and a validation plan |
+| Evaluate with slices | `/ds-evaluate` | Aggregate scores lie; slice performance reveals |
+| Diagnose and route back | `/ds-iterate` | One pass rarely finishes the job — name the gap, fix the right stage |
+| Interpret results | `/ds-explain` | Explanation is evidence, not decoration |
+| Communicate findings | `/ds-report` ⚠ | Slices and uncertainty, not one number |
+| Package for handoff | `/ds-handoff` ⚠ | Pinned environment before shipping any model |
+| Package to serve | `/ds-package` ⚠ | The served model must predict identically to the offline one |
+| Deploy behind monitoring | `/ds-deploy` ⚠ | No production model without monitoring, drift, and a rollback |
+| Capture a lesson | `/ds-learn` | What broke and what fixed it, for the next session |
+| Brief a non-technical audience | `/ds-brief` | Translate the report, don't re-analyze — no jargon, one page |
+
+The five ⚠ stages are **hard gates**, and they come in two kinds:
+
+**Discipline gates** won't run on missing evidence, but they *self-heal* rather than bouncing the work back to you — the agent produces what's missing in the same turn and says it did. `/ds-model` requires a baseline and a validation strategy; `/ds-report` requires subgroup performance, not just an aggregate metric; `/ds-handoff` requires a pinned environment.
+
+**Safety gates** stop. `/ds-package` won't call a model servable until the training/serving parity check passes; `/ds-deploy` won't go to full traffic without monitoring, drift detection, and a rollback pointer.
+
+Be clear-eyed about what that means: a discipline gate is an instruction the agent follows, not a mechanism that can block a tool call. It catches the honest omission — the far more common case — but a determined agent can satisfy it with a weak baseline. The parity check is the one gate whose result an outside party can independently recompute.
+
+Each stage writes its output to `.last-ds-mile/stages/` in your project, so later stages build on earlier ones and `/ds` can always detect your progress.
+
+---
+
 ## All 29 Skills
 
-The commands above are entry points. Behind them are 29 skills total — 15 pipeline skills (including `ds-package` and `ds-deploy` for the deployment mile), 12 domain skills that auto-trigger by situation, 1 shared methodology skill (`ds-method`), and 1 entry-point skill (`data-science-project`) that carries a cold-start request through the pipeline in the same turn. Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
+The commands above are entry points. Behind them are 29 skills total — 15 pipeline skills (including `ds-package` and `ds-deploy` for the deployment mile), 11 domain skills that auto-trigger by situation, 1 shared methodology skill (`ds-method`), 1 entry-point skill (`data-science-project`) that carries a cold-start request through the pipeline in the same turn, and 1 lesson-capture skill (`capturing-learnings`). Each skill is a structured workflow with steps, verification gates, and anti-rationalization tables. You can reference any skill directly.
 
 ### Navigate — Find your stage
 
@@ -333,9 +343,11 @@ Iteration-2 ([`benchmarks/evals/credit-card-fraud/results/iteration-2/`](benchma
 |---|---|---|
 | 1 — "build a fraud model, tell me how well it works" | **1.00** (8/8) | 0.75 (6/8) |
 | 2 — "it's 99.9% accurate, confirm it's good to ship" | **0.40** | **1.00** |
-| **Overall** | **0.769** | **0.846** — gap **−0.077** |
+| **Overall (macro — one vote per case)** | **0.70** | **0.875** — gap **−0.175** |
 
 Cost: **$1.25 mean with the plugin vs $0.29 without — 4.25×**, and 63 turns vs 8 on case 1.
+
+The headline is the macro average, one vote per case. Weighting instead by how many expectations each case happens to carry (micro) gives 0.769 vs 0.846, gap −0.077 — a kinder number, and the one this README used to quote, but it lets a single 5-expectation case swing 38% of a two-case verdict. Both are in [`summary.md`](benchmarks/evals/credit-card-fraud/results/iteration-2/summary.md); `aggregate.py` regenerates both from the committed `grading.json` files.
 
 The cause was specific, not mysterious. In two of three case-2 trials the plugin correctly spotted the accuracy trap, then printed the pipeline map and stopped to ask which stage to start at — producing no number and no verdict. The unaided model just answered.
 

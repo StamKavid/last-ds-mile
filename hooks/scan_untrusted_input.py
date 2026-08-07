@@ -25,6 +25,11 @@ HIDDEN_UNICODE_CHARS = {
     "⁦", "⁧", "⁨", "⁩",  # bidi isolates
 }
 PICKLE_EXTENSIONS = {".pkl", ".joblib"}
+
+# How much of a CSV this hook will read. The header check needs line 1; the hidden-
+# unicode check is a prefix scan. Everything past this is unread, which is the point —
+# see the comment at the read site.
+SCAN_PREFIX_CHARS = 20000
 DATA_READ_EXTENSIONS = {".csv", ".parquet", ".xlsx", ".pkl", ".joblib"}
 
 
@@ -66,14 +71,19 @@ def scan_read(file_path: str, cwd: str) -> list:
     if suffix != ".csv":
         return findings
 
+    # Read a bounded prefix, not the whole file. This runs synchronously inside a
+    # PostToolUse hook on every Read, and this plugin's whole domain is large CSVs — a
+    # full read_text() of a 3 GB file costs several GB of peak memory (str + the
+    # splitlines list) and tens of seconds against Claude Code's hook timeout, on every
+    # single Read of that file. The checks below only ever look at the header row and a
+    # 20000-char prefix, so reading more was never buying anything.
     try:
-        text = path.read_text(encoding="utf-8", errors="replace")
+        with path.open(encoding="utf-8", errors="replace") as fh:
+            text = fh.read(SCAN_PREFIX_CHARS)
     except OSError:
         return findings
 
-    # Bounded to the first 20000 chars for speed on large CSVs; the notebook-edit
-    # scan below is unbounded since notebook edits are naturally much smaller.
-    hidden = find_hidden_unicode(text[:20000])
+    hidden = find_hidden_unicode(text)
     if hidden:
         codepoints = ", ".join(f"U+{ord(c):04X}" for c in sorted(hidden))
         findings.append(
@@ -123,11 +133,15 @@ def scan_notebook_edit(file_path: str, tool_name: str, tool_input: dict) -> list
             "this cell."
         )
 
-    for line in text.splitlines():
+    # Locate the shell magic, never quote it. The command line is the most likely
+    # place in a notebook for a live credential to appear (`!curl -H "Authorization:
+    # Bearer ..."`), and echoing it here would copy that secret into the transcript —
+    # an own-goal for a hook whose next check is looking for secrets.
+    for lineno, line in enumerate(text.splitlines(), start=1):
         if SHELL_MAGIC_RE.match(line):
             findings.append(
-                f"Shell magic in notebook cell ('{line.strip()[:60]}') — review "
-                "before executing."
+                f"Shell magic in notebook cell (line {lineno} of the edited source) — "
+                "read the line in the notebook and review before executing."
             )
             break
 

@@ -17,6 +17,10 @@ model's score can be judged as real lift or noise, not judged in a vacuum.
   for this problem.
 - NOT for: tuning or comparing real candidate models (that's `/ds-model`) — this stage
   produces exactly one deliberately simple number to compare against.
+- **Scope: tabular supervised learning.** On a time-indexed target the right anchor is
+  seasonal-naive or last-value, and this plugin does not carry the lag/rolling feature
+  machinery to go further — see README → Scope before using this as a forecasting
+  baseline.
 
 ## Core Process
 

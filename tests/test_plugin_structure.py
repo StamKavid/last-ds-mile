@@ -354,3 +354,23 @@ def test_version_is_identical_across_both_manifests():
         "package.json": package["version"],
     }
     assert len(set(versions.values())) == 1, f"version mismatch across manifests: {versions}"
+
+
+@pytest.mark.parametrize("agent", ["data-profiler", "ds-reviewer", "leakage-auditor"])
+def test_agent_declares_a_tool_allowlist(agent):
+    """Without an explicit `tools:` key a subagent inherits the full parent tool set.
+
+    That handed a haiku/low-effort profiler pointed at untrusted CSVs the same Bash,
+    Write, WebFetch and MCP access as the parent session — the lowest-capability model
+    with the highest privilege on the most hostile input. AUDIT.md claims these agents
+    make no network calls and modify nothing; this is what makes that true.
+    """
+    frontmatter, _ = parse_frontmatter(ROOT / "agents" / f"{agent}.md")
+    tools = frontmatter.get("tools")
+    assert tools, f"agents/{agent}.md declares no `tools:` allowlist"
+    granted = {t.strip() for t in tools.split(",")}
+    forbidden = {"Write", "Edit", "MultiEdit", "NotebookEdit", "WebFetch", "WebSearch", "Task"}
+    assert not (granted & forbidden), (
+        f"agents/{agent}.md grants {sorted(granted & forbidden)} — these agents review "
+        f"and report; they must not mutate the project or reach the network."
+    )

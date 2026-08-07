@@ -41,6 +41,15 @@ import re
 import sys
 from collections import Counter
 
+# This script prints box-drawing characters, and CI runs it on ubuntu where stdout is
+# UTF-8 by default. On Windows it is cp1252, so the report crashed with
+# UnicodeEncodeError partway through — meaning the release-gate command in
+# CONTRIBUTING.md could not be run on the maintainer's own platform, and CI never
+# noticed because CI is linux-only.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
 SKILLS_DIR = REPO_ROOT / "skills"
 COMMANDS_DIR = REPO_ROOT / "commands"

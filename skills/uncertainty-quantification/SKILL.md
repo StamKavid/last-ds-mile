@@ -31,9 +31,11 @@ over-claiming sin the rest of it exists to catch.
    `random_state` seeds and pool the spread across repeats, not just across folds —
    fold variance alone understates the true uncertainty on small data.
 3. Before calling one score "better than," "worse than," or "consistent with" another,
-   compare the *gap* between them to the *spread* of each. A gap smaller than roughly
-   one standard deviation is not a demonstrated difference — say so explicitly rather
-   than picking the higher number and moving on.
+   compare the *gap* between them to the *spread* of each. A gap smaller than the fold
+   standard deviation is not a demonstrated difference — say so explicitly rather than
+   picking the higher number and moving on. Treat this as a **screening heuristic, not
+   a test**: it is deliberately conservative, and the reason it can't be upgraded into
+   a p-value is in "What fold spread can and cannot tell you" below.
 4. State uncertainty in the same units as the metric everywhere it's reported — in the
    experiments table in `/ds-model`, and in the final number in `/ds-evaluate` — not as
    a caveat added only in one place and dropped elsewhere.
@@ -41,6 +43,39 @@ over-claiming sin the rest of it exists to catch.
    don't manufacture a fake standard deviation from n=1 — say plainly that it's a
    single point estimate with no variance, and treat any comparison to the CV mean as
    directional evidence only, not a statistical test.
+
+## What fold spread can and cannot tell you
+
+Be precise about what `mean ± std` across k folds is, because this skill is the one
+everything else leans on when it says "exceeds the fold spread."
+
+**The k fold scores are not independent observations.** With 5-fold CV, any two
+training sets overlap in about 75% of their rows. That dependence means the usual
+move — divide by `√k` to get a standard error, multiply by 1.96, call it a 95%
+CI — is invalid here. Bengio & Grangier (2004) showed there is **no unbiased
+estimator of the variance of k-fold CV**, so an interval built this way understates
+the true uncertainty, sometimes badly. Report `mean ± std` as a *description of fold
+variability*, not as a confidence interval, and don't attach a confidence level to it.
+
+**This is why the step-3 bar uses the raw standard deviation rather than the standard
+error.** The SD is roughly `√k` times wider than the (already-optimistic) SE, and that
+extra width is doing real work — it is a rough offset for the dependence the SE
+ignores. It buys a screening rule that is hard to fool, at the cost of sometimes
+calling a real improvement "not demonstrated." For this plugin's purposes that
+trade is the right one: the failure this guards against is shipping noise as a
+finding, not missing a marginal gain.
+
+**When you need an actual test, not a screen:**
+
+| You want | Use |
+|---|---|
+| To compare two models properly on CV | Paired per-fold differences with the **corrected resampled t-test** (Nadeau & Bengio) — it inflates the variance term by `1/k + n_test/n_train` precisely to account for the overlap. The uncorrected paired t-test on fold scores has a badly inflated false-positive rate; don't use it. |
+| A real confidence interval on the final number | Bootstrap the **held-out set** (below). One model, one fixed test set, resampled rows — the independence assumption actually holds. |
+| To know if a difference survives seed noise | Repeated CV across seeds, then look at the distribution of the *paired difference*, not of each model's mean. |
+
+Never report a CV-derived interval as though it were the held-out bootstrap interval.
+They answer different questions: the first is "how much does this number move across
+folds," the second is "how precisely do I know performance on this population."
 
 ## Techniques/Patterns
 

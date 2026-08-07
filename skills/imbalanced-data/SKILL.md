@@ -35,16 +35,49 @@ wrong if applied carelessly.
 
 | Approach | When to prefer it | Leakage risk |
 |---|---|---|
-| `class_weight="balanced"` (or manual weights) | First thing to try — no data duplication, works with most sklearn estimators, no extra leakage surface | None — it's a loss-function change, not a data change |
+| `class_weight="balanced"` (or manual weights) | First thing to try — no data duplication, works with most sklearn estimators, no extra leakage surface | None for leakage — it's a loss-function change, not a data change. But see the calibration warning below: it *does* break your probabilities |
 | Oversampling minority class (random or SMOTE) | When the estimator doesn't support class weights, or oversampling empirically helps | High if fit on the full dataset — SMOTE synthesizes new points *from* the training data, so it must run inside the CV fold, after the split, never before |
 | Undersampling majority class | Very large datasets where discarding majority-class rows doesn't hurt signal | Same as oversampling — undersample only within the training fold |
-| Threshold tuning (move the decision threshold away from 0.5) | Whenever the model outputs a probability and the actual deployment decision has an asymmetric cost (see `metric-selection`) | None — this happens after prediction, doesn't touch training data |
+| Threshold tuning (move the decision threshold away from 0.5) | Whenever the model outputs a probability and the actual deployment decision has an asymmetric cost (see `metric-selection`) | **High if tuned on the data you then report.** It doesn't touch training data, but the threshold is a fitted parameter: pick it on the test set and the F1/precision/recall you report is optimistically biased. Choose it on validation-fold predictions only, freeze it, then evaluate. See `ds-model` |
+
+## Every fix on that table breaks your probabilities
+
+Class weights, oversampling, SMOTE, and undersampling all work by changing the
+effective base rate the model is trained against. The model learns to predict
+probabilities for a world with more positives than yours actually has, so its outputs
+come out **systematically too high**. The ranking is usually fine — which is why
+ROC-AUC and PR-AUC barely move and the problem stays invisible — but the numbers are
+no longer probabilities.
+
+This matters because `/ds-evaluate` requires a calibration check, and because any
+downstream expected-value calculation (`p × cost`) is now wrong. A fraud model
+trained at a resampled 50/50 that reports "85% likely fraud" on a population with a
+0.17% base rate is not making an 85% claim about anything.
+
+What to do:
+
+- **Prefer `class_weight="balanced"` over resampling**, and check whether you need the
+  imbalance fix at all — for a well-specified model with enough minority examples,
+  often you don't, and an uncalibrated fix is worse than no fix.
+- **If you resample, recalibrate afterwards.** Fit the calibrator (Platt/sigmoid, or
+  isotonic if you have thousands of minority examples) on a held-out fold that was
+  **not** resampled — calibrating against the resampled distribution just relearns the
+  wrong base rate. `CalibratedClassifierCV` with a `cv` that respects your validation
+  scheme is the usual route.
+- **Or prior-correct analytically** if you only used class weights and know both
+  rates: adjust the log-odds by `log(π_train/(1-π_train)) - log(π_true/(1-π_true))`.
+- **Then re-check the calibration curve on the original, unresampled distribution.**
+  That is the only distribution the check means anything on.
+
+Tune the decision threshold *after* calibrating, not before — otherwise you've tuned a
+threshold against a probability scale you then changed.
 
 ## Common Rationalizations
 
 | Rationalization | Reality |
 |---|---|
 | "I'll SMOTE the whole dataset once, then split for CV" | This is the single most common imbalanced-data leak: SMOTE-then-split lets synthetic points derived from validation-fold neighbors appear in the training fold. Always split first, then resample only the training portion, per fold. |
+| "AUC didn't change after resampling, so nothing broke" | AUC is rank-based and nearly blind to this — that's exactly why calibration damage goes unnoticed. Plot the calibration curve on the unresampled distribution, or check Brier score, which does move. |
 | "Accuracy went up, so the imbalance fix worked" | With severe imbalance, accuracy can stay high even if the model predicts the majority class 100% of the time. Check recall/precision on the minority class directly (see `metric-selection`). |
 
 See `ds-method` for the shared Rationalizations that apply to every stage.

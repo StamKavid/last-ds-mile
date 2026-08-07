@@ -16,6 +16,10 @@ structure (time, groups, imbalance) rather than by whatever split is easiest to 
 - Whenever asked to set up train/test splits or cross-validation.
 - NOT for: picking which model to try (that's `/ds-model`) — this stage fixes the split
   strategy first so it can't later be tuned to flatter a specific model.
+- **Scope: tabular supervised learning.** The `TimeSeriesSplit` guidance below covers
+  *validating a model on time-ordered rows*; it is not a forecasting validation stack
+  (no backtest windows, no horizon-aware refitting, no hierarchical reconciliation). If
+  the target is a future value of a series, say so and stop — see README → Scope.
 
 ## Core Process
 
@@ -69,16 +73,49 @@ happening. Skip it when the dataset is large enough that a single validation spl
 already low-variance, or when only comparing a handful of fixed-hyperparameter models —
 that's plain CV, not nested.
 
+**Both loops must use the splitter you chose in step 2, not plain `KFold`.** Nested CV
+is where a correct split decision is most often silently discarded: the outer loop gets
+the attention, the inner loop gets whatever the tutorial used, and the entity or the
+time ordering leaks through the tuning process instead of the evaluation. If step 2 said
+`GroupKFold`, both loops are grouped. If it said `TimeSeriesSplit`, both are ordered.
+
 ```python
 from sklearn.model_selection import GridSearchCV, KFold, cross_val_score
 
-# inner_cv tunes hyperparameters; outer_cv gives the honest final estimate
+# The i.i.d. case ONLY — no groups, no time ordering. See below for the others.
 inner_cv = KFold(n_splits=3, shuffle=True, random_state=0)
 outer_cv = KFold(n_splits=5, shuffle=True, random_state=1)
 
 search = GridSearchCV(estimator, param_grid, cv=inner_cv)
 nested_scores = cross_val_score(search, X, y, cv=outer_cv)
 ```
+
+For grouped data, `groups` has to reach *both* loops. `cross_val_score` passes `groups`
+to the outer splitter, but getting it into the inner `GridSearchCV` requires sklearn's
+metadata routing (1.4+) — without it the inner loop silently falls back to ungrouped
+splits and your tuning leaks the entity:
+
+```python
+import sklearn
+from sklearn.model_selection import GridSearchCV, GroupKFold, cross_val_score
+
+sklearn.set_config(enable_metadata_routing=True)
+
+inner_cv = GroupKFold(n_splits=3)
+outer_cv = GroupKFold(n_splits=5)
+
+search = GridSearchCV(estimator, param_grid, cv=inner_cv)
+nested_scores = cross_val_score(search, X, y, cv=outer_cv, params={"groups": groups})
+```
+
+On sklearn < 1.4, don't fake it — write the outer loop by hand with
+`outer_cv.split(X, y, groups)` and fit a fresh `GridSearchCV` per fold, passing that
+fold's groups into `search.fit(..., groups=...)`.
+
+For time-ordered data, use `TimeSeriesSplit` in both loops, and set `gap=` to the
+label horizon. If a label takes 30 days to mature, a `gap` of 0 trains on rows whose
+outcome wasn't known yet at the split boundary — the leak `/ds-prep` spent a whole
+stage preventing, reintroduced by the splitter.
 
 ## Common Rationalizations
 
@@ -107,6 +144,10 @@ failure mode.
       to code.
 - [ ] If hyperparameters were tuned, the final reported score comes from an outer loop
       the tuning process never saw.
-- [ ] `random_state` is set and recorded for every splitter used.
+- [ ] `random_state` is set and recorded for every splitter that *shuffles*
+      (`KFold`/`StratifiedKFold` with `shuffle=True`, `train_test_split`,
+      `GroupShuffleSplit`). It does nothing when `shuffle=False`, and
+      `TimeSeriesSplit` and older `GroupKFold` reject the argument outright — passing
+      it there is a `TypeError`, not extra rigor.
 - [ ] Exact split/CV code recorded for identical reuse in `/ds-model`.
 - [ ] `.last-ds-mile/stages/05-validate.md` written.

@@ -49,3 +49,11 @@ jobs:
         # Bare --min-rank1 uses the floor declared in route_check.py, which the
         # pytest suite also reads — one number, not two hand-mirrored copies.
         run: python benchmarks/evals/scripts/route_check.py --min-rank1
+
+      - name: Transcript hygiene
+        # Committed eval transcripts are recorded on a real machine and ship to every
+        # installer. This fails if any of them still carries the operator's username,
+        # home path, or the init record's inventory of their installed tooling and
+        # connected MCP servers. pytest covers this too; the standalone run prints the
+        # exact fix command.
+        run: python benchmarks/evals/scripts/scrub_transcripts.py --check

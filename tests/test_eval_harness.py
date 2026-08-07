@@ -185,3 +185,33 @@ def test_executor_requires_confirmation_before_spending():
     assert "--dry-run" in source, "executor must offer a dry run"
     assert 'input(' in source, "executor must confirm before spending"
     assert "--yes" in source, "unattended runs must be opt-in and explicit"
+
+
+def test_committed_transcripts_carry_no_operator_identity():
+    """Transcripts are raw evidence recorded on a real machine.
+
+    `aggregate.py` reads each trial's `result` record to publish cost and latency, so
+    these files have to ship — but a raw transcript also carries the operator's
+    username in every absolute path, plus an `init` record listing every slash command,
+    skill, agent and MCP connector that person had installed. None of that is evidence
+    and all of it reaches anyone who installs the plugin.
+
+    `scrub_transcripts.py` strips it while keeping the `last-ds-mile` entries, so
+    "was the plugin actually loaded in this arm" stays independently checkable.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "scrub_transcripts",
+        ROOT / "benchmarks" / "evals" / "scripts" / "scrub_transcripts.py",
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    dirty = [
+        path.relative_to(ROOT)
+        for path in sorted(ROOT.glob("benchmarks/evals/**/transcript.jsonl"))
+        if module.has_residue(path.read_text(encoding="utf-8"))
+    ]
+    assert not dirty, (
+        f"{len(dirty)} transcript(s) still carry operator identity or a machine "
+        f"inventory: {dirty}. Run: python benchmarks/evals/scripts/scrub_transcripts.py"
+    )

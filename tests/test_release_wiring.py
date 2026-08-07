@@ -149,10 +149,13 @@ def test_readme_skill_breakdown_adds_up():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     m = re.search(
         r"(\d+) pipeline skills.*?(\d+) domain skills.*?(\d+) shared methodology skill.*?"
-        r"(\d+) entry-point skill",
+        r"(\d+) entry-point skill.*?(\d+) lesson-capture skill",
         readme, re.S,
     )
     assert m, "README no longer states a skill breakdown — update this test or restore it"
+    # The breakdown used to sum to 29 only because two errors cancelled: it claimed 12
+    # domain skills against 11 on disk, and omitted `capturing-learnings` entirely. Each
+    # category is now named, so a miscount can no longer hide behind a correct total.
     total = sum(int(g) for g in m.groups())
     actual = len([p for p in (ROOT / "skills").iterdir() if p.is_dir()])
     assert total == actual, (

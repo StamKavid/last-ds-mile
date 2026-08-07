@@ -22,10 +22,15 @@ an agent ship a leaky model or an overreached causal claim in a real project.
 - **Command ↔ skill wiring must stay consistent** — `tests/test_plugin_structure.py`
   checks frontmatter shape and that commands reference real skills. Run `pytest`
   before treating a commands/skills change as done.
-- **The three hard-gate stages stay hard gates**: `/ds-model` requires a baseline and
-  validation strategy to already exist; `/ds-report` requires subgroup performance, not
-  just an aggregate metric; `/ds-handoff` requires a pinned environment. Don't soften
-  these without discussing it explicitly — they're the whole point of the plugin.
+- **The five hard-gate stages stay hard gates.** `ds-method` splits them into two
+  kinds and the distinction is load-bearing — don't collapse it. *Discipline* gates
+  self-heal: `/ds-model` (baseline + validation strategy), `/ds-report` (subgroup
+  performance, not just an aggregate) and `/ds-handoff` (pinned environment) produce
+  the missing artifact inline rather than ending the turn telling the user to go make
+  it. *Safety* gates stop: `/ds-package` won't call a model servable until
+  training/serving parity passes, and `/ds-deploy` won't go to full traffic without
+  monitoring, drift detection, and a rollback pointer. Don't soften either kind
+  without discussing it explicitly — they're the whole point of the plugin.
 
 ## Working in this repo
 
