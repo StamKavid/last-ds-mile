@@ -348,9 +348,9 @@ Three real datasets, each taken through the full `/ds-frame`→`/ds-handoff` pip
 
 | Dataset | Problem | Shipped model | Score | 5-seed reliability | vs. published reference |
 |---|---|---|---|---|---|
-| [House Prices](benchmarks/house-prices/) | Regression | Blend (LightGBM + CatBoost-native) | RMSE 0.1244 ± 0.0141 | mean 0.1228, **seed std 0.0014** | 0.11–0.12 is "solid"; matches |
+| [House Prices](benchmarks/house-prices/) | Regression | Blend (LightGBM + CatBoost-native) | RMSE 0.1244 ± 0.0141 | mean 0.1228, **seed std 0.0014** | ~0.11–0.13 is competent work; matches |
 | [Telco Churn](benchmarks/telco-churn/) | Classification (26.5% positive) | Blend (LogReg + CatBoost-native) | ROC-AUC 0.8477 ± 0.0113 | mean 0.8477, **seed std 0.0004** | ~0.84–0.86 published; matches |
-| [Credit Card Fraud](benchmarks/credit-card-fraud/) | Classification (0.17% positive) | Blend (LightGBM + CatBoost) | PR-AUC 0.8455 ± 0.0117 | mean 0.8465, **seed std 0.0010** | ~0.85–0.87 published; matches |
+| [Credit Card Fraud](benchmarks/credit-card-fraud/) | Classification (0.167% positive) | Blend (LightGBM + CatBoost) | PR-AUC 0.8455 ± 0.0117 | mean 0.8465, **seed std 0.0010** | ~0.85–0.87 published; matches |
 
 **Reliability, checked, not assumed:** each score was verified across 5 independent CV-splitter seeds. In every case the seed-to-seed standard deviation is 10–30x smaller than the within-run fold-to-fold standard deviation — the number is a stable property of the model and data, not a lucky split. Each score also lands inside independently published reference ranges for its dataset, an external check, not just an internally consistent one.
 

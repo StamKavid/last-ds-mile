@@ -7,6 +7,26 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **`credit-card-fraud/scripts/model.py`'s docstring still taught the wrong ROC-AUC
+  mechanism** the 0.10.0 `metric-selection` correction was supposed to purge — it said
+  ROC-AUC "stays misleadingly high" because it's "dominated by the easy majority-class
+  true-negative rate," which is backwards (ROC-AUC is *invariant* to class balance;
+  that invariance is the actual problem). The script that generated the credit-card
+  run's numbers was still teaching the false version even though `00-frame.md` and the
+  skill itself were already fixed. Docstring now matches `00-frame.md`'s corrected
+  reasoning.
+- **Benchmark-doc consistency pass** ahead of external publication: `benchmarks/README.md`'s
+  case table paired the raw row count with the post-dedup positive rate (now both
+  labeled); the House Prices reference range disagreed between `README.md` (0.11–0.12)
+  and `benchmarks/README.md` (0.11–0.13) — standardized on the latter, which is the one
+  the shipped score (0.1244) actually falls inside; the fraud positive rate was quoted
+  as a bare rounded 0.17% in `README.md`'s summary table — now 0.167%, matching every
+  other file; and `06-model.md`'s LightGBM war story mixed a 5-fold CV mean (0.0403)
+  with a single-held-split diagnostic pair (0.0170 → 0.8869) without labeling which was
+  which, plus a grammar typo ("an 52x").
+
 ## [0.10.0] — 2026-08-07 — cut the tag the docs describe; close the injection channel
 
 > **Validation status.** Two free, deterministic gates (structural lint and lexical

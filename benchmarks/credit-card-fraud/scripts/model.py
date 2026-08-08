@@ -1,9 +1,12 @@
 """Stage 6 — candidate comparison for credit-card-fraud.
 
 Primary metric: PR-AUC (average precision), per metric-selection's imbalanced-
-classification row — ROC-AUC stays misleadingly high under 0.17% fraud because it's
-dominated by the easy majority-class true-negative rate. ROC-AUC reported alongside
-as a secondary sanity check, never as the ranking metric.
+classification row. ROC-AUC is *invariant* to class balance, not inflated by it —
+that invariance is the problem: it looks the same here as on a balanced dataset,
+while precision (what PR-AUC tracks) moves with the 578:1 ratio and reflects what
+actually happens downstream (e.g. FPR 1.0% caps precision at 14.8% even at perfect
+recall). ROC-AUC is reported alongside as a secondary sanity check, never as the
+ranking metric. See 00-frame.md's Success Metric section for the full arithmetic.
 """
 import sys
 sys.path.insert(0, "scripts")

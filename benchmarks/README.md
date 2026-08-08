@@ -28,8 +28,8 @@ bites differently — not because they're famous.
 |---|---|---|---|
 | **Task** | Regression | Binary classification | Binary classification |
 | **What it stresses** | Skewed target, log-space metrics, small n | Moderate imbalance, threshold choice, cost asymmetry | Severe imbalance, metric traps, PR-AUC |
-| **Rows** | 1,460 | 7,043 | 284,807 |
-| **Positive rate** | — | 26.5% | **0.167%** |
+| **Rows** | 1,460 | 7,043 | 283,726 (284,807 raw, before dedup) |
+| **Positive rate** | — | 26.5% | **0.167%** (post-dedup; 0.173% on the raw file) |
 | **Primary metric** | RMSE of `log(SalePrice)` | ROC-AUC (PR-AUC secondary) | PR-AUC (average precision) |
 | **Kaggle** | [competition](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques) | [dataset](https://www.kaggle.com/datasets/blastchar/telco-customer-churn) | [dataset](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud) |
 

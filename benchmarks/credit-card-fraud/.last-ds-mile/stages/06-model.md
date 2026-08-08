@@ -10,21 +10,25 @@ exist and were read before modeling began. Baseline anchor: PR-AUC 0.00167, ROC-
 
 First pass used `scale_pos_weight = (1-rate)/rate ≈ 598.8` for every gradient-
 boosting candidate — the standard LightGBM/XGBoost imbalance knob. **LightGBM
-collapsed: PR-AUC 0.0403 vs. 0.82–0.84 for every other candidate**, with a huge,
-unstable std (0.0358) — not "LightGBM is weaker here," an actual break. Diagnosed on
-a held split before trusting the number: swapping only `scale_pos_weight` for
-`class_weight="balanced"` (same model, same data, same split) took PR-AUC from
-**0.0170 to 0.8869** — an 52x jump from changing one parameter's *mechanism*, not its
-value. `is_unbalance=True` showed the identical collapse; `min_child_samples=5`
-barely moved it. **XGBoost and CatBoost's own imbalance-weighting equivalents did not
-show this problem at the same ratio** — this appears to be specific to how
-LightGBM's `scale_pos_weight` scales the boosting gradient directly, which seems to
-hit a numerical-stability wall at very extreme ratios (~600:1) that
-`class_weight="balanced"`'s per-sample reweighting doesn't. Fixed in
-`pipeline_lib`/`model.py` before any candidate result below was trusted — **this is
-exactly the kind of finding `/ds-model`'s comparison table exists to surface**: a
-candidate that scores wildly worse than five structurally similar candidates is a
-bug signal, not a "some models just don't fit this data" shrug.
+collapsed under 5-fold CV: mean PR-AUC 0.0403 vs. 0.82–0.84 for every other
+candidate**, with a huge, unstable std (0.0358) — not "LightGBM is weaker here," an
+actual break. Diagnosed on a single held split (isolated from the CV loop, to swap
+one parameter without re-running all 5 folds) before trusting the number: swapping
+only `scale_pos_weight` for `class_weight="balanced"` (same model, same data, same
+split) took that single split's PR-AUC from **0.0170 to 0.8869** — a 52x jump from
+changing one parameter's *mechanism*, not its value. These two numbers (0.0403 CV
+mean vs. 0.0170/0.8869 single-split) come from different experiments and aren't
+directly comparable — the CV mean is what's in the table below; the single-split
+pair is only there to isolate the fix. `is_unbalance=True` showed the identical
+collapse; `min_child_samples=5` barely moved it. **XGBoost and CatBoost's own
+imbalance-weighting equivalents did not show this problem at the same ratio** — this
+appears to be specific to how LightGBM's `scale_pos_weight` scales the boosting
+gradient directly, which seems to hit a numerical-stability wall at very extreme
+ratios (~600:1) that `class_weight="balanced"`'s per-sample reweighting doesn't.
+Fixed in `pipeline_lib`/`model.py` before any candidate result below was trusted —
+**this is exactly the kind of finding `/ds-model`'s comparison table exists to
+surface**: a candidate that scores wildly worse than five structurally similar
+candidates is a bug signal, not a "some models just don't fit this data" shrug.
 
 ## Experiments table (corrected)
 
